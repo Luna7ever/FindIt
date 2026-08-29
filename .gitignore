@@ -15,6 +15,7 @@
 /dist
 /.wrangler/
 /.vercel
+/.vinext/
 
 # Testing & Coverage
 /coverage

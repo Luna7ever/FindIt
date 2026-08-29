@@ -1,0 +1,93 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && (
+        request.auth.token.role == 'admin' ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'
+      );
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Default deny all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Users collection
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId) && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'goodwillPoints'])) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Items collection
+    match /items/{itemId} {
+      // Any authenticated user can browse active lost/found items
+      allow read: if isAuthenticated();
+
+      // Create: Authenticated student/admin reporting with their own UID
+      allow create: if isAuthenticated() 
+        && request.resource.data.reportedBy.id == request.auth.uid
+        && request.resource.data.status in ['open', 'matched']
+        && request.resource.data.title is string
+        && request.resource.data.title.size() <= 100
+        && request.resource.data.description is string
+        && request.resource.data.description.size() <= 500;
+
+      // Update: Owner can edit details before claim; Admin can moderate and update status
+      allow update: if isAdmin() || (
+        isAuthenticated() 
+        && resource.data.reportedBy.id == request.auth.uid
+        && resource.data.status in ['open', 'matched']
+        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['reportedBy', 'reunitedAt']))
+      );
+
+      // Delete: Owner or Admin
+      allow delete: if isAdmin() || (isAuthenticated() && resource.data.reportedBy.id == request.auth.uid);
+    }
+
+    // Claims collection
+    match /claims/{claimId} {
+      // Read: Only claimant, item finder, or Admin
+      allow read: if isAuthenticated() && (
+        resource.data.claimant.id == request.auth.uid ||
+        get(/databases/$(database)/documents/items/$(resource.data.itemId)).data.reportedBy.id == request.auth.uid ||
+        isAdmin()
+      );
+
+      // Create: Authenticated student claiming an open item (cannot claim own item)
+      allow create: if isAuthenticated()
+        && request.resource.data.claimant.id == request.auth.uid
+        && request.resource.data.status == 'pending'
+        && get(/databases/$(database)/documents/items/$(request.resource.data.itemId)).data.reportedBy.id != request.auth.uid
+        && request.resource.data.answerText is string
+        && request.resource.data.answerText.size() <= 300;
+
+      // Update (Approve / Reject / Complete): Item finder or Admin only
+      allow update: if isAdmin() || (
+        isAuthenticated() &&
+        get(/databases/$(database)/documents/items/$(resource.data.itemId)).data.reportedBy.id == request.auth.uid
+      );
+
+      // Delete: Admin only
+      allow delete: if isAdmin();
+    }
+
+    // Locations collection (Public read, admin write)
+    match /locations/{locationId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+  }
+}

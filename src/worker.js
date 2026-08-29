@@ -1,4 +1,4 @@
-import rscHandler from '../dist/server/index.js';
+import rscHandler from 'virtual:vinext-rsc-entry';
 
 export default {
   async fetch(request, env, ctx) {
@@ -12,7 +12,7 @@ export default {
           return assetRes;
         }
       } catch (e) {
-        // Continue to SSR
+        // Fall through to SSR
       }
     }
 

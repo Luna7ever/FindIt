@@ -142,3 +142,17 @@ test('7. HANDOVER: Enforces correct PIN and rate limits incorrect attempts', () 
     RateLimitError
   );
 });
+
+test('8. PRIVACY & MASKING: Student ID masking and public reporter labels', async () => {
+  const { maskStudentId, getPublicReporterLabel } = await import('../src/lib/utils');
+
+  assert.equal(maskStudentId('4826'), '••26');
+  assert.equal(maskStudentId('102938'), '••••38');
+  assert.equal(maskStudentId(''), '');
+
+  assert.equal(getPublicReporterLabel('student', true), 'طالبة في المدرسة');
+  assert.equal(getPublicReporterLabel('student', false), 'أحد الطلاب (أمانة)');
+  assert.equal(getPublicReporterLabel('admin', false), 'أمانات إدارة المدرسة');
+  assert.equal(getPublicReporterLabel('student', false, 'at_office'), 'أمانات إدارة المدرسة');
+});
+

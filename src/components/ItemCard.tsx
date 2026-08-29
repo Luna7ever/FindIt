@@ -4,8 +4,9 @@ import React from 'react';
 import Link from 'next/link';
 import { Item } from '@/types';
 import { CATEGORIES, SCHOOL_LOCATIONS } from '@/lib/constants';
-import { formatArabicDate } from '@/lib/utils';
+import { formatArabicDate, getPublicReporterLabel } from '@/lib/utils';
 import ItemVisual from '@/components/ItemVisual';
+import UserAvatar from '@/components/UserAvatar';
 import { 
   MapPin, 
   Clock, 
@@ -126,12 +127,15 @@ export default function ItemCard({ item, matchScore, showMatchButton = false }: 
           {/* Reporter & Action trigger */}
           <div className="flex items-center justify-between pt-1 text-[11px] text-[#66706B]">
             <div className="flex items-center gap-1.5">
-              <img
-                src={item.reportedBy?.avatar}
-                alt=""
-                className="w-4 h-4 rounded-full object-cover ring-1 ring-[#E4E7E4]"
+              <UserAvatar
+                size="xs"
+                name={item.reportedBy?.role === 'admin' ? 'إدارة' : 'طالب'}
+                role={item.reportedBy?.role}
+                avatarUrl={item.reportedBy?.avatar}
               />
-              <span className="truncate max-w-[120px]">{item.reportedBy?.name}</span>
+              <span className="truncate max-w-[130px]">
+                {getPublicReporterLabel(item.reportedBy?.role, isLost, item.custody)}
+              </span>
             </div>
             <div className="flex items-center gap-0.5 text-[#176B5B] font-semibold text-xs group-hover:translate-x-[-2px] transition-transform">
               <span>التفاصيل</span>

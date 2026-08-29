@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { IBM_Plex_Sans_Arabic, Plus_Jakarta_Sans } from 'next/font/google';
 import './globals.css';
 import { AppProvider } from '@/context/AppContext';
@@ -18,9 +18,49 @@ const plusJakarta = Plus_Jakarta_Sans({
   display: 'swap',
 });
 
+const appBaseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.findit-us.workers.dev';
+
 export const metadata: Metadata = {
-  title: 'FindIt | فُقِدَ. تَطابَقَ. عَادَ.',
-  description: 'المنصة الذكية الآمنة لتوثيق واسترداد المفقودات والأمانات المدرسية.',
+  metadataBase: new URL(appBaseUrl),
+  title: {
+    default: 'FindIt | مفقودات المدرسة — فُقِدَ. تَطابَقَ. عَادَ.',
+    template: '%s | FindIt',
+  },
+  description: 'منصة ذكية لمساعدة طلاب المدرسة على العثور على المفقودات واستردادها بأمان.',
+  applicationName: 'FindIt',
+  authors: [{ name: 'FindIt School Team' }],
+  manifest: '/manifest.json',
+  icons: {
+    icon: '/icon.svg',
+    shortcut: '/icon.svg',
+    apple: '/icon.svg',
+  },
+  openGraph: {
+    title: 'FindIt | مفقودات المدرسة',
+    description: 'منصة ذكية لمساعدة طلاب المدرسة على العثور على المفقودات واستردادها بأمان.',
+    url: appBaseUrl,
+    siteName: 'FindIt',
+    locale: 'ar_SA',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary',
+    title: 'FindIt | مفقودات المدرسة',
+    description: 'منصة ذكية لمساعدة طلاب المدرسة على العثور على المفقودات واستردادها بأمان.',
+  },
+  appleWebApp: {
+    capable: true,
+    title: 'FindIt',
+    statusBarStyle: 'default',
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: '#176B5B',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 export default function RootLayout({
@@ -30,6 +70,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ar" dir="rtl" className={`${ibmPlexArabic.variable} ${plusJakarta.variable}`}>
+      <head>
+        <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="/icon.svg" />
+      </head>
       <body className="min-h-screen bg-[#F7F7F4] text-[#18201D] font-sans antialiased selection:bg-[#E6F1ED] selection:text-[#176B5B]">
         <AppProvider>
           <AppShell>

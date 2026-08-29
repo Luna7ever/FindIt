@@ -16,6 +16,7 @@ import {
   ChevronDown
 } from 'lucide-react';
 import QRModal from '@/components/QRModal';
+import UserAvatar from '@/components/UserAvatar';
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -126,11 +127,7 @@ export default function Navbar() {
                 onClick={() => setShowUserMenu(!showUserMenu)}
                 className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-white border border-slate-200 shadow-sm hover:border-slate-300 transition-all text-xs text-right"
               >
-                <img
-                  src={currentUser.avatar}
-                  alt={currentUser.name}
-                  className="w-5 h-5 rounded-full object-cover"
-                />
+                <UserAvatar size="xs" name={currentUser.name} role={currentUser.role} />
                 <span className="hidden sm:inline font-semibold text-slate-800 text-xs">
                   {currentUser.name}
                 </span>
@@ -166,11 +163,7 @@ export default function Navbar() {
                         }`}
                       >
                         <div className="flex items-center gap-2">
-                          <img
-                            src={u.avatar}
-                            alt={u.name}
-                            className="w-6 h-6 rounded-full object-cover"
-                          />
+                          <UserAvatar size="xs" name={u.name} role={u.role} />
                           <div>
                             <p className="font-semibold text-slate-800">{u.name}</p>
                             <p className="text-[10px] text-slate-500">{u.grade}</p>

@@ -126,9 +126,14 @@ export default function QRModal({ isOpen, onClose }: QRModalProps) {
               </svg>
             </div>
 
+            {/* Direct URL Preview */}
+            <div className="w-full mt-1 px-2 py-1 rounded-lg bg-white/80 border border-[#E4E7E4] text-[9px] text-[#66706B] font-mono truncate text-center dir-ltr">
+              https://app.findit-us.workers.dev/report?type=found&location={activeLoc.id}
+            </div>
+
             <button
               onClick={() => handleSimulateScan(activeLoc.id)}
-              className="mt-2.5 w-full py-2 px-3 rounded-xl bg-[#176B5B] hover:bg-[#125648] text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5"
+              className="mt-2 w-full py-2 px-3 rounded-xl bg-[#176B5B] hover:bg-[#125648] text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5"
             >
               <span>محاكاة مسح الباركود</span>
               <ArrowLeft className="w-3.5 h-3.5" />

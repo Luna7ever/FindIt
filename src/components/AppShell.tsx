@@ -20,6 +20,8 @@ import {
   Lock
 } from 'lucide-react';
 import QRModal from '@/components/QRModal';
+import UserAvatar from '@/components/UserAvatar';
+import { env } from '@/config/env';
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -170,10 +172,12 @@ export default function AppShell({ children }: AppShellProps) {
               className="w-full flex items-center justify-between p-2 rounded-2xl hover:bg-[#F1F3F0] transition-colors text-right border border-[#E4E7E4] bg-white"
             >
               <div className="flex items-center gap-2.5 min-w-0">
-                <img
-                  src={currentUser.avatar}
-                  alt={currentUser.name}
-                  className="w-8 h-8 rounded-full object-cover shrink-0 ring-1 ring-[#E4E7E4]"
+                <UserAvatar
+                  size="md"
+                  name={currentUser.name}
+                  role={currentUser.role}
+                  avatarUrl={currentUser.avatar}
+                  showBadge={isAdminUser}
                 />
                 <div className="truncate">
                   <div className="flex items-center gap-1">
@@ -195,11 +199,11 @@ export default function AppShell({ children }: AppShellProps) {
                   </p>
                 </div>
               </div>
-              <ChevronDown className="w-3.5 h-3.5 text-[#66706B] shrink-0" />
+              {env.NEXT_PUBLIC_DEMO_MODE && <ChevronDown className="w-3.5 h-3.5 text-[#66706B] shrink-0" />}
             </button>
 
             {/* Demo Account Switcher Popover */}
-            {showDemoSwitcher && (
+            {showDemoSwitcher && env.NEXT_PUBLIC_DEMO_MODE && (
               <div
                 className="absolute bottom-full right-0 mb-2 w-64 rounded-2xl bg-white p-2.5 shadow-xl border border-[#E4E7E4] z-50 animate-in fade-in"
                 onClick={() => setShowDemoSwitcher(false)}
@@ -223,10 +227,11 @@ export default function AppShell({ children }: AppShellProps) {
                       }`}
                     >
                       <div className="flex items-center gap-2">
-                        <img
-                          src={u.avatar}
-                          alt={u.name}
-                          className="w-6 h-6 rounded-full object-cover"
+                        <UserAvatar
+                          size="sm"
+                          name={u.name}
+                          role={u.role}
+                          avatarUrl={u.avatar}
                         />
                         <div>
                           <p className="font-bold text-xs">{u.name}</p>
@@ -281,19 +286,21 @@ export default function AppShell({ children }: AppShellProps) {
 
           {/* Account Switcher Icon */}
           <button
-            onClick={() => setShowDemoSwitcher(!showDemoSwitcher)}
-            className="flex items-center gap-1.5 p-1 rounded-full bg-[#F1F3F0] ring-1 ring-[#E4E7E4]"
+            onClick={() => env.NEXT_PUBLIC_DEMO_MODE && setShowDemoSwitcher(!showDemoSwitcher)}
+            className="flex items-center gap-1.5 p-0.5 rounded-full bg-[#F1F3F0] ring-1 ring-[#E4E7E4]"
           >
-            <img
-              src={currentUser.avatar}
-              alt={currentUser.name}
-              className="w-6 h-6 rounded-full object-cover"
+            <UserAvatar
+              size="sm"
+              name={currentUser.name}
+              role={currentUser.role}
+              avatarUrl={currentUser.avatar}
+              showBadge={isAdminUser}
             />
           </button>
         </div>
 
         {/* Mobile Demo Switcher Popover */}
-        {showDemoSwitcher && (
+        {showDemoSwitcher && env.NEXT_PUBLIC_DEMO_MODE && (
           <div
             className="absolute top-14 left-4 w-60 rounded-2xl bg-white p-2.5 shadow-2xl border border-[#E4E7E4] z-50 animate-in fade-in"
             onClick={() => setShowDemoSwitcher(false)}
@@ -313,10 +320,11 @@ export default function AppShell({ children }: AppShellProps) {
                   }`}
                 >
                   <div className="flex items-center gap-2">
-                    <img
-                      src={u.avatar}
-                      alt={u.name}
-                      className="w-6 h-6 rounded-full object-cover"
+                    <UserAvatar
+                      size="sm"
+                      name={u.name}
+                      role={u.role}
+                      avatarUrl={u.avatar}
                     />
                     <div>
                       <p className="font-bold text-xs">{u.name}</p>

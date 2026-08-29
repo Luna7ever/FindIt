@@ -5,9 +5,10 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
 import { SCHOOL_LOCATIONS, CATEGORIES } from '@/lib/constants';
-import { formatArabicDate } from '@/lib/utils';
+import { formatArabicDate, getPublicReporterLabel } from '@/lib/utils';
 import ClaimModal from '@/components/ClaimModal';
 import ItemVisual from '@/components/ItemVisual';
+import UserAvatar from '@/components/UserAvatar';
 import { 
   MapPin, 
   Clock, 
@@ -206,23 +207,31 @@ export default function ItemDetailsPage({ params }: { params: Promise<{ id: stri
             </span>
 
             <div className="flex items-center gap-3">
-              <img
-                src={item.reportedBy?.avatar}
-                alt=""
-                className="w-11 h-11 rounded-full object-cover ring-2 ring-[#E4E7E4]"
+              <UserAvatar
+                size="lg"
+                name={isMyReport || currentUser.role === 'admin' ? item.reportedBy?.name : (item.reportedBy?.role === 'admin' ? 'إدارة المدرسة' : 'طالب')}
+                role={item.reportedBy?.role}
+                avatarUrl={item.reportedBy?.avatar}
+                showBadge={item.reportedBy?.role === 'admin'}
               />
               <div className="min-w-0">
                 <div className="flex items-center gap-1">
                   <h4 className="font-bold text-xs sm:text-sm text-[#18201D] truncate">
-                    {item.reportedBy?.name}
+                    {isMyReport || currentUser.role === 'admin'
+                      ? item.reportedBy?.name
+                      : getPublicReporterLabel(item.reportedBy?.role, isLost, item.custody)}
                   </h4>
                   {item.reportedBy?.isTrusted && (
-                    <span title="طالب موثوق">
+                    <span title="موثوق">
                       <ShieldCheck className="w-3.5 h-3.5 text-[#059669] shrink-0" />
                     </span>
                   )}
                 </div>
-                <p className="text-[11px] text-[#66706B] truncate">{item.reportedBy?.grade}</p>
+                <p className="text-[11px] text-[#66706B] truncate">
+                  {isMyReport || currentUser.role === 'admin' 
+                    ? item.reportedBy?.grade 
+                    : (item.reportedBy?.role === 'admin' ? 'إدارة المدرسة والأمانات' : 'عضو في المدرسة')}
+                </p>
                 <span className="text-[10px] text-[#059669] font-bold block mt-0.5">
                   ⭐ {item.reportedBy?.returnedCount || 0} أغراض مستردة
                 </span>

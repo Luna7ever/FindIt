@@ -17,7 +17,9 @@ import {
   QrCode,
   LayoutDashboard,
   Users2,
-  Lock
+  Lock,
+  BrainCircuit,
+  Sparkles
 } from 'lucide-react';
 import QRModal from '@/components/QRModal';
 import UserAvatar from '@/components/UserAvatar';
@@ -43,6 +45,7 @@ export default function AppShell({ children }: AppShellProps) {
   const isExplore = pathname === '/explore';
   const isReport = pathname === '/report';
   const isMyItems = pathname === '/my-items' || pathname === '/profile';
+  const isMoralBank = pathname.startsWith('/moral-bank');
   const isAdmin = pathname.startsWith('/admin');
 
   return (

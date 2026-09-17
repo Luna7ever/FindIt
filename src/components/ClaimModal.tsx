@@ -23,7 +23,7 @@ interface ClaimModalProps {
 
 export default function ClaimModal({ itemId, isOpen, onClose }: ClaimModalProps) {
   const router = useRouter();
-  const { getItemById, submitClaim, getClaimForCurrentUserAndItem } = useApp();
+  const { getItemById, submitClaim, getClaimForCurrentUserAndItem, dir, language } = useApp();
 
   const [answerText, setAnswerText] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
@@ -40,7 +40,7 @@ export default function ClaimModal({ itemId, isOpen, onClose }: ClaimModalProps)
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!answerText.trim()) {
-      alert('يرجى كتابة الإجابة على السؤال السري');
+      alert(language === 'en' ? 'Please enter the answer to the secret question' : 'يرجى كتابة الإجابة على السؤال السري');
       return;
     }
 
@@ -50,37 +50,37 @@ export default function ClaimModal({ itemId, isOpen, onClose }: ClaimModalProps)
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-in fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in" dir={dir}>
       <div 
-        className="relative w-full max-w-md bg-white border border-[#E4E7E4] rounded-3xl p-6 sm:p-7 shadow-xl overflow-hidden"
+        className="relative w-full max-w-md bg-white dark:bg-[#15201D] border border-[#E4E7E4] dark:border-[#263834] rounded-3xl p-6 sm:p-7 shadow-2xl overflow-hidden text-[#18201D] dark:text-[#F1F5F3]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-5 left-5 p-2 rounded-full bg-[#F1F3F0] hover:bg-[#E4E7E4] text-[#18201D] transition-colors"
+          className="absolute top-4 sm:top-5 end-4 sm:end-5 p-2 rounded-full bg-[#F1F3F0] dark:bg-[#1C2B27] hover:bg-[#E4E7E4] dark:hover:bg-[#253934] text-[#18201D] dark:text-white transition-colors cursor-pointer"
         >
           <X className="w-4 h-4" />
         </button>
 
         {!isSuccess && !existingClaim ? (
-          <div className="space-y-4 text-right">
+          <div className="space-y-4 text-start">
             
             <div className="space-y-1">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E6F1ED] text-[#176B5B] text-xs font-bold">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E6F1ED] dark:bg-[#122B25] text-[#176B5B] dark:text-[#2DD4BF] text-xs font-bold">
                 <Lock className="w-3.5 h-3.5" />
-                <span>إثبات الملكية</span>
+                <span>{language === 'en' ? 'Proof of Ownership' : 'إثبات الملكية'}</span>
               </div>
-              <h2 className="text-lg sm:text-xl font-extrabold text-[#18201D]">
-                المطالبة بالغرض المعثور عليه
+              <h2 className="text-lg sm:text-xl font-extrabold text-[#18201D] dark:text-white">
+                {language === 'en' ? 'Claim Found Item' : 'المطالبة بالغرض المعثور عليه'}
               </h2>
-              <p className="text-xs text-[#66706B]">
-                أجب على السؤال السري الذي وضعه الملتقط للتأكد من هويتك.
+              <p className="text-xs text-[#66706B] dark:text-[#94A39D]">
+                {language === 'en' ? 'Answer the secret question set by the finder to verify your ownership.' : 'أجب على السؤال السري الذي وضعه الملتقط للتأكد من هويتك.'}
               </p>
             </div>
 
             {/* Item Mini Card */}
-            <div className="p-3 rounded-2xl bg-[#F1F3F0] flex items-center gap-3">
+            <div className="p-3 rounded-2xl bg-[#F1F3F0] dark:bg-[#1C2B27] flex items-center gap-3">
               <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0">
                 <ItemVisual
                   category={item.category}
@@ -90,75 +90,71 @@ export default function ClaimModal({ itemId, isOpen, onClose }: ClaimModalProps)
                 />
               </div>
               <div className="min-w-0">
-                <h4 className="font-bold text-[#18201D] text-xs sm:text-sm truncate">{item.title}</h4>
-                <p className="text-[11px] text-[#66706B] flex items-center gap-1">
-                  <MapPin className="w-3 h-3 text-[#176B5B]" />
+                <h4 className="font-bold text-[#18201D] dark:text-white text-xs sm:text-sm truncate">{item.title}</h4>
+                <p className="text-[11px] text-[#66706B] dark:text-[#94A39D] flex items-center gap-1">
+                  <MapPin className="w-3 h-3 text-[#176B5B] dark:text-[#2DD4BF]" />
                   {locationInfo?.name}
                 </p>
               </div>
             </div>
 
-            {/* Secret Question */}
-            <div className="p-3.5 rounded-2xl bg-[#FEF3C7]/60 border border-[#FDE68A] space-y-1 text-xs">
-              <div className="flex items-center gap-1 text-[#92400E] font-bold">
-                <HelpCircle className="w-3.5 h-3.5 text-[#D97706]" />
-                <span>السؤال السري:</span>
+            {/* Form */}
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2 p-3.5 rounded-2xl bg-amber-50/70 dark:bg-amber-950/40 border border-amber-200/80 dark:border-amber-900/50">
+                <div className="flex items-center gap-2 text-amber-900 dark:text-amber-300 font-bold text-xs">
+                  <HelpCircle className="w-4 h-4 text-amber-700 dark:text-amber-400 shrink-0" />
+                  <span>{language === 'en' ? 'Secret Question:' : 'السؤال السري:'}</span>
+                </div>
+                <p className="text-xs font-semibold text-amber-950 dark:text-amber-200 pr-6">
+                  {item.secretQuestion || (language === 'en' ? 'Describe distinguishing markings or unique details on this item.' : 'اذكر علامة مميزة أو محتويات دقيقة داخل هذا الغرض')}
+                </p>
               </div>
-              <p className="font-bold text-[#18201D] bg-white p-2.5 rounded-xl border border-[#FDE68A]/60 leading-relaxed">
-                «{item.secretQuestion || 'ما هي العلامة المميزة للغرض؟'}»
-              </p>
-            </div>
 
-            {/* Answer Form */}
-            <form onSubmit={handleSubmit} className="space-y-3.5">
-              <div className="space-y-1">
-                <label className="block text-xs font-bold text-[#18201D]">
-                  إجابتك للعلامة المخفية <span className="text-[#E11D48]">*</span>
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold text-[#18201D] dark:text-white">
+                  {language === 'en' ? 'Your Answer:' : 'إجابتك للتأكيد:'}
                 </label>
                 <textarea
-                  required
                   rows={3}
                   value={answerText}
                   onChange={(e) => setAnswerText(e.target.value)}
-                  placeholder="اكتب إجابتك هنا..."
-                  className="w-full p-3 rounded-xl bg-[#F1F3F0] border border-[#E4E7E4] text-[#18201D] text-xs placeholder-[#66706B]/70 focus:bg-white focus:border-[#176B5B] focus:outline-none resize-none transition-colors"
+                  placeholder={language === 'en' ? 'Write precise details known only to the owner...' : 'اكتب تفاصيل دقيقة تثبت أن الغرض ملكك...'}
+                  className="w-full p-3 text-xs bg-slate-50 dark:bg-[#1C2B27] border border-[#E4E7E4] dark:border-[#2D3E3A] rounded-2xl focus:bg-white dark:focus:bg-[#15201D] focus:border-[#176B5B] dark:focus:border-[#2DD4BF] focus:outline-none transition-all text-[#18201D] dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                  required
                 />
               </div>
 
               <button
                 type="submit"
-                className="w-full py-3 px-6 rounded-xl bg-[#176B5B] hover:bg-[#125648] text-white font-bold text-xs sm:text-sm transition-all shadow-xs flex items-center justify-center gap-2"
+                className="w-full py-3 rounded-2xl bg-[#176B5B] dark:bg-[#2DD4BF] hover:bg-[#125648] dark:hover:bg-[#14B8A6] text-white dark:text-slate-950 font-bold text-xs shadow-md transition-all cursor-pointer"
               >
-                <ShieldCheck className="w-4 h-4" />
-                <span>إرسال إثبات الملكية</span>
+                {language === 'en' ? 'Submit Claim Request' : 'إرسال طلب الاسترداد'}
               </button>
             </form>
 
           </div>
         ) : (
-          <div className="space-y-4 text-center py-2 animate-in zoom-in-95">
-            <div className="w-12 h-12 rounded-full bg-[#D1FAE5] text-[#059669] flex items-center justify-center mx-auto">
-              <CheckCircle2 className="w-6 h-6" />
+          <div className="space-y-5 text-center py-2">
+            <div className="w-14 h-14 rounded-2xl bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-[#2DD4BF] mx-auto flex items-center justify-center">
+              <CheckCircle2 className="w-8 h-8" />
             </div>
 
             <div className="space-y-1">
-              <h3 className="text-lg font-bold text-[#18201D]">تم إرسال طلبك بنجاح!</h3>
-              <p className="text-xs text-[#66706B] max-w-xs mx-auto">
-                وصلت إجابتك للملتقط، وبمجرد موافقته ستلتقيان في المدرسة لإتمام الاستلام.
+              <h2 className="text-xl font-black text-[#18201D] dark:text-white">
+                {language === 'en' ? 'Claim Submitted Successfully!' : 'تم تقديم طلب الاسترداد بنجاح!'}
+              </h2>
+              <p className="text-xs text-[#66706B] dark:text-[#94A39D]">
+                {language === 'en' ? 'Your request has been recorded. Present this PIN upon collection.' : 'تم تسجيل طلبك، استخدم رمز PIN السري أدناه عند استلام الغرض.'}
               </p>
             </div>
 
-            {/* PIN Card */}
-            <div className="p-4 rounded-2xl bg-[#F1F3F0] border border-[#E4E7E4] space-y-1">
-              <span className="text-[11px] text-[#66706B] block font-semibold">
-                رمز التسليم الرقمي الخاص بك (PIN):
+            <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-[#122823] dark:to-[#173830] border border-emerald-200 dark:border-[#1E463D] space-y-1">
+              <span className="text-[11px] font-bold text-[#66706B] dark:text-[#94A39D] block">
+                {language === 'en' ? 'Your Secret Handover PIN:' : 'رمز التسليم السري (PIN):'}
               </span>
-              <div className="text-3xl font-black tracking-widest text-[#176B5B] py-1 font-mono">
-                {generatedClaimPin || existingClaim?.handoverPin || '4829'}
-              </div>
-              <p className="text-[10px] text-[#66706B]">
-                اذكر هذا الرمز للملتقط عند اللقاء الفعلي.
-              </p>
+              <span className="font-mono text-3xl font-black tracking-widest text-[#176B5B] dark:text-[#2DD4BF]">
+                {generatedClaimPin || existingClaim?.handoverPin || '1234'}
+              </span>
             </div>
 
             <button
@@ -166,13 +162,12 @@ export default function ClaimModal({ itemId, isOpen, onClose }: ClaimModalProps)
                 onClose();
                 router.push('/my-items');
               }}
-              className="w-full py-2.5 px-4 rounded-xl bg-[#18201D] text-white font-bold text-xs"
+              className="w-full py-3 rounded-2xl bg-[#176B5B] dark:bg-[#2DD4BF] text-white dark:text-slate-950 font-bold text-xs hover:bg-[#125648] dark:hover:bg-[#14B8A6] transition-colors cursor-pointer"
             >
-              متابعة في قائمة أغراضي
+              {language === 'en' ? 'View in My Items' : 'متابعة الطلب في صفحة أغراضي'}
             </button>
           </div>
         )}
-
       </div>
     </div>
   );

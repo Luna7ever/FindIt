@@ -32,6 +32,43 @@ export const CustodyStatusEnum = z.enum(['with_finder', 'at_office']);
 export const UserRoleEnum = z.enum(['student', 'admin']);
 export const ClaimStatusEnum = z.enum(['pending', 'approved', 'rejected', 'completed']);
 
+// Visual AI and OCR Feature Schemas
+export const DominantColorSchema = z.object({
+  name: z.string(),
+  rgb: z.tuple([z.number(), z.number(), z.number()]),
+  hex: z.string(),
+  percentage: z.number(),
+});
+
+export const ExtractedEntitiesSchema = z.object({
+  brand: z.string().optional(),
+  model: z.string().optional(),
+  serialNumber: z.string().optional(),
+  studentName: z.string().optional(),
+});
+
+export const OcrParsedResultSchema = z.object({
+  rawText: z.string(),
+  normalizedTokens: z.array(z.string()),
+  entities: ExtractedEntitiesSchema,
+  confidence: z.number(),
+});
+
+export const ShapeVectorSchema = z.object({
+  aspectRatio: z.number(),
+  solidity: z.number(),
+  edgeComplexity: z.number(),
+});
+
+export const VisualFeaturesSchema = z.object({
+  dominantColors: z.array(DominantColorSchema),
+  colorHistogram: z.array(z.number()),
+  detectedText: z.string().optional(),
+  ocr: OcrParsedResultSchema.optional(),
+  shape: ShapeVectorSchema.optional(),
+  processedAt: z.string(),
+});
+
 // 1. Item Creation Schema
 export const ItemCreateSchema = z.object({
   title: z
@@ -69,8 +106,11 @@ export const ItemCreateSchema = z.object({
   imageUrl: z
     .string()
     .url('رابط الصورة غير صالح')
-    .max(500)
+    .max(2_000_000)
     .optional(),
+  visualFeatures: VisualFeaturesSchema.optional(),
+  ocrText: z.string().max(2000).optional(),
+  isAiVerified: z.boolean().optional(),
   secretQuestion: z
     .string()
     .trim()

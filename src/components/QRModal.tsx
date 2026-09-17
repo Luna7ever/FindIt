@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { SCHOOL_LOCATIONS } from '@/lib/constants';
+import { useApp } from '@/context/AppContext';
 import { 
   X, 
   QrCode, 
@@ -24,19 +25,20 @@ interface QRModalProps {
 }
 
 const locationIcons: Record<string, React.ReactNode> = {
-  science_lab: <FlaskConical className="w-4 h-4 text-[#176B5B]" />,
-  library: <Library className="w-4 h-4 text-[#176B5B]" />,
-  cafeteria: <Utensils className="w-4 h-4 text-[#176B5B]" />,
-  gym: <Dumbbell className="w-4 h-4 text-[#176B5B]" />,
-  playground: <Sun className="w-4 h-4 text-[#176B5B]" />,
-  classrooms_g1: <GraduationCap className="w-4 h-4 text-[#176B5B]" />,
-  classrooms_g2: <Building className="w-4 h-4 text-[#176B5B]" />,
-  admin_office: <ShieldCheck className="w-4 h-4 text-[#176B5B]" />,
-  prayer_room: <Moon className="w-4 h-4 text-[#176B5B]" />,
+  science_lab: <FlaskConical className="w-4 h-4 text-[#176B5B] dark:text-[#2DD4BF]" />,
+  library: <Library className="w-4 h-4 text-[#176B5B] dark:text-[#2DD4BF]" />,
+  cafeteria: <Utensils className="w-4 h-4 text-[#176B5B] dark:text-[#2DD4BF]" />,
+  gym: <Dumbbell className="w-4 h-4 text-[#176B5B] dark:text-[#2DD4BF]" />,
+  playground: <Sun className="w-4 h-4 text-[#176B5B] dark:text-[#2DD4BF]" />,
+  classrooms_g1: <GraduationCap className="w-4 h-4 text-[#176B5B] dark:text-[#2DD4BF]" />,
+  classrooms_g2: <Building className="w-4 h-4 text-[#176B5B] dark:text-[#2DD4BF]" />,
+  admin_office: <ShieldCheck className="w-4 h-4 text-[#176B5B] dark:text-[#2DD4BF]" />,
+  prayer_room: <Moon className="w-4 h-4 text-[#176B5B] dark:text-[#2DD4BF]" />,
 };
 
 export default function QRModal({ isOpen, onClose }: QRModalProps) {
   const router = useRouter();
+  const { dir, language } = useApp();
   const [selectedLocation, setSelectedLocation] = useState<string>('science_lab');
 
   if (!isOpen) return null;
@@ -49,30 +51,30 @@ export default function QRModal({ isOpen, onClose }: QRModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-in fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in" dir={dir}>
       <div 
-        className="relative w-full max-w-lg bg-white border border-[#E4E7E4] rounded-3xl p-6 sm:p-7 shadow-xl overflow-hidden"
+        className="relative w-full max-w-lg bg-white dark:bg-[#15201D] border border-[#E4E7E4] dark:border-[#263834] rounded-3xl p-6 sm:p-7 shadow-2xl overflow-hidden text-[#18201D] dark:text-[#F1F5F3]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-5 left-5 p-2 rounded-full bg-[#F1F3F0] hover:bg-[#E4E7E4] text-[#18201D] transition-colors"
+          className="absolute top-4 sm:top-5 end-4 sm:end-5 p-2 rounded-full bg-[#F1F3F0] dark:bg-[#1C2B27] hover:bg-[#E4E7E4] dark:hover:bg-[#253934] text-[#18201D] dark:text-white transition-colors cursor-pointer"
         >
           <X className="w-4 h-4" />
         </button>
 
         {/* Modal Header */}
-        <div className="text-right space-y-1 mb-5">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E6F1ED] text-[#176B5B] text-xs font-bold">
+        <div className="text-start space-y-1 mb-5">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E6F1ED] dark:bg-[#122B25] text-[#176B5B] dark:text-[#2DD4BF] text-xs font-bold">
             <QrCode className="w-3.5 h-3.5" />
-            <span>نقاط QR المدرسية</span>
+            <span>{language === 'en' ? 'School QR Posters' : 'نقاط QR المدرسية'}</span>
           </div>
-          <h2 className="text-lg sm:text-xl font-extrabold text-[#18201D]">
-            ملصقات الباركود في مرافق المدرسة
+          <h2 className="text-lg sm:text-xl font-extrabold text-[#18201D] dark:text-white">
+            {language === 'en' ? 'Printable QR Location Codes' : 'ملصقات الباركود في مرافق المدرسة'}
           </h2>
-          <p className="text-xs text-[#66706B]">
-            عند مسح ملصق QR المعلق بأي مرفق، يفتح النموذج وموقع الغرض محدد تلقائياً.
+          <p className="text-xs text-[#66706B] dark:text-[#94A39D]">
+            {language === 'en' ? 'Scanning the room QR code pre-selects the exact facility in the report form.' : 'عند مسح ملصق QR المعلق بأي مرفق، يفتح النموذج وموقع الغرض محدد تلقائياً.'}
           </p>
         </div>
 
@@ -80,104 +82,72 @@ export default function QRModal({ isOpen, onClose }: QRModalProps) {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
           
           {/* Poster Graphic Card */}
-          <div className="bg-[#F1F3F0] rounded-2xl p-4 flex flex-col items-center text-center border border-[#E4E7E4]">
-            <div className="w-full flex items-center justify-between border-b border-[#E4E7E4] pb-2 mb-2">
-              <span className="text-[10px] font-bold text-[#66706B] tracking-wider uppercase">
+          <div className="bg-[#F1F3F0] dark:bg-[#1C2B27] rounded-2xl p-4 flex flex-col items-center text-center border border-[#E4E7E4] dark:border-[#2D3E3A]">
+            <div className="w-full flex items-center justify-between border-b border-[#E4E7E4] dark:border-[#2D3E3A] pb-2 mb-2">
+              <span className="text-[10px] font-bold text-[#66706B] dark:text-[#94A39D] tracking-wider uppercase">
                 FindIt POINT
               </span>
-              <span className="text-[10px] text-[#176B5B] font-bold">نقطة أمانات</span>
+              <span className="text-[10px] text-[#176B5B] dark:text-[#2DD4BF] font-bold">
+                {language === 'en' ? 'Custody Station' : 'نقطة أمانات'}
+              </span>
             </div>
 
             <div className="flex items-center gap-2 mb-2">
-              <div className="p-1.5 rounded-lg bg-white shadow-2xs">
+              <div className="p-1.5 rounded-lg bg-white dark:bg-[#15201D] shadow-2xs">
                 {locationIcons[activeLoc.id]}
               </div>
-              <div className="text-right">
-                <h4 className="font-bold text-[#18201D] text-xs">{activeLoc.name}</h4>
-                <p className="text-[10px] text-[#66706B]">{activeLoc.building}</p>
+              <div className="text-start">
+                <h4 className="font-bold text-[#18201D] dark:text-white text-xs">{activeLoc.name}</h4>
+                <p className="text-[10px] text-[#66706B] dark:text-[#94A39D]">{activeLoc.building}</p>
               </div>
             </div>
 
-            {/* QR Graphic */}
-            <div className="p-2 bg-white rounded-xl shadow-2xs border border-[#E4E7E4] my-1">
-              <svg viewBox="0 0 100 100" className="w-28 h-28 text-[#18201D]" fill="currentColor">
-                <rect width="30" height="30" x="10" y="10" rx="4" fill="#18201D" />
-                <rect width="18" height="18" x="16" y="16" rx="2" fill="white" />
-                <rect width="10" height="10" x="20" y="20" rx="1" fill="#176B5B" />
-
-                <rect width="30" height="30" x="60" y="10" rx="4" fill="#18201D" />
-                <rect width="18" height="18" x="66" y="16" rx="2" fill="white" />
-                <rect width="10" height="10" x="70" y="20" rx="1" fill="#176B5B" />
-
-                <rect width="30" height="30" x="10" y="60" rx="4" fill="#18201D" />
-                <rect width="18" height="18" x="16" y="66" rx="2" fill="white" />
-                <rect width="10" height="10" x="20" y="70" rx="1" fill="#176B5B" />
-
-                <rect width="6" height="6" x="48" y="14" rx="1" fill="#18201D" />
-                <rect width="6" height="6" x="48" y="26" rx="1" fill="#18201D" />
-                <rect width="6" height="6" x="14" y="48" rx="1" fill="#18201D" />
-                <rect width="6" height="6" x="26" y="48" rx="1" fill="#18201D" />
-                <rect width="10" height="10" x="45" y="45" rx="2" fill="#059669" />
-                <rect width="6" height="6" x="62" y="48" rx="1" fill="#18201D" />
-                <rect width="6" height="6" x="78" y="48" rx="1" fill="#18201D" />
-                <rect width="6" height="6" x="48" y="66" rx="1" fill="#18201D" />
-                <rect width="6" height="6" x="64" y="66" rx="1" fill="#18201D" />
-                <rect width="6" height="6" x="78" y="78" rx="1" fill="#18201D" />
-              </svg>
+            {/* Generated QR Box */}
+            <div className="p-3 bg-white dark:bg-white rounded-xl shadow-xs border border-slate-200 my-1">
+              <QrCode className="w-24 h-24 text-[#18201D]" />
             </div>
 
-            {/* Direct URL Preview */}
-            <div className="w-full mt-1 px-2 py-1 rounded-lg bg-white/80 border border-[#E4E7E4] text-[9px] text-[#66706B] font-mono truncate text-center dir-ltr">
-              https://app.findit-us.workers.dev/report?type=found&location={activeLoc.id}
-            </div>
-
-            <button
-              onClick={() => handleSimulateScan(activeLoc.id)}
-              className="mt-2 w-full py-2 px-3 rounded-xl bg-[#176B5B] hover:bg-[#125648] text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5"
-            >
-              <span>محاكاة مسح الباركود</span>
-              <ArrowLeft className="w-3.5 h-3.5" />
-            </button>
+            <span className="text-[9px] text-[#66706B] dark:text-[#94A39D] font-mono mt-1">
+              SCAN-LOC-{activeLoc.id.toUpperCase()}
+            </span>
           </div>
 
-          {/* Location Picker */}
-          <div className="space-y-1 max-h-[260px] overflow-y-auto pr-1">
-            <span className="block text-xs font-bold text-[#18201D] mb-1 text-right">
-              اختر موقعاً للمعاينة:
+          {/* Location Selector List */}
+          <div className="space-y-2 text-start">
+            <span className="text-xs font-bold text-[#18201D] dark:text-white block">
+              {language === 'en' ? 'Select Location to Preview:' : 'اختر المرفق للمعاينة:'}
             </span>
-            {SCHOOL_LOCATIONS.map((loc) => {
-              const isSelected = selectedLocation === loc.id;
-              return (
+            <div className="space-y-1 max-h-48 overflow-y-auto pr-1">
+              {SCHOOL_LOCATIONS.map((loc) => (
                 <button
                   key={loc.id}
                   onClick={() => setSelectedLocation(loc.id)}
-                  className={`w-full flex items-center justify-between p-2 rounded-xl text-right transition-all border ${
-                    isSelected
-                      ? 'bg-[#18201D] border-[#18201D] text-white'
-                      : 'bg-white border-[#E4E7E4] text-[#66706B] hover:bg-[#F1F3F0] hover:text-[#18201D]'
+                  className={`w-full p-2 rounded-xl text-start text-xs font-semibold flex items-center justify-between transition-colors cursor-pointer ${
+                    selectedLocation === loc.id
+                      ? 'bg-[#E6F1ED] dark:bg-[#122B25] text-[#176B5B] dark:text-[#2DD4BF] font-bold'
+                      : 'hover:bg-[#F1F3F0] dark:hover:bg-[#1C2B27] text-slate-700 dark:text-slate-300'
                   }`}
                 >
-                  <div className="flex items-center gap-2">
-                    <div className="p-1 rounded-lg bg-white/20">
-                      {locationIcons[loc.id]}
-                    </div>
-                    <div>
-                      <p className="text-xs font-bold">{loc.name}</p>
-                      <p className="text-[10px] opacity-70">{loc.building}</p>
-                    </div>
+                  <div className="flex items-center gap-2 min-w-0">
+                    {locationIcons[loc.id]}
+                    <span className="truncate">{loc.name}</span>
                   </div>
-                  {isSelected && (
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/20 text-white font-medium">
-                      محدد
-                    </span>
+                  {selectedLocation === loc.id && (
+                    <span className="w-2 h-2 rounded-full bg-[#176B5B] dark:bg-[#2DD4BF]" />
                   )}
                 </button>
-              );
-            })}
+              ))}
+            </div>
+
+            <button
+              onClick={() => handleSimulateScan(selectedLocation)}
+              className="w-full py-2.5 rounded-xl bg-[#176B5B] dark:bg-[#2DD4BF] hover:bg-[#125648] dark:hover:bg-[#14B8A6] text-white dark:text-slate-950 font-bold text-xs shadow-xs transition-colors cursor-pointer"
+            >
+              {language === 'en' ? 'Simulate Scanning this QR' : 'محاكاة مسح هذا الرمز الآن'}
+            </button>
           </div>
 
         </div>
-
       </div>
     </div>
   );

@@ -4,8 +4,10 @@ import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
 import { CATEGORIES, SCHOOL_LOCATIONS, ITEM_COLORS } from '@/lib/constants';
-import { ItemCategory, SchoolLocationId, CustodyStatus, ItemType } from '@/types';
+import { getLocalizedLocation, getLocalizedColorName } from '@/lib/i18n/seedDataTranslations';
+import { ItemCategory, SchoolLocationId, CustodyStatus, ItemType, VisualFeatures } from '@/types';
 import ItemVisual from '@/components/ItemVisual';
+import EdgeVisionDropzone, { AutofillPayload } from '@/components/EdgeVisionDropzone';
 import { 
   Search, 
   PlusCircle, 
@@ -22,10 +24,10 @@ import {
   Shirt, 
   CreditCard, 
   Trophy, 
-  FolderOpen,
-  KeyRound,
-  ShoppingBag,
-  CupSoda
+  FolderOpen, 
+  KeyRound, 
+  ShoppingBag, 
+  CupSoda 
 } from 'lucide-react';
 
 const categoryIcons: Record<string, React.ReactNode> = {
@@ -44,10 +46,10 @@ const categoryIcons: Record<string, React.ReactNode> = {
 function ReportWizardContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { addItem } = useApp();
+  const { addItem, openQRScanner, dir, language, t } = useApp();
 
   const initialType: ItemType = searchParams.get('type') === 'found' ? 'found' : 'lost';
-  const initialLocation = (searchParams.get('location') as SchoolLocationId) || 'science_lab';
+  const initialLocation = (searchParams.get('locationId') || searchParams.get('location')) as SchoolLocationId || 'science_lab';
 
   // Step state (1, 2, 3)
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
@@ -67,16 +69,41 @@ function ReportWizardContent() {
   const [brand, setBrand] = useState('');
   const [description, setDescription] = useState('');
   const [imageUrl, setImageUrl] = useState('');
+  const [visualFeatures, setVisualFeatures] = useState<VisualFeatures | undefined>(undefined);
+  const [isAiVerified, setIsAiVerified] = useState<boolean>(false);
   const [secretQuestion, setSecretQuestion] = useState('');
   const [custody, setCustody] = useState<CustodyStatus>('with_finder');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleAutofill = (data: AutofillPayload) => {
+    if (data.title) setTitle(data.title);
+    if (data.category) setCategory(data.category);
+    if (data.color) setColor(data.color);
+    if (data.brand) setBrand(data.brand);
+    if (data.description) setDescription(data.description);
+    if (data.imageUrl) setImageUrl(data.imageUrl);
+    if (data.visualFeatures) setVisualFeatures(data.visualFeatures);
+    if (data.isAiVerified !== undefined) setIsAiVerified(data.isAiVerified);
+  };
+
+  const handleImageSelected = (dataUrl: string, features?: VisualFeatures) => {
+    setImageUrl(dataUrl);
+    setVisualFeatures(features);
+    if (features) {
+      setIsAiVerified(true);
+    }
+  };
+
+  const isRtl = dir === 'rtl';
+  const NextArrow = isRtl ? ArrowLeft : ArrowRight;
+  const BackArrow = isRtl ? ArrowRight : ArrowLeft;
 
   useEffect(() => {
     const qType = searchParams.get('type');
     if (qType === 'found' || qType === 'lost') {
       setType(qType);
     }
-    const qLoc = searchParams.get('location') as SchoolLocationId;
+    const qLoc = (searchParams.get('locationId') || searchParams.get('location')) as SchoolLocationId;
     if (qLoc && SCHOOL_LOCATIONS.some((l) => l.id === qLoc)) {
       setLocationId(qLoc);
     }
@@ -85,7 +112,7 @@ function ReportWizardContent() {
   const handleNext = () => {
     if (currentStep === 1) {
       if (!title.trim()) {
-        alert('يرجى إدخال اسم أو عنوان الغرض للمتابعة');
+        alert(language === 'en' ? 'Please enter item title to continue' : 'يرجى إدخال اسم أو عنوان الغرض للمتابعة');
         return;
       }
       setCurrentStep(2);
@@ -102,407 +129,372 @@ function ReportWizardContent() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim()) {
-      alert('يرجى كتابة اسم الغرض');
+    if (!title.trim() || !description.trim()) {
+      alert(language === 'en' ? 'Please fill all required fields' : 'يرجى إكمال البيانات المطلوبة');
       return;
     }
 
     setIsSubmitting(true);
 
-    const newItem = addItem({
-      title: title.trim(),
-      type,
-      category,
-      locationId,
-      locationDetails: locationDetails.trim() || undefined,
-      date,
-      color,
-      brand: brand.trim() || undefined,
-      description: description.trim() || 'لا يوجد وصف إضافي',
-      imageUrl: imageUrl.trim() || undefined,
-      secretQuestion: type === 'found' ? secretQuestion.trim() || undefined : undefined,
-      custody: type === 'found' ? custody : undefined,
-      status: 'open',
-    });
+    try {
+      const newItem = addItem({
+        title: title.trim(),
+        type,
+        category,
+        locationId,
+        locationDetails: locationDetails.trim(),
+        date,
+        color,
+        brand: brand.trim(),
+        description: description.trim(),
+        imageUrl: imageUrl.trim() || undefined,
+        visualFeatures,
+        isAiVerified,
+        secretQuestion: type === 'found' ? secretQuestion.trim() : undefined,
+        custody: type === 'found' ? custody : undefined,
+      });
 
-    setTimeout(() => {
-      router.push(`/match/${newItem.id}`);
-    }, 200);
+      router.push(`/items/${newItem.id}`);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : (language === 'en' ? 'An error occurred while saving the report' : 'حدث خطأ أثناء حفظ البلاغ'));
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <div className="px-4 sm:px-6 py-6 sm:py-8 max-w-2xl mx-auto">
+    <div className="px-3.5 sm:px-6 py-4 sm:py-8 space-y-6 max-w-2xl mx-auto w-full text-start text-[#18201D] dark:text-[#F1F5F3]" dir={dir}>
       
-      {/* Wizard Card Container */}
-      <div className="app-card p-6 sm:p-8 bg-white space-y-6">
-        
-        {/* Top Header & Type Switcher */}
-        <div className="space-y-4 text-right border-b border-[#E4E7E4] pb-5">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div>
-              <span className="text-[11px] font-bold text-[#176B5B] uppercase tracking-wider block mb-0.5">
-                معالج البلاغات الذكي
-              </span>
-              <h1 className="text-xl sm:text-2xl font-extrabold text-[#18201D]">
-                {type === 'lost' ? 'تسجيل غرض مفقود' : 'تسجيل غرض معثور عليه'}
-              </h1>
-            </div>
-
-            {/* Type Switcher */}
-            <div className="flex items-center p-1 rounded-xl bg-[#F1F3F0] self-start sm:self-auto">
-              <button
-                type="button"
-                onClick={() => setType('lost')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                  type === 'lost'
-                    ? 'bg-white text-[#D97706] shadow-2xs'
-                    : 'text-[#66706B]'
-                }`}
-              >
-                <Search className="w-3.5 h-3.5" />
-                <span>أضعت غرضاً</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setType('found')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                  type === 'found'
-                    ? 'bg-white text-[#059669] shadow-2xs'
-                    : 'text-[#66706B]'
-                }`}
-              >
-                <PlusCircle className="w-3.5 h-3.5" />
-                <span>عثرت على غرض</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Progress Indicator */}
-          <div className="space-y-1.5 pt-1">
-            <div className="flex items-center justify-between text-xs font-semibold text-[#66706B]">
-              <span>الخطوة {currentStep} من 3</span>
-              <span>
-                {currentStep === 1
-                  ? '١. ما هو الغرض؟'
-                  : currentStep === 2
-                  ? '٢. أين ومتى؟'
-                  : '٣. تفاصيل التحقق والعلامات'}
-              </span>
-            </div>
-            {/* Progress Bar */}
-            <div className="w-full h-1.5 rounded-full bg-[#F1F3F0] overflow-hidden">
-              <div
-                className="h-full bg-[#176B5B] transition-all duration-300 rounded-full"
-                style={{ width: `${(currentStep / 3) * 100}%` }}
-              />
-            </div>
-          </div>
+      {/* Wizard Progress Header */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h1 className="text-xl sm:text-2xl font-black text-[#18201D] dark:text-white tracking-tight">
+            {language === 'en' ? 'Record School Report' : 'تسجيل بلاغ جديد'}
+          </h1>
+          <span className="text-xs font-bold text-[#176B5B] dark:text-[#2DD4BF] bg-[#E6F1ED] dark:bg-[#122823] px-3 py-1 rounded-full border border-emerald-200/60 dark:border-[#1E463D]">
+            {language === 'en' ? `Step ${currentStep} of 3` : `الخطوة ${currentStep} من 3`}
+          </span>
         </div>
 
-        {/* Wizard Form */}
-        <form onSubmit={handleSubmit} className="space-y-6 text-right">
-          
-          {/* ========================================================
-              STEP 1: What did you lose/find? (Category, Name, Color)
-          ======================================================== */}
-          {currentStep === 1 && (
-            <div className="space-y-5 animate-in fade-in">
-              
-              {/* Category Grid */}
-              <div className="space-y-2">
-                <label className="block text-xs font-bold text-[#18201D]">
-                  اختر فئة الغرض <span className="text-[#E11D48]">*</span>
-                </label>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {CATEGORIES.map((cat) => {
-                    const isSelected = category === cat.id;
-                    return (
-                      <button
-                        key={cat.id}
-                        type="button"
-                        onClick={() => setCategory(cat.id)}
-                        className={`p-3 rounded-xl border text-right transition-all flex items-center gap-2.5 ${
-                          isSelected
-                            ? 'bg-[#E6F1ED] border-[#176B5B] text-[#176B5B] font-bold shadow-2xs'
-                            : 'bg-white border-[#E4E7E4] text-[#66706B] hover:bg-[#F1F3F0] hover:text-[#18201D]'
-                        }`}
-                      >
-                        <div className={`p-1.5 rounded-lg ${isSelected ? 'bg-white text-[#176B5B]' : 'bg-[#F1F3F0]'}`}>
-                          {categoryIcons[cat.id] || <FolderOpen className="w-5 h-5" />}
-                        </div>
-                        <span className="text-xs">{cat.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
+        {/* Progress Bar */}
+        <div className="w-full h-2 bg-slate-200 dark:bg-[#1C2B27] rounded-full overflow-hidden">
+          <div
+            className="h-full bg-gradient-to-r from-[#176B5B] to-emerald-500 dark:from-[#2DD4BF] dark:to-teal-400 transition-all duration-300 rounded-full"
+            style={{ width: `${(currentStep / 3) * 100}%` }}
+          />
+        </div>
+      </div>
 
-              {/* Title / Name */}
-              <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-[#18201D]">
-                  اسم أو نوع الغرض <span className="text-[#E11D48]">*</span>
-                </label>
-                <input
-                  type="text"
-                  required
-                  autoFocus
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="مثال: حاسبة كاسيو علمية سوداء، سماعات آيربودز، جاكيت أزرق..."
-                  className="w-full py-3 px-4 rounded-xl bg-white border border-[#E4E7E4] text-xs sm:text-sm text-[#18201D] placeholder-[#66706B]/70 focus:outline-none focus:border-[#176B5B] focus:ring-2 focus:ring-[#176B5B]/10 shadow-2xs transition-all"
-                />
-              </div>
+      {/* Type Toggle: Lost vs Found */}
+      <div className="grid grid-cols-2 gap-3 p-1.5 bg-white dark:bg-[#15201D] rounded-2xl border border-[#E4E7E4] dark:border-[#263834] shadow-2xs">
+        <button
+          type="button"
+          onClick={() => setType('lost')}
+          className={`py-3 px-4 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer ${
+            type === 'lost'
+              ? 'bg-[#FEF3C7] dark:bg-amber-950/80 text-[#92400E] dark:text-amber-300 border border-[#FDE68A] dark:border-amber-800 shadow-xs'
+              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-[#1C2B27]'
+          }`}
+        >
+          <Search className="w-4 h-4" />
+          <span>{language === 'en' ? 'Lost Item (I lost it)' : 'غرض مفقود (أضعته)'}</span>
+        </button>
 
-              {/* Color Selector */}
-              <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-[#18201D]">
-                  اللون الرئيسي
-                </label>
-                <div className="flex flex-wrap gap-1.5">
-                  {ITEM_COLORS.map((c) => {
-                    const isSelected = color === c.name;
-                    return (
-                      <button
-                        key={c.name}
-                        type="button"
-                        onClick={() => setColor(c.name)}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs transition-all border ${
-                          isSelected
-                            ? 'bg-[#18201D] text-white border-[#18201D] font-bold shadow-xs'
-                            : 'bg-white text-[#66706B] border-[#E4E7E4] hover:bg-[#F1F3F0]'
-                        }`}
-                      >
-                        <span
-                          className="w-2.5 h-2.5 rounded-full border border-black/10"
-                          style={{ backgroundColor: c.hex }}
-                        />
-                        <span>{c.name}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
+        <button
+          type="button"
+          onClick={() => setType('found')}
+          className={`py-3 px-4 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer ${
+            type === 'found'
+              ? 'bg-[#D1FAE5] dark:bg-emerald-950/80 text-[#065F46] dark:text-emerald-300 border border-[#A7F3D0] dark:border-emerald-800 shadow-xs'
+              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-[#1C2B27]'
+          }`}
+        >
+          <PlusCircle className="w-4 h-4" />
+          <span>{language === 'en' ? 'Found Item (I found it)' : 'غرض معثور عليه (أمانة)'}</span>
+        </button>
+      </div>
 
-            </div>
-          )}
-
-          {/* ========================================================
-              STEP 2: Where and when? (Location, Date, Detail)
-          ======================================================== */}
-          {currentStep === 2 && (
-            <div className="space-y-5 animate-in fade-in">
-              
-              {/* Location Selector */}
-              <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-[#18201D] flex items-center justify-between">
-                  <span>الموقع في المدرسة <span className="text-[#E11D48]">*</span></span>
-                  {searchParams.get('location') && (
-                    <span className="text-[10px] text-[#059669] font-bold">
-                      ✓ محدد عبر QR
-                    </span>
-                  )}
-                </label>
-                <select
-                  value={locationId}
-                  onChange={(e) => setLocationId(e.target.value as SchoolLocationId)}
-                  className="w-full py-3 px-4 rounded-xl bg-white border border-[#E4E7E4] text-xs sm:text-sm text-[#18201D] focus:outline-none focus:border-[#176B5B] shadow-2xs"
-                >
-                  {SCHOOL_LOCATIONS.map((loc) => (
-                    <option key={loc.id} value={loc.id}>
-                      {loc.name} ({loc.building} - {loc.floor})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Date */}
-              <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-[#18201D]">
-                  تاريخ الحادثة التقريبي
-                </label>
-                <input
-                  type="date"
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  className="w-full py-3 px-4 rounded-xl bg-white border border-[#E4E7E4] text-xs sm:text-sm text-[#18201D] focus:outline-none focus:border-[#176B5B] shadow-2xs"
-                />
-              </div>
-
-              {/* Specific Location Detail */}
-              <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-[#18201D]">
-                  مكان التواجد بدقة داخل المرفق (اختياري)
-                </label>
-                <input
-                  type="text"
-                  value={locationDetails}
-                  onChange={(e) => setLocationDetails(e.target.value)}
-                  placeholder="مثال: على طاولة التجارب رقم 4، أو عند مدرجات الصالة الرياضية..."
-                  className="w-full py-3 px-4 rounded-xl bg-white border border-[#E4E7E4] text-xs sm:text-sm text-[#18201D] placeholder-[#66706B]/70 focus:outline-none focus:border-[#176B5B] shadow-2xs"
-                />
-              </div>
-
-            </div>
-          )}
-
-          {/* ========================================================
-              STEP 3: Help us recognize it (Brand, Secret Detail, Visual)
-          ======================================================== */}
-          {currentStep === 3 && (
-            <div className="space-y-5 animate-in fade-in">
-              
-              {/* Brand & Description */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-[#18201D]">
-                    الماركة أو الشركة المصنعة (اختياري)
-                  </label>
-                  <input
-                    type="text"
-                    value={brand}
-                    onChange={(e) => setBrand(e.target.value)}
-                    placeholder="مثال: Casio, Apple, Nike..."
-                    className="w-full py-2.5 px-3.5 rounded-xl bg-white border border-[#E4E7E4] text-xs text-[#18201D] focus:outline-none focus:border-[#176B5B]"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-[#18201D]">
-                    وصف أو علامات عامة واضحة
-                  </label>
-                  <input
-                    type="text"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    placeholder="مثال: بحالة جيدة مع غلاف حماية..."
-                    className="w-full py-2.5 px-3.5 rounded-xl bg-white border border-[#E4E7E4] text-xs text-[#18201D] focus:outline-none focus:border-[#176B5B]"
-                  />
-                </div>
-              </div>
-
-              {/* Automatic CSS Illustration Preview Notice */}
-              <div className="p-3.5 rounded-2xl bg-[#E6F1ED] border border-[#C2DDD5] flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl overflow-hidden shrink-0 border border-[#A7F3D0]">
-                  <ItemVisual
-                    category={category}
-                    title={title || 'غرض'}
-                    className="w-full h-full"
-                  />
-                </div>
-                <div className="text-right">
-                  <span className="text-[11px] font-bold text-[#176B5B] block">
-                    سيتم توليد رسم توضيحي ذكي للغرض تلقائياً ✨
-                  </span>
-                  <p className="text-[10px] text-[#66706B]">
-                    لا حاجة لالتقاط أو رفع صور حقيقية؛ يولد النظام مظهراً هندسياً أنيقاً متطابقاً مع الفئة.
-                  </p>
-                </div>
-              </div>
-
-              {/* FOUND ONLY: Secret Question & Custody */}
-              {type === 'found' && (
-                <div className="p-4 rounded-2xl bg-[#F1F3F0] border border-[#E4E7E4] space-y-4">
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-[#059669]">
-                    <Lock className="w-4 h-4" />
-                    <span>العلامة المخفية لإثبات الملكية (لن تظهر علناً)</span>
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="block text-xs font-bold text-[#18201D]">
-                      سؤال التحقق السري <span className="text-[#E11D48]">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      required={type === 'found'}
-                      value={secretQuestion}
-                      onChange={(e) => setSecretQuestion(e.target.value)}
-                      placeholder="مثال: ما هو لون وشكل الملصق بالخلف؟ أو ما الاسم المكتوب بالداخل؟"
-                      className="w-full py-2.5 px-3.5 rounded-xl bg-white border border-[#E4E7E4] text-xs text-[#18201D] focus:outline-none focus:border-[#176B5B]"
-                    />
-                    <p className="text-[10px] text-[#66706B]">
-                      🔒 لن يتم تسليم الغرض لأي طالب إلا بعد الإجابة الصحيحة على هذا السؤال.
-                    </p>
-                  </div>
-
-                  {/* Custody */}
-                  <div className="space-y-1.5">
-                    <label className="block text-xs font-bold text-[#18201D]">
-                      أين يتواجد الغرض الآن؟
-                    </label>
-                    <div className="grid grid-cols-2 gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setCustody('with_finder')}
-                        className={`p-2.5 rounded-xl border text-right transition-all flex items-center gap-2 ${
-                          custody === 'with_finder'
-                            ? 'bg-white border-[#176B5B] text-[#176B5B] font-bold shadow-2xs'
-                            : 'bg-white/60 border-[#E4E7E4] text-[#66706B]'
-                        }`}
-                      >
-                        <span>🤝</span>
-                        <span className="text-xs">معي شخصياً</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setCustody('at_office')}
-                        className={`p-2.5 rounded-xl border text-right transition-all flex items-center gap-2 ${
-                          custody === 'at_office'
-                            ? 'bg-white border-[#176B5B] text-[#176B5B] font-bold shadow-2xs'
-                            : 'bg-white/60 border-[#E4E7E4] text-[#66706B]'
-                        }`}
-                      >
-                        <span>🏛️</span>
-                        <span className="text-xs">في مكتب الأمانات</span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-            </div>
-          )}
-
-          {/* Bottom Step Actions */}
-          <div className="pt-3 border-t border-[#E4E7E4] flex items-center justify-between gap-3">
+      <form onSubmit={handleSubmit} className="space-y-6">
+        
+        {/* STEP 1: Main Category & Basic Info */}
+        {currentStep === 1 && (
+          <div className="space-y-5 bg-white dark:bg-[#15201D] p-5 sm:p-6 rounded-3xl border border-[#E4E7E4] dark:border-[#263834] shadow-xs">
             
-            {currentStep > 1 ? (
-              <button
-                type="button"
-                onClick={handleBack}
-                className="py-2.5 px-5 rounded-xl bg-[#F1F3F0] hover:bg-[#E4E7E4] text-[#18201D] text-xs font-bold transition-colors flex items-center gap-1.5"
+            {/* Edge AI Vision & OCR Ingestion */}
+            <EdgeVisionDropzone
+              onAutofill={handleAutofill}
+              onImageSelected={handleImageSelected}
+              currentImageUrl={imageUrl}
+            />
+
+            {/* Title Field */}
+            <div className="space-y-1.5">
+              <label className="block text-xs font-bold text-[#18201D] dark:text-white">
+                {language === 'en' ? 'Item Title / Name *' : 'اسم أو عنوان الغرض *'}
+              </label>
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder={language === 'en' ? 'e.g. Casio Scientific Calculator, Blue Water Bottle...' : 'مثال: حاسبة كاسيو علمية، مطارة ماء زرقاء...'}
+                className="w-full p-3 rounded-2xl border border-[#E4E7E4] dark:border-[#2D3E3A] bg-slate-50 dark:bg-[#1C2B27] text-xs sm:text-sm focus:bg-white dark:focus:bg-[#15201D] focus:border-[#176B5B] dark:focus:border-[#2DD4BF] focus:outline-none transition-colors text-[#18201D] dark:text-white"
+                required
+              />
+            </div>
+
+            {/* Category Grid */}
+            <div className="space-y-2">
+              <label className="block text-xs font-bold text-[#18201D] dark:text-white">
+                {language === 'en' ? 'Select Category *' : 'تصنيف الغرض *'}
+              </label>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                {CATEGORIES.map((cat) => {
+                  const isSelected = category === cat.id;
+                  return (
+                    <button
+                      type="button"
+                      key={cat.id}
+                      onClick={() => setCategory(cat.id)}
+                      className={`p-3 rounded-2xl border text-start transition-all cursor-pointer flex items-center gap-2.5 ${
+                        isSelected
+                          ? 'bg-[#E6F1ED] dark:bg-[#122823] border-[#176B5B] dark:border-[#2DD4BF] text-[#176B5B] dark:text-[#2DD4BF] font-black shadow-2xs'
+                          : 'bg-slate-50 dark:bg-[#1C2B27] border-[#E4E7E4] dark:border-[#2D3E3A] text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#253934]'
+                      }`}
+                    >
+                      <div className={`p-1.5 rounded-xl ${isSelected ? 'bg-[#176B5B] dark:bg-[#2DD4BF] text-white dark:text-slate-950' : 'bg-white dark:bg-[#15201D] text-slate-600 dark:text-slate-400'}`}>
+                        {categoryIcons[cat.id]}
+                      </div>
+                      <span className="text-xs font-bold truncate">{t('cat.' + cat.id) || cat.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Color Swatches */}
+            <div className="space-y-2">
+              <label className="block text-xs font-bold text-[#18201D] dark:text-white">
+                {language === 'en' ? 'Primary Color' : 'اللون الأساسي للغرض'}
+              </label>
+              <div className="flex items-center gap-2 flex-wrap">
+                {ITEM_COLORS.map((c) => {
+                  const isSelected = color === c.name;
+                  return (
+                    <button
+                      type="button"
+                      key={c.name}
+                      onClick={() => setColor(c.name)}
+                      className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${
+                        isSelected
+                          ? 'border-[#176B5B] dark:border-[#2DD4BF] bg-white dark:bg-[#1C2B27] shadow-xs text-[#176B5B] dark:text-[#2DD4BF]'
+                          : 'border-[#E4E7E4] dark:border-[#2D3E3A] bg-slate-50 dark:bg-[#1C2B27] text-slate-700 dark:text-slate-300'
+                      }`}
+                    >
+                      <span
+                        className="w-3 h-3 rounded-full border border-black/10 dark:border-white/20"
+                        style={{ backgroundColor: c.hex }}
+                      />
+                      <span>{getLocalizedColorName(c.name, language)}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+          </div>
+        )}
+
+        {/* STEP 2: Location & Timing */}
+        {currentStep === 2 && (
+          <div className="space-y-5 bg-white dark:bg-[#15201D] p-5 sm:p-6 rounded-3xl border border-[#E4E7E4] dark:border-[#263834] shadow-xs">
+            
+            {/* Location Selector */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-bold text-[#18201D] dark:text-white">
+                  {language === 'en' ? 'School Location / Room *' : 'المرفق أو الغرفة المدرسية *'}
+                </label>
+                <button
+                  type="button"
+                  onClick={openQRScanner}
+                  className="text-xs text-[#176B5B] dark:text-[#2DD4BF] hover:underline flex items-center gap-1 font-bold cursor-pointer"
+                >
+                  <Camera className="w-3.5 h-3.5" />
+                  <span>{language === 'en' ? 'Scan Room QR' : 'مسح باركود الغرفة'}</span>
+                </button>
+              </div>
+
+              <select
+                value={locationId}
+                onChange={(e) => setLocationId(e.target.value as SchoolLocationId)}
+                className="w-full p-3 rounded-2xl border border-[#E4E7E4] dark:border-[#2D3E3A] bg-slate-50 dark:bg-[#1C2B27] text-xs sm:text-sm font-bold text-[#18201D] dark:text-white focus:outline-none focus:border-[#176B5B] dark:focus:border-[#2DD4BF] cursor-pointer"
               >
-                <ArrowRight className="w-3.5 h-3.5" />
-                <span>السابق</span>
-              </button>
-            ) : (
-              <div />
+                {SCHOOL_LOCATIONS.map((rawLoc) => {
+                  const loc = getLocalizedLocation(rawLoc, language);
+                  return (
+                    <option key={loc.id} value={loc.id} className="bg-white dark:bg-[#15201D] text-[#18201D] dark:text-white">
+                      {loc.name} — {loc.building} ({loc.floor})
+                    </option>
+                  );
+                })}
+              </select>
+            </div>
+
+            {/* Location Details */}
+            <div className="space-y-1.5">
+              <label className="block text-xs font-bold text-[#18201D] dark:text-white">
+                {language === 'en' ? 'Specific Location Details' : 'تفاصيل المكان الدقيق (اختياري)'}
+              </label>
+              <input
+                type="text"
+                value={locationDetails}
+                onChange={(e) => setLocationDetails(e.target.value)}
+                placeholder={language === 'en' ? 'e.g. Under table 4, near the window...' : 'مثال: تحت طاولة رقم 4، بجانب النافذة...'}
+                className="w-full p-3 rounded-2xl border border-[#E4E7E4] dark:border-[#2D3E3A] bg-slate-50 dark:bg-[#1C2B27] text-xs sm:text-sm focus:bg-white dark:focus:bg-[#15201D] focus:border-[#176B5B] dark:focus:border-[#2DD4BF] focus:outline-none transition-colors text-[#18201D] dark:text-white"
+              />
+            </div>
+
+            {/* Date Field */}
+            <div className="space-y-1.5">
+              <label className="block text-xs font-bold text-[#18201D] dark:text-white">
+                {language === 'en' ? 'Date Found / Lost *' : 'تاريخ الفقدان أو العثور *'}
+              </label>
+              <input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="w-full p-3 rounded-2xl border border-[#E4E7E4] dark:border-[#2D3E3A] bg-slate-50 dark:bg-[#1C2B27] text-xs sm:text-sm font-bold text-[#18201D] dark:text-white focus:outline-none focus:border-[#176B5B] dark:focus:border-[#2DD4BF]"
+                required
+              />
+            </div>
+
+          </div>
+        )}
+
+        {/* STEP 3: Description, Secret Question & Custody */}
+        {currentStep === 3 && (
+          <div className="space-y-5 bg-white dark:bg-[#15201D] p-5 sm:p-6 rounded-3xl border border-[#E4E7E4] dark:border-[#263834] shadow-xs">
+            
+            {/* Brand */}
+            <div className="space-y-1.5">
+              <label className="block text-xs font-bold text-[#18201D] dark:text-white">
+                {language === 'en' ? 'Brand or Manufacturer (Optional)' : 'الماركة أو الشركة المصنعة (اختياري)'}
+              </label>
+              <input
+                type="text"
+                value={brand}
+                onChange={(e) => setBrand(e.target.value)}
+                placeholder={language === 'en' ? 'e.g. Casio, Apple, Nike...' : 'مثال: Casio, Apple, Nike...'}
+                className="w-full p-3 rounded-2xl border border-[#E4E7E4] dark:border-[#2D3E3A] bg-slate-50 dark:bg-[#1C2B27] text-xs sm:text-sm focus:bg-white dark:focus:bg-[#15201D] focus:border-[#176B5B] dark:focus:border-[#2DD4BF] focus:outline-none transition-colors text-[#18201D] dark:text-white"
+              />
+            </div>
+
+            {/* Description */}
+            <div className="space-y-1.5">
+              <label className="block text-xs font-bold text-[#18201D] dark:text-white">
+                {language === 'en' ? 'Detailed Description *' : 'الوصف والمواصفات العامة *'}
+              </label>
+              <textarea
+                rows={3}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder={language === 'en' ? 'Describe the item condition, size, special signs...' : 'اكتب وصفاً للغرض وحالته وأي علامات مميزة...'}
+                className="w-full p-3 rounded-2xl border border-[#E4E7E4] dark:border-[#2D3E3A] bg-slate-50 dark:bg-[#1C2B27] text-xs sm:text-sm focus:bg-white dark:focus:bg-[#15201D] focus:border-[#176B5B] dark:focus:border-[#2DD4BF] focus:outline-none transition-colors text-[#18201D] dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                required
+              />
+            </div>
+
+            {/* Secret Question for Found Items */}
+            {type === 'found' && (
+              <div className="p-4 rounded-2xl bg-amber-50/70 dark:bg-amber-950/40 border border-amber-200/80 dark:border-amber-900/50 space-y-2">
+                <div className="flex items-center gap-2 text-amber-900 dark:text-amber-300 font-bold text-xs">
+                  <Lock className="w-4 h-4 text-amber-700 dark:text-amber-400" />
+                  <span>{language === 'en' ? 'Secret Question (Ownership Verification):' : 'السؤال السري (لإثبات الملكية):'}</span>
+                </div>
+                <p className="text-[11px] text-[#66706B] dark:text-[#94A39D]">
+                  {language === 'en' ? 'Ask a question only the true owner would know.' : 'ضع سؤالاً لا يعرف إجابته إلا صاحب الغرض الحقيقي.'}
+                </p>
+                <input
+                  type="text"
+                  value={secretQuestion}
+                  onChange={(e) => setSecretQuestion(e.target.value)}
+                  placeholder={language === 'en' ? 'e.g. What sticker is on the back? What is inside?' : 'مثال: ما هو الملصق الموجود على الخلف؟ ما هي محتويات الحافظة؟'}
+                  className="w-full p-3 rounded-2xl border border-amber-200 dark:border-amber-800 bg-white dark:bg-[#15201D] text-xs focus:border-[#176B5B] dark:focus:border-[#2DD4BF] focus:outline-none text-[#18201D] dark:text-white"
+                />
+              </div>
             )}
 
-            {currentStep < 3 ? (
-              <button
-                type="button"
-                onClick={handleNext}
-                className="py-2.5 px-6 rounded-xl bg-[#176B5B] hover:bg-[#125648] text-white text-xs font-bold transition-colors flex items-center gap-1.5 shadow-xs"
-              >
-                <span>التالي</span>
-                <ArrowLeft className="w-3.5 h-3.5" />
-              </button>
-            ) : (
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="py-2.5 px-6 rounded-xl bg-[#176B5B] hover:bg-[#125648] text-white text-xs font-bold transition-colors flex items-center gap-1.5 shadow-xs disabled:opacity-50"
-              >
-                <span>{isSubmitting ? 'جارِ التحليل والمطابقة...' : 'نشر البلاغ وبدء المطابقة 🔍'}</span>
-                <Check className="w-3.5 h-3.5" />
-              </button>
+            {/* Custody Status for Found Items */}
+            {type === 'found' && (
+              <div className="space-y-2">
+                <label className="block text-xs font-bold text-[#18201D] dark:text-white">
+                  {language === 'en' ? 'Current Custody of the Item:' : 'مكان حيازة الغرض حالياً:'}
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setCustody('with_finder')}
+                    className={`p-3 rounded-2xl border text-start text-xs font-bold transition-all cursor-pointer ${
+                      custody === 'with_finder'
+                        ? 'bg-[#E6F1ED] dark:bg-[#122823] border-[#176B5B] dark:border-[#2DD4BF] text-[#176B5B] dark:text-[#2DD4BF]'
+                        : 'bg-slate-50 dark:bg-[#1C2B27] border-slate-200 dark:border-[#2D3E3A] text-slate-700 dark:text-slate-300'
+                    }`}
+                  >
+                    {language === 'en' ? 'With Finder (With Me)' : 'مع الملتقط (معي حالياً)'}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setCustody('at_office')}
+                    className={`p-3 rounded-2xl border text-start text-xs font-bold transition-all cursor-pointer ${
+                      custody === 'at_office'
+                        ? 'bg-[#E6F1ED] dark:bg-[#122823] border-[#176B5B] dark:border-[#2DD4BF] text-[#176B5B] dark:text-[#2DD4BF]'
+                        : 'bg-slate-50 dark:bg-[#1C2B27] border-slate-200 dark:border-[#2D3E3A] text-slate-700 dark:text-slate-300'
+                    }`}
+                  >
+                    {language === 'en' ? 'Deposited at Office' : 'تم تسليمه لمكتب الإدارة'}
+                  </button>
+                </div>
+              </div>
             )}
 
           </div>
+        )}
 
-        </form>
+        {/* Wizard Footer Controls */}
+        <div className="flex items-center justify-between gap-3 pt-2">
+          {currentStep > 1 ? (
+            <button
+              type="button"
+              onClick={handleBack}
+              className="py-3 px-5 rounded-2xl bg-white dark:bg-[#1C2B27] border border-[#E4E7E4] dark:border-[#2D3E3A] hover:bg-slate-50 dark:hover:bg-[#253934] text-[#18201D] dark:text-white font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+            >
+              <BackArrow className="w-4 h-4" />
+              <span>{language === 'en' ? 'Back' : 'السابق'}</span>
+            </button>
+          ) : <div />}
 
-      </div>
+          {currentStep < 3 ? (
+            <button
+              type="button"
+              onClick={handleNext}
+              className="py-3 px-6 rounded-2xl bg-[#176B5B] dark:bg-[#2DD4BF] hover:bg-[#125648] dark:hover:bg-[#14B8A6] text-white dark:text-slate-950 font-bold text-xs flex items-center gap-1.5 transition-all shadow-md cursor-pointer"
+            >
+              <span>{language === 'en' ? 'Next' : 'التالي'}</span>
+              <NextArrow className="w-4 h-4" />
+            </button>
+          ) : (
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="py-3 px-8 rounded-2xl bg-[#176B5B] dark:bg-[#2DD4BF] hover:bg-[#125648] dark:hover:bg-[#14B8A6] text-white dark:text-slate-950 font-black text-xs sm:text-sm flex items-center gap-2 shadow-lg transition-all cursor-pointer disabled:opacity-50"
+            >
+              <Check className="w-4 h-4" />
+              <span>{isSubmitting ? (language === 'en' ? 'Saving...' : 'جاري الحفظ...') : (language === 'en' ? 'Publish Report' : 'نشر وتوثيق البلاغ')}</span>
+            </button>
+          )}
+        </div>
+
+      </form>
 
     </div>
   );
@@ -510,7 +502,7 @@ function ReportWizardContent() {
 
 export default function ReportPage() {
   return (
-    <Suspense fallback={<div className="p-12 text-center text-[#66706B]">جارِ تحميل المعالج...</div>}>
+    <Suspense fallback={<div className="p-12 text-center text-xs text-slate-500">Loading...</div>}>
       <ReportWizardContent />
     </Suspense>
   );

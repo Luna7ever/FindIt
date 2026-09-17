@@ -69,12 +69,37 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ar" dir="rtl" className={`${ibmPlexArabic.variable} ${plusJakarta.variable}`}>
+    <html lang="ar" dir="rtl" suppressHydrationWarning className={`${ibmPlexArabic.variable} ${plusJakarta.variable}`}>
       <head>
         <link rel="icon" href="/icon.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/icon.svg" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var savedTheme = localStorage.getItem('findit_theme_v4');
+                  var systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                  if (savedTheme === 'dark' || (savedTheme !== 'light' && systemDark)) {
+                    document.documentElement.classList.add('dark');
+                  } else {
+                    document.documentElement.classList.remove('dark');
+                  }
+                  var savedLang = localStorage.getItem('findit_language_v4');
+                  if (savedLang === 'en') {
+                    document.documentElement.lang = 'en';
+                    document.documentElement.dir = 'ltr';
+                  } else if (savedLang === 'ar') {
+                    document.documentElement.lang = 'ar';
+                    document.documentElement.dir = 'rtl';
+                  }
+                } catch(e) {}
+              })();
+            `,
+          }}
+        />
       </head>
-      <body className="min-h-screen bg-[#F7F7F4] text-[#18201D] font-sans antialiased selection:bg-[#E6F1ED] selection:text-[#176B5B]">
+      <body className="min-h-screen bg-[#F7F7F4] dark:bg-[#0D1412] text-[#18201D] dark:text-[#F0F4F2] font-sans antialiased selection:bg-[#E6F1ED] selection:text-[#176B5B]">
         <AppProvider>
           <AppShell>
             {children}

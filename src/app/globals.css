@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @layer base {
   :root {
     --background: #F7F7F4;
@@ -15,23 +17,71 @@
   }
 }
 
+html.dark {
+  --background: #0D1412;
+  --surface: #15201D;
+  --surface-raised: #1C2B27;
+  --foreground: #F0F4F2;
+  --foreground-muted: #94A39E;
+  --border: #263834;
+  --primary: #2DD4BF;
+  --primary-hover: #14B8A6;
+  --primary-soft: #122B25;
+  --primary-soft-border: #1D433A;
+  color-scheme: dark;
+}
+
 body {
-  background-color: #F7F7F4;
-  color: #18201D;
+  background-color: var(--background);
+  color: var(--foreground);
   font-feature-settings: "rlig" 1, "calt" 1;
   overflow-x: hidden;
-  direction: rtl;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  font-family: var(--font-ibm-arabic), system-ui, -apple-system, sans-serif;
+  font-family: var(--font-ibm-arabic), var(--font-plus-jakarta), system-ui, -apple-system, sans-serif;
+  letter-spacing: normal;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+html.dark body {
+  background-color: #0D1412;
+  color: #F0F4F2;
+}
+
+/* Fix Native Select and Option Colors for Light & Dark Mode */
+select {
+  color-scheme: light;
+}
+
+html.dark select {
+  color-scheme: dark;
+}
+
+select option,
+select optgroup {
+  background-color: #FFFFFF;
+  color: #18201D;
+  padding: 8px;
+}
+
+html.dark select option,
+html.dark select optgroup {
+  background-color: #15201D;
+  color: #F0F4F2;
 }
 
 /* FindIt App Card */
 .app-card {
-  background-color: #FFFFFF;
-  border: 1px solid #E4E7E4;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
   border-radius: 1.25rem; /* 20px */
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+html.dark .app-card {
+  background-color: #15201D;
+  border-color: #263834;
+  color: #F0F4F2;
 }
 
 .app-card-interactive {
@@ -42,6 +92,11 @@ body {
   border-color: #CBD3CE;
   transform: translateY(-1px);
   box-shadow: 0 4px 16px -2px rgba(24, 32, 29, 0.05);
+}
+
+html.dark .app-card-interactive:hover {
+  border-color: #37504A;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4);
 }
 
 .app-card-interactive:active {
@@ -63,17 +118,38 @@ body {
   border-radius: 9999px;
 }
 
+html.dark ::-webkit-scrollbar-thumb {
+  background: #2D3E3A;
+}
+
 ::-webkit-scrollbar-thumb:hover {
   background: #AAB3AE;
 }
 
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background: #3F5752;
+}
+
 /* Safe area padding for mobile bottom bar */
 .safe-bottom-space {
-  padding-bottom: 5.5rem;
+  padding-bottom: max(7.5rem, calc(6rem + env(safe-area-inset-bottom, 0px)));
 }
 
 @media (min-width: 768px) {
   .safe-bottom-space {
-    padding-bottom: 2rem;
+    padding-bottom: 2.5rem;
   }
+}
+
+/* LTR Typography Optimization */
+html[dir="ltr"] body,
+html[lang="en"] body {
+  font-family: var(--font-plus-jakarta), var(--font-ibm-arabic), system-ui, -apple-system, sans-serif;
+}
+
+/* RTL Arabic Ligature Protection */
+html[dir="rtl"] body,
+html[lang="ar"] body {
+  font-family: var(--font-ibm-arabic), var(--font-plus-jakarta), system-ui, -apple-system, sans-serif;
+  letter-spacing: normal !important;
 }

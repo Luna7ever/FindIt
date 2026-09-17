@@ -1,11 +1,38 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { Item, Claim, UserProfile, ItemStatus, CustodyStatus, UserRole } from '@/types';
-import { DEMO_USERS, INITIAL_SEED_ITEMS } from '@/lib/constants';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
+import { 
+  Item, 
+  Claim, 
+  UserProfile, 
+  ItemStatus, 
+  CustodyStatus, 
+  UserRole,
+  IntegrityAttempt,
+  TrustTier,
+  NotificationItem,
+  ToastMessage,
+  AppLanguage,
+  AppTheme,
+  SchoolActivity,
+  ActivitySubmission,
+  ActivityBadge,
+  SchoolLocationId
+} from '@/types';
+import { 
+  DEMO_USERS, 
+  INITIAL_SEED_ITEMS, 
+  INTEGRITY_SCENARIOS, 
+  INITIAL_NOTIFICATIONS,
+  SCHOOL_ACTIVITIES,
+  ACTIVITY_BADGES,
+  INITIAL_ACTIVITY_SUBMISSIONS
+} from '@/lib/constants';
+import { TRANSLATIONS } from '@/lib/i18n/translations';
 import { ItemService } from '@/services/itemService';
 import { ClaimService } from '@/services/claimService';
 import { HandoverService } from '@/services/handoverService';
+import { IntegrityService, EvaluationResult, ScenarioStatus } from '@/services/integrityService';
 import { canAccessAdmin, canDirectReunite, canDeleteItem } from '@/lib/auth/permissions';
 import { AuthorizationError, NotFoundError } from '@/lib/errors/AppError';
 import { logger } from '@/lib/logging/logger';
@@ -15,6 +42,23 @@ interface AppContextType {
   claims: Claim[];
   currentUser: UserProfile;
   users: UserProfile[];
+  integrityAttempts: IntegrityAttempt[];
+  currentUserTrustTier: TrustTier;
+  notifications: NotificationItem[];
+  unreadNotificationsCount: number;
+  markNotificationAsRead: (id: string) => void;
+  markAllNotificationsAsRead: () => void;
+  addNotification: (notif: Omit<NotificationItem, 'id' | 'timestamp' | 'isRead'> & { id?: string }) => void;
+  toasts: ToastMessage[];
+  addToast: (title: string, message: string, type?: 'success' | 'info' | 'warning' | 'error', duration?: number) => void;
+  removeToast: (id: string) => void;
+  isQRScannerOpen: boolean;
+  openQRScanner: () => void;
+  closeQRScanner: () => void;
+  isCertificateModalOpen: boolean;
+  certificateUser: UserProfile | null;
+  openCertificateModal: (user?: UserProfile) => void;
+  closeCertificateModal: () => void;
   setCurrentUserById: (userId: string) => void;
   switchUserRole: (role: UserRole) => void;
   addItem: (itemData: unknown) => Item;
@@ -29,7 +73,29 @@ interface AppContextType {
   completeHandover: (claimId: string, inputPin: string) => { success: boolean; message: string };
   getClaimForCurrentUserAndItem: (itemId: string) => Claim | undefined;
   getClaimsForMyItems: () => { claim: Claim; item: Item }[];
+  submitIntegrityAttempt: (scenarioId: string, answers: Record<string, string> | string) => EvaluationResult;
+  getScenarioStatusForCurrentUser: (scenarioId: string) => ScenarioStatus;
+  resetScenarioCooldown: (scenarioId: string) => void;
+  
+  // School Activities System
+  activitySubmissions: ActivitySubmission[];
+  submitSchoolActivity: (activityId: string, notes?: string, locationId?: SchoolLocationId) => { success: boolean; submission: ActivitySubmission; isInstant: boolean };
+  approveSchoolActivity: (submissionId: string) => void;
+  rejectSchoolActivity: (submissionId: string) => void;
+  getUserActivitySubmissions: (userId?: string) => ActivitySubmission[];
+  getUserEarnedBadges: (userId?: string) => ActivityBadge[];
+  
   resetDemoData: () => void;
+  
+  // Multilingual & Theme
+  language: AppLanguage;
+  setLanguage: (lang: AppLanguage) => void;
+  theme: AppTheme;
+  setTheme: (theme: AppTheme) => void;
+  resolvedTheme: 'light' | 'dark';
+  t: (key: string) => string;
+  dir: 'rtl' | 'ltr';
+  isRtl: boolean;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -37,13 +103,31 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 const ITEMS_STORAGE_KEY = 'findit_items_v4';
 const CLAIMS_STORAGE_KEY = 'findit_claims_v4';
 const CURRENT_USER_KEY = 'findit_current_user_v4';
+const USERS_STORAGE_KEY = 'findit_users_v4';
+const INTEGRITY_ATTEMPTS_KEY = 'findit_integrity_attempts_v4';
+const NOTIFICATIONS_STORAGE_KEY = 'findit_notifications_v4';
+const ACTIVITIES_STORAGE_KEY = 'findit_activities_v4';
+const LANGUAGE_STORAGE_KEY = 'findit_language_v4';
+const THEME_STORAGE_KEY = 'findit_theme_v4';
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<Item[]>(INITIAL_SEED_ITEMS);
   const [claims, setClaims] = useState<Claim[]>([]);
   const [currentUser, setCurrentUser] = useState<UserProfile>(DEMO_USERS[0]); // Default: Malak (Student)
   const [users, setUsers] = useState<UserProfile[]>(DEMO_USERS);
+  const [integrityAttempts, setIntegrityAttempts] = useState<IntegrityAttempt[]>([]);
+  const [notifications, setNotifications] = useState<NotificationItem[]>(INITIAL_NOTIFICATIONS);
+  const [activitySubmissions, setActivitySubmissions] = useState<ActivitySubmission[]>(INITIAL_ACTIVITY_SUBMISSIONS);
+  const [toasts, setToasts] = useState<ToastMessage[]>([]);
+  const [isQRScannerOpen, setIsQRScannerOpen] = useState(false);
+  const [isCertificateModalOpen, setIsCertificateModalOpen] = useState(false);
+  const [certificateUser, setCertificateUser] = useState<UserProfile | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
+
+  // Language & Theme State
+  const [language, setLanguageState] = useState<AppLanguage>('ar');
+  const [theme, setThemeState] = useState<AppTheme>('system');
+  const [systemPrefersDark, setSystemPrefersDark] = useState(false);
 
   // Load from LocalStorage once on client mount
   useEffect(() => {
@@ -51,6 +135,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       const savedItems = localStorage.getItem(ITEMS_STORAGE_KEY);
       const savedClaims = localStorage.getItem(CLAIMS_STORAGE_KEY);
       const savedUserId = localStorage.getItem(CURRENT_USER_KEY);
+      const savedUsers = localStorage.getItem(USERS_STORAGE_KEY);
+      const savedIntegrity = localStorage.getItem(INTEGRITY_ATTEMPTS_KEY);
+      const savedNotifications = localStorage.getItem(NOTIFICATIONS_STORAGE_KEY);
+      const savedActivities = localStorage.getItem(ACTIVITIES_STORAGE_KEY);
+      const savedLanguage = localStorage.getItem(LANGUAGE_STORAGE_KEY) as AppLanguage | null;
+      const savedTheme = localStorage.getItem(THEME_STORAGE_KEY) as AppTheme | null;
 
       if (savedItems) {
         setItems(JSON.parse(savedItems));
@@ -58,15 +148,126 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       if (savedClaims) {
         setClaims(JSON.parse(savedClaims));
       }
-      if (savedUserId) {
+      if (savedIntegrity) {
+        setIntegrityAttempts(JSON.parse(savedIntegrity));
+      }
+      if (savedNotifications) {
+        setNotifications(JSON.parse(savedNotifications));
+      }
+      if (savedActivities) {
+        setActivitySubmissions(JSON.parse(savedActivities));
+      }
+      if (savedUsers) {
+        const parsedUsers: UserProfile[] = JSON.parse(savedUsers);
+        setUsers(parsedUsers);
+        if (savedUserId) {
+          const found = parsedUsers.find((u) => u.id === savedUserId);
+          if (found) setCurrentUser(found);
+        }
+      } else if (savedUserId) {
         const found = DEMO_USERS.find((u) => u.id === savedUserId);
         if (found) setCurrentUser(found);
       }
+
+      // Language Auto-Detection
+      if (savedLanguage && (savedLanguage === 'ar' || savedLanguage === 'en')) {
+        setLanguageState(savedLanguage);
+      } else if (typeof navigator !== 'undefined') {
+        const navLang = navigator.language.toLowerCase();
+        if (navLang.startsWith('en')) {
+          setLanguageState('en');
+        } else {
+          setLanguageState('ar');
+        }
+      }
+
+      // Theme Auto-Detection
+      if (savedTheme && (savedTheme === 'system' || savedTheme === 'light' || savedTheme === 'dark')) {
+        setThemeState(savedTheme);
+      }
+
+      // Detect system dark mode preference
+      if (typeof window !== 'undefined' && window.matchMedia) {
+        const mql = window.matchMedia('(prefers-color-scheme: dark)');
+        setSystemPrefersDark(mql.matches);
+
+        const handleChange = (e: MediaQueryListEvent) => {
+          setSystemPrefersDark(e.matches);
+        };
+        mql.addEventListener('change', handleChange);
+        return () => mql.removeEventListener('change', handleChange);
+      }
+
     } catch (e) {
       logger.error('Error loading state from localStorage', { error: String(e) });
     } finally {
       setIsLoaded(true);
     }
+  }, []);
+
+  // Compute resolved theme
+  const resolvedTheme: 'light' | 'dark' = useMemo(() => {
+    if (theme === 'dark') return 'dark';
+    if (theme === 'light') return 'light';
+    return systemPrefersDark ? 'dark' : 'light';
+  }, [theme, systemPrefersDark]);
+
+  // Sync DOM with Theme
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    const root = document.documentElement;
+    if (resolvedTheme === 'dark') {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+  }, [resolvedTheme]);
+
+  // Sync DOM with Language & Direction
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    const root = document.documentElement;
+    root.lang = language;
+    root.dir = language === 'ar' ? 'rtl' : 'ltr';
+    document.body.dir = language === 'ar' ? 'rtl' : 'ltr';
+  }, [language]);
+
+  // Translation helper
+  const t = useCallback((key: string): string => {
+    return TRANSLATIONS[language]?.[key] || TRANSLATIONS['ar']?.[key] || key;
+  }, [language]);
+
+  const dir = language === 'ar' ? 'rtl' : 'ltr';
+
+  const setLanguage = useCallback((newLang: AppLanguage) => {
+    setLanguageState(newLang);
+    try {
+      localStorage.setItem(LANGUAGE_STORAGE_KEY, newLang);
+      if (typeof document !== 'undefined') {
+        const root = document.documentElement;
+        root.lang = newLang;
+        root.dir = newLang === 'ar' ? 'rtl' : 'ltr';
+        if (document.body) {
+          document.body.dir = newLang === 'ar' ? 'rtl' : 'ltr';
+        }
+      }
+    } catch {}
+  }, []);
+
+  const setTheme = useCallback((newTheme: AppTheme) => {
+    setThemeState(newTheme);
+    try {
+      localStorage.setItem(THEME_STORAGE_KEY, newTheme);
+      if (typeof document !== 'undefined') {
+        const root = document.documentElement;
+        const willBeDark = newTheme === 'dark' || (newTheme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        if (willBeDark) {
+          root.classList.add('dark');
+        } else {
+          root.classList.remove('dark');
+        }
+      }
+    } catch {}
   }, []);
 
   // Save to LocalStorage
@@ -87,6 +288,42 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       logger.error('Error saving claims to localStorage', { error: String(e) });
     }
   }, [claims, isLoaded]);
+
+  useEffect(() => {
+    if (!isLoaded) return;
+    try {
+      localStorage.setItem(INTEGRITY_ATTEMPTS_KEY, JSON.stringify(integrityAttempts));
+    } catch (e) {
+      logger.error('Error saving integrity attempts to localStorage', { error: String(e) });
+    }
+  }, [integrityAttempts, isLoaded]);
+
+  useEffect(() => {
+    if (!isLoaded) return;
+    try {
+      localStorage.setItem(NOTIFICATIONS_STORAGE_KEY, JSON.stringify(notifications));
+    } catch (e) {
+      logger.error('Error saving notifications to localStorage', { error: String(e) });
+    }
+  }, [notifications, isLoaded]);
+
+  useEffect(() => {
+    if (!isLoaded) return;
+    try {
+      localStorage.setItem(ACTIVITIES_STORAGE_KEY, JSON.stringify(activitySubmissions));
+    } catch (e) {
+      logger.error('Error saving activity submissions to localStorage', { error: String(e) });
+    }
+  }, [activitySubmissions, isLoaded]);
+
+  useEffect(() => {
+    if (!isLoaded) return;
+    try {
+      localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
+    } catch (e) {
+      logger.error('Error saving users to localStorage', { error: String(e) });
+    }
+  }, [users, isLoaded]);
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -269,14 +506,332 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       .filter((entry) => !!entry.item);
   }, [currentUser, items, claims]);
 
+  const currentUserTrustTier = useMemo(() => {
+    return IntegrityService.calculateTrustTier(currentUser.goodwillPoints || 0);
+  }, [currentUser.goodwillPoints]);
+
+  const getScenarioStatusForCurrentUser = useCallback((scenarioId: string): ScenarioStatus => {
+    return IntegrityService.getScenarioStatus(currentUser.id, scenarioId, integrityAttempts);
+  }, [currentUser.id, integrityAttempts]);
+
+  const submitIntegrityAttempt = useCallback((scenarioId: string, answers: Record<string, string> | string): EvaluationResult => {
+    const scenario = INTEGRITY_SCENARIOS.find((s) => s.id === scenarioId);
+    if (!scenario) throw new NotFoundError('السيناريو المطلوب غير موجود');
+
+    const status = IntegrityService.getScenarioStatus(currentUser.id, scenarioId, integrityAttempts);
+    if (!status.canAttempt) {
+      if (status.reason === 'passed_already') {
+        throw new Error('تم اجتياز هذا السيناريو بنجاح مسبقاً، وتُمنح نقاط النزاهة مرة واحدة فقط.');
+      }
+      if (status.reason === 'in_cooldown') {
+        throw new Error('السيناريو في فترة انتظار مؤقتة حالياً، يرجى المحاولة لاحقاً.');
+      }
+    }
+
+    const answersRecord: Record<string, string> = 
+      typeof answers === 'string' 
+        ? { [scenario.questions[0]?.id || 'decision']: answers } 
+        : answers;
+
+    const evaluation = IntegrityService.evaluateAttempt(scenario, answersRecord);
+    const newAttempt = IntegrityService.createAttemptRecord(
+      currentUser.id,
+      scenarioId,
+      evaluation.scorePercentage,
+      evaluation.isPassed,
+      answersRecord
+    );
+
+    setIntegrityAttempts((prev) => [newAttempt, ...prev]);
+
+    if (evaluation.isPassed && evaluation.pointsToAward > 0) {
+      const awardedPoints = evaluation.pointsToAward;
+      setUsers((prevUsers) =>
+        prevUsers.map((u) => {
+          if (u.id === currentUser.id) {
+            const newCompleted = Array.from(new Set([...(u.integrityScenariosCompleted || []), scenarioId]));
+            return {
+              ...u,
+              goodwillPoints: (u.goodwillPoints || 0) + awardedPoints,
+              isTrusted: true,
+              integrityScenariosCompleted: newCompleted,
+            };
+          }
+          return u;
+        })
+      );
+      setCurrentUser((prev) => ({
+        ...prev,
+        goodwillPoints: (prev.goodwillPoints || 0) + awardedPoints,
+        isTrusted: true,
+        integrityScenariosCompleted: Array.from(new Set([...(prev.integrityScenariosCompleted || []), scenarioId])),
+      }));
+    }
+
+    return evaluation;
+  }, [currentUser, integrityAttempts]);
+
+  const resetScenarioCooldown = useCallback((scenarioId: string) => {
+    setIntegrityAttempts((prev) =>
+      prev.filter((a) => !(a.studentId === currentUser.id && a.scenarioId === scenarioId && !a.isPassed))
+    );
+    logger.info('Reset cooldown for scenario in demo mode', { scenarioId, userId: currentUser.id });
+  }, [currentUser.id]);
+
+  const unreadNotificationsCount = useMemo(() => {
+    return notifications.filter((n) => !n.isRead).length;
+  }, [notifications]);
+
+  const markNotificationAsRead = useCallback((id: string) => {
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
+    );
+  }, []);
+
+  const markAllNotificationsAsRead = useCallback(() => {
+    setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+  }, []);
+
+  const addNotification = useCallback((
+    notif: Omit<NotificationItem, 'id' | 'timestamp' | 'isRead'> & { id?: string }
+  ) => {
+    const newNotif: NotificationItem = {
+      id: notif.id || `notif_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      timestamp: new Date().toISOString(),
+      isRead: false,
+      ...notif,
+    };
+    setNotifications((prev) => [newNotif, ...prev]);
+  }, []);
+
+  const removeToast = useCallback((id: string) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  }, []);
+
+  const addToast = useCallback((
+    title: string,
+    message: string,
+    type: 'success' | 'info' | 'warning' | 'error' = 'info',
+    duration = 4500
+  ) => {
+    const id = `toast_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+    const newToast: ToastMessage = { id, title, message, type, duration };
+    setToasts((prev) => [...prev, newToast]);
+
+    if (duration > 0) {
+      setTimeout(() => {
+        removeToast(id);
+      }, duration);
+    }
+  }, [removeToast]);
+
+  const openQRScanner = useCallback(() => setIsQRScannerOpen(true), []);
+  const closeQRScanner = useCallback(() => setIsQRScannerOpen(false), []);
+
+  const openCertificateModal = useCallback((user?: UserProfile) => {
+    setCertificateUser(user || currentUser);
+    setIsCertificateModalOpen(true);
+  }, [currentUser]);
+
+  const closeCertificateModal = useCallback(() => {
+    setIsCertificateModalOpen(false);
+  }, []);
+
+  // ========================================================
+  // SCHOOL ACTIVITIES & QUESTS METHODS
+  // ========================================================
+  const submitSchoolActivity = useCallback((
+    activityId: string,
+    notes?: string,
+    locationId?: SchoolLocationId
+  ) => {
+    const activity = SCHOOL_ACTIVITIES.find((a) => a.id === activityId);
+    if (!activity) {
+      throw new NotFoundError('النشاط المطلوب غير موجود');
+    }
+
+    const isInstant = activity.verificationType === 'instant';
+    const submissionId = `sub_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+
+    const newSubmission: ActivitySubmission = {
+      id: submissionId,
+      activityId,
+      userId: currentUser.id,
+      userName: currentUser.name,
+      userGrade: currentUser.grade,
+      status: isInstant ? 'approved' : 'pending',
+      submittedAt: new Date().toISOString(),
+      notes: notes?.trim(),
+      locationId: locationId || activity.targetLocationId,
+      awardedPoints: activity.points,
+      reviewedBy: isInstant ? 'النظام الذكي (فوري)' : undefined,
+      reviewedAt: isInstant ? new Date().toISOString() : undefined,
+    };
+
+    setActivitySubmissions((prev) => [newSubmission, ...prev]);
+
+    if (isInstant) {
+      // Award points immediately
+      const points = activity.points;
+      setUsers((prev) =>
+        prev.map((u) =>
+          u.id === currentUser.id
+            ? { ...u, goodwillPoints: (u.goodwillPoints || 0) + points }
+            : u
+        )
+      );
+      setCurrentUser((prev) => ({
+        ...prev,
+        goodwillPoints: (prev.goodwillPoints || 0) + points,
+      }));
+
+      addNotification({
+        title: language === 'en' ? 'Activity Points Earned! 🌟' : 'تم احتساب نقاط النشاط! 🌟',
+        message: language === 'en'
+          ? `You completed "${activity.title}" and earned +${points} points.`
+          : `أكملت نشاط "${activity.title}" وحصلت على +${points} نقطة أمانة.`,
+        type: 'points',
+        linkUrl: '/activities',
+      });
+
+      addToast(
+        language === 'en' ? 'Activity Completed! 🎉' : 'تم إنجاز النشاط بنجاح! 🎉',
+        language === 'en'
+          ? `+${points} points added to your score!`
+          : `تمت إضافة +${points} نقطة إلى رصيدك وترتيبك!`,
+        'success'
+      );
+    } else {
+      // Supervised activity pending approval
+      addNotification({
+        title: language === 'en' ? 'Activity Under Review 📋' : 'توثيق النشاط قيد المراجعة 📋',
+        message: language === 'en'
+          ? `Your submission for "${activity.title}" was received and is awaiting administrative approval.`
+          : `تم استلام تقريرك لنشاط "${activity.title}" وهو بانتظار اعتماد إدارة المدرسة.`,
+        type: 'system',
+        linkUrl: '/activities',
+      });
+
+      addToast(
+        language === 'en' ? 'Report Submitted 📋' : 'تم إرسال التوثيق 📋',
+        language === 'en'
+          ? 'Your activity report is awaiting admin review.'
+          : 'تم إرسال تقرير النشاط للإدارة للاعتماد ومنح النقاط.',
+        'info'
+      );
+    }
+
+    return { success: true, submission: newSubmission, isInstant };
+  }, [currentUser, language, addNotification, addToast]);
+
+  const approveSchoolActivity = useCallback((submissionId: string) => {
+    const sub = activitySubmissions.find((s) => s.id === submissionId);
+    if (!sub) return;
+
+    setActivitySubmissions((prev) =>
+      prev.map((s) =>
+        s.id === submissionId
+          ? {
+              ...s,
+              status: 'approved',
+              reviewedBy: currentUser.role === 'admin' ? currentUser.name : 'م. مشيرة',
+              reviewedAt: new Date().toISOString(),
+            }
+          : s
+      )
+    );
+
+    const points = sub.awardedPoints;
+    setUsers((prev) =>
+      prev.map((u) =>
+        u.id === sub.userId
+          ? { ...u, goodwillPoints: (u.goodwillPoints || 0) + points }
+          : u
+      )
+    );
+
+    if (currentUser.id === sub.userId) {
+      setCurrentUser((prev) => ({
+        ...prev,
+        goodwillPoints: (prev.goodwillPoints || 0) + points,
+      }));
+    }
+
+    const activity = SCHOOL_ACTIVITIES.find((a) => a.id === sub.activityId);
+
+    addNotification({
+      title: language === 'en' ? 'Activity Approved! 🎉' : 'تم اعتماد النشاط المدرسي! 🎉',
+      message: language === 'en'
+        ? `Administration approved your work in "${activity?.title || 'School Activity'}" (+${points} pts).`
+        : `اعتمدت إدارة المدرسة مشاركتك في "${activity?.title || 'النشاط المدرسي'}" وتم منحك +${points} نقطة.`,
+      type: 'points',
+      linkUrl: '/activities',
+    });
+
+    addToast(
+      language === 'en' ? 'Activity Approved' : 'تم اعتماد النشاط',
+      language === 'en' ? `Awarded +${points} points to ${sub.userName}` : `تم منح +${points} نقطة للطالب (${sub.userName})`,
+      'success'
+    );
+  }, [activitySubmissions, currentUser, language, addNotification, addToast]);
+
+  const rejectSchoolActivity = useCallback((submissionId: string) => {
+    setActivitySubmissions((prev) =>
+      prev.map((s) =>
+        s.id === submissionId
+          ? {
+              ...s,
+              status: 'rejected',
+              reviewedBy: currentUser.role === 'admin' ? currentUser.name : 'م. مشيرة',
+              reviewedAt: new Date().toISOString(),
+            }
+          : s
+      )
+    );
+    addToast(
+      language === 'en' ? 'Activity Rejected' : 'تم رفض الطلب',
+      language === 'en' ? 'Activity submission was marked as rejected' : 'تم رفض توثيق النشاط',
+      'warning'
+    );
+  }, [currentUser, language, addToast]);
+
+  const getUserActivitySubmissions = useCallback((userId?: string) => {
+    const targetId = userId || currentUser.id;
+    return activitySubmissions.filter((s) => s.userId === targetId);
+  }, [activitySubmissions, currentUser.id]);
+
+  const getUserEarnedBadges = useCallback((userId?: string) => {
+    const targetId = userId || currentUser.id;
+    const user = users.find((u) => u.id === targetId) || currentUser;
+    const userSubmissions = activitySubmissions.filter((s) => s.userId === targetId && s.status === 'approved');
+    
+    return ACTIVITY_BADGES.filter((badge) => {
+      const pointsInCategory = userSubmissions
+        .filter((s) => {
+          const act = SCHOOL_ACTIVITIES.find((a) => a.id === s.activityId);
+          return act?.category === badge.category;
+        })
+        .reduce((sum, s) => sum + s.awardedPoints, 0);
+
+      return pointsInCategory >= badge.requiredPoints / 2 || (user.goodwillPoints || 0) >= badge.requiredPoints;
+    });
+  }, [activitySubmissions, currentUser, users]);
+
   const resetDemoData = useCallback(() => {
     setItems(INITIAL_SEED_ITEMS);
     setClaims([]);
     setUsers(DEMO_USERS);
     setCurrentUser(DEMO_USERS[0]);
+    setIntegrityAttempts([]);
+    setNotifications(INITIAL_NOTIFICATIONS);
+    setActivitySubmissions(INITIAL_ACTIVITY_SUBMISSIONS);
     localStorage.removeItem(ITEMS_STORAGE_KEY);
     localStorage.removeItem(CLAIMS_STORAGE_KEY);
     localStorage.removeItem(CURRENT_USER_KEY);
+    localStorage.removeItem(USERS_STORAGE_KEY);
+    localStorage.removeItem(INTEGRITY_ATTEMPTS_KEY);
+    localStorage.removeItem(NOTIFICATIONS_STORAGE_KEY);
+    localStorage.removeItem(ACTIVITIES_STORAGE_KEY);
   }, []);
 
   return (
@@ -286,6 +841,23 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         claims,
         currentUser,
         users,
+        integrityAttempts,
+        currentUserTrustTier,
+        notifications,
+        unreadNotificationsCount,
+        markNotificationAsRead,
+        markAllNotificationsAsRead,
+        addNotification,
+        toasts,
+        addToast,
+        removeToast,
+        isQRScannerOpen,
+        openQRScanner,
+        closeQRScanner,
+        isCertificateModalOpen,
+        certificateUser,
+        openCertificateModal,
+        closeCertificateModal,
         setCurrentUserById,
         switchUserRole,
         addItem,
@@ -300,7 +872,29 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         completeHandover,
         getClaimForCurrentUserAndItem,
         getClaimsForMyItems,
+        submitIntegrityAttempt,
+        getScenarioStatusForCurrentUser,
+        resetScenarioCooldown,
+        
+        // School Activities
+        activitySubmissions,
+        submitSchoolActivity,
+        approveSchoolActivity,
+        rejectSchoolActivity,
+        getUserActivitySubmissions,
+        getUserEarnedBadges,
+
         resetDemoData,
+
+        // Multilingual & Theme
+        language,
+        setLanguage,
+        theme,
+        setTheme,
+        resolvedTheme,
+        t,
+        dir,
+        isRtl: dir === 'rtl',
       }}
     >
       {children}
@@ -315,3 +909,4 @@ export function useApp() {
   }
   return context;
 }
+

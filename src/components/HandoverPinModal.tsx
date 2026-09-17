@@ -22,7 +22,7 @@ interface HandoverPinModalProps {
 }
 
 export default function HandoverPinModal({ claim, item, isOpen, onClose }: HandoverPinModalProps) {
-  const { completeHandover } = useApp();
+  const { completeHandover, dir, language } = useApp();
   const [pin, setPin] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
@@ -47,7 +47,7 @@ export default function HandoverPinModal({ claim, item, isOpen, onClose }: Hando
     setErrorMessage('');
 
     if (pin.length !== 4) {
-      setErrorMessage('يرجى إدخال رمز التسليم المكون من 4 أرقام');
+      setErrorMessage(language === 'en' ? 'Please enter the 4-digit PIN' : 'يرجى إدخال رمز التسليم المكون من 4 أرقام');
       return;
     }
 
@@ -61,61 +61,58 @@ export default function HandoverPinModal({ claim, item, isOpen, onClose }: Hando
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-in fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in" dir={dir}>
       <div 
-        className="relative w-full max-w-md bg-white border border-[#E4E7E4] rounded-3xl p-6 sm:p-7 shadow-xl overflow-hidden"
+        className="relative w-full max-w-md bg-white dark:bg-[#15201D] border border-[#E4E7E4] dark:border-[#263834] rounded-3xl p-6 sm:p-7 shadow-2xl overflow-hidden text-[#18201D] dark:text-[#F1F5F3]"
         onClick={(e) => e.stopPropagation()}
       >
         <button
           onClick={onClose}
-          className="absolute top-5 left-5 p-2 rounded-full bg-[#F1F3F0] hover:bg-[#E4E7E4] text-[#18201D] transition-colors"
+          className="absolute top-4 sm:top-5 end-4 sm:end-5 p-2 rounded-full bg-[#F1F3F0] dark:bg-[#1C2B27] hover:bg-[#E4E7E4] dark:hover:bg-[#253934] text-[#18201D] dark:text-white transition-colors cursor-pointer"
         >
           <X className="w-4 h-4" />
         </button>
 
         {!isSuccess ? (
-          <div className="space-y-4 text-right">
+          <div className="space-y-4 text-start">
             
             <div className="space-y-1">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E6F1ED] text-[#176B5B] text-xs font-bold">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E6F1ED] dark:bg-[#122823] text-[#176B5B] dark:text-[#2DD4BF] text-xs font-bold">
                 <KeyRound className="w-3.5 h-3.5" />
-                <span>تأكيد التسليم المباشر</span>
+                <span>{language === 'en' ? 'Verify Handover' : 'تأكيد التسليم المباشر'}</span>
               </div>
-              <h2 className="text-lg sm:text-xl font-extrabold text-[#18201D]">
-                إدخال رمز التسليم (PIN)
+              <h2 className="text-lg sm:text-xl font-extrabold text-[#18201D] dark:text-white">
+                {language === 'en' ? 'Enter Handover PIN' : 'إدخال رمز التسليم (PIN)'}
               </h2>
-              <p className="text-xs text-[#66706B]">
-                اطلب من الطالب <strong>({claim.claimant.name})</strong> الرمز المكون من 4 أرقام في شاشته.
+              <p className="text-xs text-[#66706B] dark:text-[#94A39D]">
+                {language === 'en' ? `Ask (${claim.claimant.name}) for the 4-digit PIN from their screen.` : `اطلب من الطالب (${claim.claimant.name}) الرمز المكون من 4 أرقام في شاشته.`}
               </p>
             </div>
 
-            <div className="p-3 rounded-2xl bg-[#F1F3F0] text-xs text-[#18201D] flex items-center justify-between">
+            <div className="p-3 rounded-2xl bg-[#F1F3F0] dark:bg-[#1C2B27] text-xs text-[#18201D] dark:text-white flex items-center justify-between">
               <span className="font-bold">{item.title}</span>
-              <span className="text-[#176B5B] font-semibold">{item.color}</span>
+              <span className="text-[#176B5B] dark:text-[#2DD4BF] font-semibold">{item.color}</span>
             </div>
 
             {/* PIN Input */}
             <form onSubmit={handleVerify} className="space-y-3.5">
               <div className="space-y-1.5 text-center">
-                <label className="block text-xs font-bold text-[#18201D]">
-                  أدخل رمز الـ 4 أرقام:
+                <label className="block text-xs font-bold text-[#18201D] dark:text-white">
+                  {language === 'en' ? '4-Digit PIN' : 'الرمز السري المكون من 4 أرقام'}
                 </label>
                 <input
                   type="text"
                   maxLength={4}
-                  autoFocus
                   value={pin}
-                  onChange={(e) => {
-                    setPin(e.target.value.replace(/\D/g, ''));
-                    setErrorMessage('');
-                  }}
-                  placeholder="• • • •"
-                  className="w-full py-3 text-center tracking-[0.5em] text-2xl font-bold text-[#18201D] bg-[#F1F3F0] border border-[#E4E7E4] rounded-2xl focus:bg-white focus:border-[#176B5B] focus:outline-none font-mono shadow-inner transition-colors"
+                  onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
+                  placeholder="••••"
+                  className="w-44 mx-auto text-center font-mono font-black text-2xl tracking-[0.6em] p-3 bg-slate-50 dark:bg-[#1C2B27] border border-slate-300 dark:border-[#2D3E3A] rounded-2xl focus:border-[#176B5B] dark:focus:border-[#2DD4BF] focus:bg-white dark:focus:bg-[#15201D] focus:outline-none transition-all text-[#18201D] dark:text-white"
+                  autoFocus
                 />
               </div>
 
               {errorMessage && (
-                <div className="p-2.5 rounded-xl bg-[#FEF2F2] border border-[#FEE2E2] text-[#E11D48] text-xs flex items-center gap-1.5">
+                <div className="p-2.5 rounded-xl bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-900/60 text-rose-700 dark:text-rose-300 text-xs flex items-center gap-2">
                   <AlertCircle className="w-4 h-4 shrink-0" />
                   <span>{errorMessage}</span>
                 </div>
@@ -123,59 +120,45 @@ export default function HandoverPinModal({ claim, item, isOpen, onClose }: Hando
 
               <button
                 type="submit"
-                className="w-full py-3 px-6 rounded-xl bg-[#176B5B] hover:bg-[#125648] text-white font-bold text-xs sm:text-sm transition-all shadow-xs flex items-center justify-center gap-2"
+                className="w-full py-3 rounded-2xl bg-[#176B5B] dark:bg-[#2DD4BF] hover:bg-[#125648] dark:hover:bg-[#14B8A6] text-white dark:text-slate-950 font-bold text-xs shadow-md transition-all cursor-pointer"
               >
-                <CheckCircle2 className="w-4 h-4" />
-                <span>التحقق من الرمز وإتمام التسليم</span>
+                {language === 'en' ? 'Confirm and Complete Handover' : 'تأكيد الرمز وإتمام التسليم'}
               </button>
             </form>
 
-            <div className="text-[11px] text-[#66706B] text-center">
-              💡 الرمز لـ {claim.claimant.name}: <span className="text-[#176B5B] font-bold font-mono">{claim.handoverPin}</span>
-            </div>
-
           </div>
         ) : (
-          <div className="space-y-4 text-center py-3 animate-in zoom-in-95">
-            <div className="w-14 h-14 rounded-full bg-[#D1FAE5] text-[#059669] flex items-center justify-center mx-auto shadow-2xs">
-              <Sparkles className="w-7 h-7 text-[#059669]" />
+          <div className="space-y-5 text-center py-3">
+            <div className="w-16 h-16 rounded-3xl bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-[#2DD4BF] mx-auto flex items-center justify-center">
+              <CheckCircle2 className="w-10 h-10" />
             </div>
 
             <div className="space-y-1">
-              <span className="text-[11px] font-bold text-[#059669] tracking-wider uppercase">
-                فُقِدَ • تَطابَقَ • عَادَ 🎉
-              </span>
-              <h3 className="text-xl font-extrabold text-[#18201D]">
-                عادت الأمانة لصاحبها!
-              </h3>
-              <p className="text-xs text-[#66706B] max-w-xs mx-auto">
-                شكراً لأمانتك! تم توثيق استرداد <strong>({item.title})</strong> بنجاح.
+              <h2 className="text-xl font-black text-[#18201D] dark:text-white">
+                {language === 'en' ? 'Item Reunited Successfully!' : 'تم تسليم الأمانة بنجاح!'}
+              </h2>
+              <p className="text-xs text-[#66706B] dark:text-[#94A39D]">
+                {language === 'en' ? 'Thank you for your honesty! Points and integrity badges have been awarded.' : 'شكراً لأمانتك وحسن صنيعك. تم توثيق التسليم واحتساب نقاط الأمانة.'}
               </p>
             </div>
 
-            <div className="p-3.5 rounded-2xl bg-[#F1F3F0] text-xs space-y-1.5 text-right">
-              <div className="flex items-center justify-between text-[#18201D]">
-                <span>نقاط الأمانة والموثوقية المكتسبة:</span>
-                <span className="font-bold text-[#176B5B]">+50 نقطة ⭐</span>
-              </div>
-              <div className="flex items-center justify-between text-[#18201D]">
-                <span>شارة الطالب الموثوق:</span>
-                <span className="font-bold text-[#059669] flex items-center gap-1">
-                  <ShieldCheck className="w-3.5 h-3.5" />
-                  مفعلة
-                </span>
-              </div>
+            <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-[#122823] border border-emerald-200 dark:border-[#1E463D] flex items-center justify-between text-xs">
+              <span className="font-bold text-emerald-950 dark:text-emerald-300">
+                {language === 'en' ? 'Reward Points:' : 'نقاط الأمانة المكتسبة:'}
+              </span>
+              <span className="font-black text-[#176B5B] dark:text-[#2DD4BF] text-sm">
+                +50 {language === 'en' ? 'pts' : 'نقطة'} ✨
+              </span>
             </div>
 
             <button
               onClick={onClose}
-              className="w-full py-2.5 px-4 rounded-xl bg-[#18201D] text-white font-bold text-xs"
+              className="w-full py-3 rounded-2xl bg-[#176B5B] dark:bg-[#2DD4BF] text-white dark:text-slate-950 font-bold text-xs hover:bg-[#125648] dark:hover:bg-[#14B8A6] transition-colors cursor-pointer"
             >
-              إغلاق
+              {language === 'en' ? 'Done' : 'إغلاق'}
             </button>
           </div>
         )}
-
       </div>
     </div>
   );

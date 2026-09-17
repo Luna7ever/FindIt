@@ -8,10 +8,12 @@ import { canAccessAdmin } from '@/lib/auth/permissions';
 import { CATEGORIES } from '@/lib/constants';
 import ItemCard from '@/components/ItemCard';
 import ItemVisual from '@/components/ItemVisual';
+import { getLocalizedItem, CATEGORY_DESCRIPTIONS_EN } from '@/lib/i18n/seedDataTranslations';
 import { 
   Search, 
   PlusCircle, 
   ArrowLeft, 
+  ArrowRight, 
   Sparkles, 
   CheckCircle2, 
   Laptop,
@@ -25,7 +27,10 @@ import {
   ShieldCheck,
   Building2,
   FileCheck,
-  CupSoda
+  CupSoda,
+  Camera,
+  Award,
+  Cpu
 } from 'lucide-react';
 
 const categoryIconMap: Record<string, React.ReactNode> = {
@@ -42,10 +47,12 @@ const categoryIconMap: Record<string, React.ReactNode> = {
 
 export default function HomePage() {
   const router = useRouter();
-  const { items, claims, currentUser } = useApp();
+  const { items, claims, currentUser, openQRScanner, openCertificateModal, dir, language, t } = useApp();
   const [searchQuery, setSearchQuery] = useState('');
 
   const isAdmin = canAccessAdmin(currentUser);
+  const isRtl = dir === 'rtl';
+  const ArrowIcon = isRtl ? ArrowLeft : ArrowRight;
 
   // Recent Items
   const recentFoundItems = useMemo(() => {
@@ -54,7 +61,7 @@ export default function HomePage() {
       .slice(0, 4);
   }, [items]);
 
-  // Malak's Calculator for High-Match Spotlight (Target: 88% match with item_found_calc_lab)
+  // Malak's Calculator for High-Match Spotlight
   const malakLostCalc = useMemo(() => {
     return items.find((i) => i.id === 'item_malak_lost_calc');
   }, [items]);
@@ -73,290 +80,320 @@ export default function HomePage() {
   };
 
   return (
-    <div className="px-4 sm:px-6 py-6 sm:py-8 space-y-8 max-w-4xl mx-auto">
+    <div className="px-4 sm:px-6 py-6 sm:py-8 space-y-7 sm:space-y-8 max-w-5xl mx-auto text-[#18201D] dark:text-[#F1F5F3]" dir={dir}>
       
       {/* ========================================================
-          1. PERSONALIZED HERO GREETING
+          1. PERSONALIZED HERO GREETING & SEARCH BAR
       ======================================================== */}
-      <section className="space-y-1.5 text-right pt-2">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E6F1ED] text-[#176B5B] text-xs font-bold mb-1">
-          <span>
-            {isAdmin ? 'مرحباً، م. مشيرة (إدارة المدرسة) 🏛️' : `مساء الخير، ${currentUser.name} 👋`}
-          </span>
+      <section className="space-y-4 text-start pt-1">
+        <div className="space-y-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E6F1ED] dark:bg-[#122823] text-[#176B5B] dark:text-[#2DD4BF] text-xs font-bold border border-[#176B5B]/30 dark:border-[#263834]">
+              <span>
+                {isAdmin 
+                  ? (language === 'en' ? 'Welcome, Ms. Moshira (School Principal) 🏛️' : 'مرحباً، أ/ مشيرة محمد (مديرة المدرسة) 🏛️') 
+                  : (language === 'en' ? `Good day, ${currentUser.name} 👋` : `مساء الخير، ${currentUser.name} 👋`)}
+              </span>
+            </div>
+
+            {isAdmin && (
+              <Link
+                href="/admin"
+                className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#176B5B] hover:bg-[#125648] text-white text-xs font-bold transition-all shadow-2xs"
+              >
+                <Building2 className="w-3.5 h-3.5" />
+                <span>{language === 'en' ? 'Open Admin Portal 🏛️' : 'الانتقال إلى لوحة الإدارة 🏛️'}</span>
+              </Link>
+            )}
+          </div>
+          
+          <div>
+            <h1 className="text-2xl sm:text-4xl font-extrabold text-[#18201D] dark:text-white ltr:tracking-tight">
+              {language === 'en' ? 'Lost something? ' : 'ضاع منك شيء؟ '}
+              <span className="text-[#176B5B] dark:text-[#2DD4BF]">
+                {language === 'en' ? 'We are here to help.' : 'خلّينا نساعدك تلاقيه.'}
+              </span>
+            </h1>
+            <p className="text-xs sm:text-sm text-[#66706B] dark:text-[#94A39D] mt-1 max-w-2xl leading-relaxed">
+              {language === 'en'
+                ? 'Smart, confidential school platform connecting lost and found belongings.'
+                : 'المنظومة الذكية لمطابقة المفقودات والأمانات داخل الحرم المدرسي بأمان وسرية.'}
+            </p>
+          </div>
         </div>
-        
-        {isAdmin ? (
-          <div>
-            <h1 className="text-2xl sm:text-4xl font-extrabold text-[#18201D] tracking-tight">
-              لوحة العمليات اليومية <span className="text-[#176B5B]">لمفقودات المدرسة</span>
-            </h1>
-            <p className="text-xs sm:text-sm text-[#66706B] mt-1">
-              متابعة البلاغات النشطة، اعتماد طلبات إثبات الملكية، وتوثيق استلام الأمانات.
-            </p>
-          </div>
-        ) : (
-          <div>
-            <h1 className="text-2xl sm:text-4xl font-extrabold text-[#18201D] tracking-tight">
-              ضاع منك شيء؟ <span className="text-[#176B5B]">خلّينا نساعدك تلاقيه.</span>
-            </h1>
-            <p className="text-xs sm:text-sm text-[#66706B] mt-1">
-              المنظومة الذكية لمطابقة المفقودات والأمانات داخل الحرم المدرسي بأمان وسرية.
-            </p>
-          </div>
-        )}
+
+        {/* Integrated Instant Search Bar */}
+        <form onSubmit={handleSearchSubmit} className="relative pt-1">
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder={language === 'en' ? 'Search items by keyword (e.g. calculator, watch, keys)...' : 'ابحث عن أي غرض (مثل: حاسبة، نظارة، مفاتيح، حقيبة)...'}
+            className="w-full py-3.5 px-4 ps-11 bg-white dark:bg-[#15201D] border border-[#E4E7E4] dark:border-[#263834] rounded-2xl shadow-xs text-xs sm:text-sm focus:border-[#176B5B] dark:focus:border-[#2DD4BF] focus:outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500 text-[#18201D] dark:text-white"
+          />
+          <Search className="w-4 h-4 text-slate-400 absolute top-1/2 -translate-y-1/2 start-4 pointer-events-none" />
+          <button
+            type="submit"
+            className="absolute top-1/2 -translate-y-1/2 end-2 px-4 py-2 min-h-[38px] rounded-xl bg-[#176B5B] dark:bg-[#2DD4BF] text-white dark:text-slate-950 text-xs font-bold hover:bg-[#125648] dark:hover:bg-[#14B8A6] transition-colors cursor-pointer flex items-center justify-center shadow-2xs"
+          >
+            {language === 'en' ? 'Search' : 'بحث'}
+          </button>
+        </form>
       </section>
 
       {/* ========================================================
-          2. ADMIN OPERATIONAL SHORTCUTS (Visible when Moshira is active)
+          2. DUAL ACTION HERO CARDS (فقدت شيئاً؟ / عثرت على شيء؟)
       ======================================================== */}
-      {isAdmin ? (
-        <section className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
-          <Link
-            href="/admin"
-            className="app-card app-card-interactive p-5 bg-white border-l-4 border-l-[#E11D48] text-right space-y-2"
-          >
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-[#E11D48]">طلبات معلقة</span>
-              <FileCheck className="w-5 h-5 text-[#E11D48]" />
+      <section className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4">
+        <Link
+          href="/report?type=lost"
+          className="app-card app-card-interactive p-5 sm:p-6 border-l-4 border-l-[#D97706] bg-white dark:bg-[#15201D] flex flex-col justify-between space-y-4 group text-start"
+        >
+          <div className="flex items-start justify-between">
+            <div className="p-3 rounded-2xl bg-[#FEF3C7] dark:bg-amber-950/60 text-[#D97706] dark:text-amber-400">
+              <Search className="w-6 h-6" />
             </div>
-            <div className="text-2xl font-black text-[#18201D]">
-              {claims.filter((c) => c.status === 'pending').length}
-            </div>
-            <p className="text-[11px] text-[#66706B]">تحتاج مراجعة واعتماد السؤال السري &larr;</p>
-          </Link>
-
-          <Link
-            href="/admin"
-            className="app-card app-card-interactive p-5 bg-white border-l-4 border-l-[#176B5B] text-right space-y-2"
-          >
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-[#176B5B]">أمانات بالإدارة</span>
-              <Building2 className="w-5 h-5 text-[#176B5B]" />
-            </div>
-            <div className="text-2xl font-black text-[#18201D]">
-              {items.filter((i) => i.custody === 'at_office' && i.status !== 'reunited').length}
-            </div>
-            <p className="text-[11px] text-[#66706B]">محفوظة لدى المشرف بمكتب الإدارة &larr;</p>
-          </Link>
-
-          <Link
-            href="/admin"
-            className="app-card app-card-interactive p-5 bg-white border-l-4 border-l-[#059669] text-right space-y-2"
-          >
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-[#059669]">أغراض مستردة</span>
-              <CheckCircle2 className="w-5 h-5 text-[#059669]" />
-            </div>
-            <div className="text-2xl font-black text-[#18201D]">
-              {items.filter((i) => i.status === 'reunited').length + 42}
-            </div>
-            <p className="text-[11px] text-[#66706B]">عمليات تسليم ناجحة بالـ PIN &larr;</p>
-          </Link>
-        </section>
-      ) : (
-        /* ========================================================
-            STUDENT HERO ACTIONS (Visible when Malak is active)
-        ======================================================== */
-        <section className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4">
-          <Link
-            href="/report?type=lost"
-            className="app-card app-card-interactive p-5 sm:p-6 border-l-4 border-l-[#D97706] bg-white flex flex-col justify-between space-y-4 group text-right"
-          >
-            <div className="flex items-start justify-between">
-              <div className="p-3 rounded-2xl bg-[#FEF3C7] text-[#D97706]">
-                <Search className="w-6 h-6" />
-              </div>
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#FEF3C7] text-[#92400E]">
-                بحث فوري
-              </span>
-            </div>
-
-            <div>
-              <h2 className="text-lg font-bold text-[#18201D] group-hover:text-[#D97706] transition-colors">
-                فقدت شيئاً؟
-              </h2>
-              <p className="text-xs text-[#66706B] mt-1 leading-relaxed">
-                سجلي مواصفات الغرض وسيقوم النظام بمطابقته فوراً مع معثورات المدرسة.
-              </p>
-            </div>
-
-            <div className="flex items-center gap-1.5 text-xs font-bold text-[#D97706] pt-1">
-              <span>ابدئي تسجيل المفقود</span>
-              <ArrowLeft className="w-3.5 h-3.5 group-hover:translate-x-[-2px] transition-transform" />
-            </div>
-          </Link>
-
-          <Link
-            href="/report?type=found"
-            className="app-card app-card-interactive p-5 sm:p-6 border-l-4 border-l-[#059669] bg-white flex flex-col justify-between space-y-4 group text-right"
-          >
-            <div className="flex items-start justify-between">
-              <div className="p-3 rounded-2xl bg-[#D1FAE5] text-[#059669]">
-                <PlusCircle className="w-6 h-6" />
-              </div>
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#D1FAE5] text-[#065F46]">
-                أمانة
-              </span>
-            </div>
-
-            <div>
-              <h2 className="text-lg font-bold text-[#18201D] group-hover:text-[#059669] transition-colors">
-                عثرت على شيء؟
-              </h2>
-              <p className="text-xs text-[#66706B] mt-1 leading-relaxed">
-                شكراً لأمانتك! وثّقي الغرض مع سؤال سري لنصل إلى صاحبه الحقيقي بأمان.
-              </p>
-            </div>
-
-            <div className="flex items-center gap-1.5 text-xs font-bold text-[#059669] pt-1">
-              <span>تسجيل الأمانة الآن</span>
-              <ArrowLeft className="w-3.5 h-3.5 group-hover:translate-x-[-2px] transition-transform" />
-            </div>
-          </Link>
-        </section>
-      )}
-
-      {/* ========================================================
-          3. STUDENT POSSIBLE MATCH SPOTLIGHT CARD (Malak's 88% Match)
-      ======================================================== */}
-      {!isAdmin && malakLostCalc && matchingFoundCalc && (
-        <section className="app-card p-5 sm:p-6 bg-linear-to-l from-[#E6F1ED] via-white to-white border-2 border-[#176B5B]/30 space-y-4 text-right shadow-sm animate-in fade-in">
-          
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-[#176B5B] text-white flex items-center justify-center shadow-xs">
-                <Sparkles className="w-4 h-4 text-[#FDE68A]" />
-              </div>
-              <div>
-                <span className="text-[10px] font-bold text-[#176B5B] uppercase tracking-wider">
-                  إشعار مطابقة ذكية خاصة بك 🎯
-                </span>
-                <h3 className="font-extrabold text-sm sm:text-base text-[#18201D]">
-                  وجدنا تطابقاً بنسبة 88% لحاسبتك المفقودة!
-                </h3>
-              </div>
-            </div>
-
-            <span className="px-3 py-1 rounded-full text-xs font-black bg-[#176B5B] text-white shadow-2xs">
-              88% تطابق
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#FEF3C7] dark:bg-amber-950/60 text-[#92400E] dark:text-amber-300">
+              {language === 'en' ? 'Quick Search' : 'بحث فوري'}
             </span>
           </div>
 
-          <div className="p-3.5 rounded-2xl bg-white border border-[#E4E7E4] flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0">
+          <div>
+            <h2 className="text-lg font-bold text-[#18201D] dark:text-white group-hover:text-[#D97706] transition-colors">
+              {language === 'en' ? 'Lost something?' : 'فقدت شيئاً؟'}
+            </h2>
+            <p className="text-xs text-[#66706B] dark:text-[#94A39D] mt-1 leading-relaxed">
+              {language === 'en' 
+                ? 'Register your item specs and the system will match it immediately with school findings.' 
+                : 'سجّلي مواصفات غرضك وسيقوم النظام بمطابقته فوراً مع معثورات المدرسة.'}
+            </p>
+          </div>
+
+          <div className="flex items-center gap-1.5 text-xs font-bold text-[#D97706] dark:text-amber-400 pt-1">
+            <span>{language === 'en' ? 'Report Lost Item' : 'ابدئي تسجيل المفقود'}</span>
+            <ArrowIcon className={`w-3.5 h-3.5 transition-transform ${isRtl ? 'group-hover:-translate-x-1' : 'group-hover:translate-x-1'}`} />
+          </div>
+        </Link>
+
+        <Link
+          href="/report?type=found"
+          className="app-card app-card-interactive p-5 sm:p-6 border-l-4 border-l-[#059669] bg-white dark:bg-[#15201D] flex flex-col justify-between space-y-4 group text-start"
+        >
+          <div className="flex items-start justify-between">
+            <div className="p-3 rounded-2xl bg-[#D1FAE5] dark:bg-emerald-950/60 text-[#059669] dark:text-emerald-400">
+              <PlusCircle className="w-6 h-6" />
+            </div>
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#D1FAE5] dark:bg-emerald-950/60 text-[#065F46] dark:text-emerald-300">
+              {language === 'en' ? 'Honesty' : 'أمانة'}
+            </span>
+          </div>
+
+          <div>
+            <h2 className="text-lg font-bold text-[#18201D] dark:text-white group-hover:text-[#059669] transition-colors">
+              {language === 'en' ? 'Found something?' : 'عثرت على شيء؟'}
+            </h2>
+            <p className="text-xs text-[#66706B] dark:text-[#94A39D] mt-1 leading-relaxed">
+              {language === 'en'
+                ? 'Thank you for your honesty! Record the item with a secret question to reach the owner safely.'
+                : 'شكراً لأمانتك! وثّقي الغرض مع سؤال سري لنصل إلى صاحبه الحقيقي بأمان.'}
+            </p>
+          </div>
+
+          <div className="flex items-center gap-1.5 text-xs font-bold text-[#059669] dark:text-emerald-400 pt-1">
+            <span>{language === 'en' ? 'Record Found Item' : 'تسجيل الأمانة الآن'}</span>
+            <ArrowIcon className={`w-3.5 h-3.5 transition-transform ${isRtl ? 'group-hover:-translate-x-1' : 'group-hover:translate-x-1'}`} />
+          </div>
+        </Link>
+      </section>
+
+      {/* ========================================================
+          3. HIGH-MATCH SPOTLIGHT CARD (When Match Exists)
+      ======================================================== */}
+      {malakLostCalc && matchingFoundCalc && currentUser.id === 'user_malak' && (
+        <section className="bg-gradient-to-br from-emerald-50 via-teal-50/40 to-white dark:from-[#122823] dark:via-[#16352E] dark:to-[#15201D] p-5 sm:p-6 rounded-3xl border border-emerald-300/50 dark:border-[#263834] shadow-sm space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#176B5B] dark:bg-[#2DD4BF] animate-ping" />
+              <span className="text-xs font-black text-[#176B5B] dark:text-[#2DD4BF] uppercase tracking-wider">
+                {language === 'en' ? '✨ Instant AI Match Found!' : '✨ تطابق ذكي مكتشف لبلاغك!'}
+              </span>
+            </div>
+            <span className="px-2.5 py-1 rounded-full bg-[#176B5B] dark:bg-[#2DD4BF] text-white dark:text-slate-950 text-xs font-bold">
+              88% {language === 'en' ? 'Match' : 'تطابق'}
+            </span>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-1">
+            <div className="flex items-center gap-3 w-full sm:w-auto">
+              <div className="w-14 h-14 rounded-2xl overflow-hidden shrink-0 bg-white dark:bg-[#1C2B27] border border-[#E4E7E4] dark:border-[#263834]">
                 <ItemVisual
                   category={matchingFoundCalc.category}
                   title={matchingFoundCalc.title}
+                  imageUrl={matchingFoundCalc.imageUrl}
                   className="w-full h-full"
                 />
               </div>
-              <div>
-                <h4 className="font-bold text-xs sm:text-sm text-[#18201D]">{matchingFoundCalc.title}</h4>
-                <p className="text-[11px] text-[#66706B]">
-                  وُجدت في: <strong>معمل العلوم والكيمياء</strong> · قبل قليل
+              <div className="text-start">
+                <h3 className="font-extrabold text-sm sm:text-base text-[#18201D] dark:text-white">
+                  {getLocalizedItem(matchingFoundCalc, language).title}
+                </h3>
+                <p className="text-xs text-[#66706B] dark:text-[#94A39D] mt-0.5">
+                  {language === 'en' ? 'Found in Science Lab - matches your lost calculator specs' : 'عُثر عليها في معمل العلوم - تطابق مواصفات حاسبتك المفقودة'}
                 </p>
               </div>
             </div>
 
             <Link
               href={`/match/${malakLostCalc.id}`}
-              className="py-2 px-4 rounded-xl bg-[#176B5B] hover:bg-[#125648] text-white text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 shrink-0"
+              className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#176B5B] dark:bg-[#2DD4BF] hover:bg-[#125648] dark:hover:bg-[#14B8A6] text-white dark:text-slate-950 text-xs font-bold transition-colors shadow-sm text-center cursor-pointer"
             >
-              <span>فحص وإثبات الملكية</span>
-              <ArrowLeft className="w-3.5 h-3.5" />
+              {language === 'en' ? 'Review Match & Claim' : 'معاينة المطابقة واسترداد الغرض'}
             </Link>
           </div>
-
-          <p className="text-[11px] text-[#66706B] leading-relaxed">
-            💡 <strong>ملاحظة:</strong> تطابقت الفئة (إلكترونيات)، المكان (معمل العلوم)، واللون الأسود. يمكنك الإجابة على السؤال السري لاستلامها.
-          </p>
         </section>
       )}
 
       {/* ========================================================
-          4. QUICK SEARCH BAR
+          4. QUICK SHORTCUTS STRIP (Activities, QR Scanner, Leaderboard, Certificate)
       ======================================================== */}
-      <section>
-        <form onSubmit={handleSearchSubmit} className="relative">
-          <Search className="absolute right-4 top-3.5 w-4 h-4 text-[#66706B] pointer-events-none" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="ابحث عن أي غرض... (حاسبة كاسيو، سماعات، مفاتيح، قارورة ماء...)"
-            className="w-full py-3.5 pr-11 pl-24 rounded-2xl bg-white border border-[#E4E7E4] text-xs sm:text-sm text-[#18201D] placeholder-[#66706B]/70 focus:outline-none focus:border-[#176B5B] focus:ring-2 focus:ring-[#176B5B]/10 shadow-2xs transition-all text-right"
-          />
-          <button
-            type="submit"
-            className="absolute left-2 top-2 bottom-2 px-4 rounded-xl bg-[#176B5B] hover:bg-[#125648] text-white text-xs font-bold transition-colors flex items-center gap-1"
-          >
-            <span>بحث</span>
-          </button>
-        </form>
-      </section>
-
-      {/* ========================================================
-          5. CATEGORY SHORTCUTS
-      ======================================================== */}
-      <section className="space-y-3">
-        <div className="flex items-center justify-between text-right">
-          <h3 className="text-xs font-bold text-[#66706B] uppercase tracking-wider">
-            تصفح حسب الفئة
-          </h3>
-          <Link
-            href="/explore"
-            className="text-xs font-bold text-[#176B5B] hover:underline"
-          >
-            عرض الكل &larr;
-          </Link>
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-          {CATEGORIES.slice(0, 4).map((cat) => (
-            <Link
-              key={cat.id}
-              href={`/explore?category=${cat.id}`}
-              className="app-card app-card-interactive p-3 flex items-center gap-3 bg-white text-right"
-            >
-              <div className="p-2 rounded-xl bg-[#F1F3F0] text-[#176B5B] shrink-0">
-                {categoryIconMap[cat.id] || <FolderOpen className="w-4 h-4" />}
-              </div>
-              <div className="min-w-0 truncate">
-                <h4 className="text-xs font-bold text-[#18201D] truncate leading-tight">
-                  {cat.label}
-                </h4>
-                <p className="text-[10px] text-[#66706B] truncate">
-                  {cat.description}
-                </p>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* ========================================================
-          6. RECENTLY FOUND ITEMS FEED
-      ======================================================== */}
-      <section className="space-y-4">
-        <div className="flex items-center justify-between text-right">
-          <div>
-            <h2 className="text-base sm:text-lg font-bold text-[#18201D]">
-              أحدث المعثورات بالمدرسة
-            </h2>
-            <p className="text-xs text-[#66706B]">
-              أغراض تم العثور عليها وتنتظر أصحابها
+      <section className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
+        <Link
+          href="/activities"
+          className="p-2.5 sm:p-3.5 rounded-2xl bg-white dark:bg-[#15201D] border border-[#E4E7E4] dark:border-[#263834] hover:border-[#176B5B] dark:hover:border-[#2DD4BF] hover:bg-[#E6F1ED]/40 dark:hover:bg-[#1C2B27] text-start transition-all flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-start gap-2 sm:gap-2.5 shadow-2xs group"
+        >
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#176B5B] to-emerald-600 dark:from-[#2DD4BF] dark:to-emerald-600 text-white dark:text-slate-950 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-xs">
+            <Sparkles className="w-4 h-4" />
+          </div>
+          <div className="min-w-0 w-full sm:w-auto">
+            <div className="flex items-center justify-center sm:justify-start gap-1">
+              <p className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-[#176B5B] dark:group-hover:text-[#2DD4BF] truncate">
+                {language === 'en' ? 'Activities' : 'الأنشطة المدرسية'}
+              </p>
+              <span className="px-1 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-[#2DD4BF] text-[8px] font-black">
+                {language === 'en' ? '+50 pts' : '+50ن'}
+              </span>
+            </div>
+            <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate hidden sm:block">
+              {language === 'en' ? 'Quests & Badges' : 'مهام وتحديات وأوسمة'}
             </p>
           </div>
-          <Link
-            href="/explore"
-            className="py-1.5 px-3 rounded-xl bg-[#F1F3F0] hover:bg-[#E4E7E4] text-[#18201D] text-xs font-bold transition-colors"
-          >
-            استكشاف جميع الأغراض
+        </Link>
+
+        <button
+          onClick={openQRScanner}
+          className="p-2.5 sm:p-3.5 rounded-2xl bg-white dark:bg-[#15201D] border border-[#E4E7E4] dark:border-[#263834] hover:border-[#176B5B] dark:hover:border-[#2DD4BF] hover:bg-[#E6F1ED]/40 dark:hover:bg-[#1C2B27] text-start transition-all flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-start gap-2 sm:gap-2.5 shadow-2xs group cursor-pointer"
+        >
+          <div className="w-8 h-8 rounded-xl bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-[#2DD4BF] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+            <Camera className="w-4 h-4" />
+          </div>
+          <div className="min-w-0 w-full sm:w-auto">
+            <p className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-[#176B5B] dark:group-hover:text-[#2DD4BF] truncate">
+              {language === 'en' ? 'QR Scanner' : 'مسح الباركود'}
+            </p>
+            <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate hidden sm:block">
+              {language === 'en' ? 'Instant room matching' : 'تحديد موقع المعمل فورياً'}
+            </p>
+          </div>
+        </button>
+
+        <Link
+          href="/leaderboard"
+          className="p-2.5 sm:p-3.5 rounded-2xl bg-white dark:bg-[#15201D] border border-[#E4E7E4] dark:border-[#263834] hover:border-amber-400 hover:bg-amber-50/40 dark:hover:bg-[#1C2B27] text-start transition-all flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-start gap-2 sm:gap-2.5 shadow-2xs group"
+        >
+          <div className="w-8 h-8 rounded-xl bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+            <Trophy className="w-4 h-4" />
+          </div>
+          <div className="min-w-0 w-full sm:w-auto">
+            <p className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-amber-950 dark:group-hover:text-amber-300 truncate">
+              {language === 'en' ? 'Leaderboard' : 'لوحة الشرف'}
+            </p>
+            <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate hidden sm:block">
+              {language === 'en' ? 'Integrity Honor Roll' : 'تصنيف أبطال الأمانة'}
+            </p>
+          </div>
+        </Link>
+
+        <button
+          onClick={() => openCertificateModal(currentUser)}
+          className="p-2.5 sm:p-3.5 rounded-2xl bg-white dark:bg-[#15201D] border border-[#E4E7E4] dark:border-[#263834] hover:border-teal-500 hover:bg-teal-50/40 dark:hover:bg-[#1C2B27] text-start transition-all flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-start gap-2 sm:gap-2.5 shadow-2xs group cursor-pointer"
+        >
+          <div className="w-8 h-8 rounded-xl bg-teal-100 dark:bg-teal-950/80 text-teal-800 dark:text-teal-300 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+            <Award className="w-4 h-4" />
+          </div>
+          <div className="min-w-0 w-full sm:w-auto">
+            <p className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-teal-950 dark:group-hover:text-teal-300 truncate">
+              {isAdmin 
+                ? (language === 'en' ? 'Certificate' : 'معاينة الشهادة') 
+                : (language === 'en' ? 'My Certificate' : 'شهادتي الرسمية')}
+            </p>
+            <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate hidden sm:block">
+              {isAdmin 
+                ? (language === 'en' ? 'Official student template' : 'نموذج التكريم المعتمد') 
+                : (language === 'en' ? 'Verified honor doc' : 'توثيق سفير النزاهة')}
+            </p>
+          </div>
+        </button>
+      </section>
+
+      {/* ========================================================
+          5. CATEGORIES BROWSER (Decluttered Unified Surface)
+      ======================================================== */}
+      <section className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm sm:text-base font-black text-[#18201D] dark:text-white">
+            {language === 'en' ? 'Explore by Category' : 'تصفح حسب التصنيف'}
+          </h2>
+          <Link href="/explore" className="text-xs font-bold text-[#176B5B] dark:text-[#2DD4BF] hover:underline flex items-center gap-1 group">
+            <span>{language === 'en' ? 'View All' : 'عرض الكل'}</span>
+            <ArrowIcon className={`w-3.5 h-3.5 transition-transform ${isRtl ? 'group-hover:-translate-x-0.5' : 'group-hover:translate-x-0.5'}`} />
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="p-2.5 sm:p-3.5 rounded-3xl bg-white dark:bg-[#15201D] border border-[#E4E7E4] dark:border-[#263834] shadow-xs">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 gap-2.5 sm:gap-3">
+            {CATEGORIES.map((cat) => (
+              <Link
+                key={cat.id}
+                href={`/explore?category=${cat.id}`}
+                className="p-2.5 rounded-2xl bg-[#F7F7F4]/80 dark:bg-[#1C2B27]/50 hover:bg-[#E6F1ED] dark:hover:bg-[#1C2B27] transition-all flex items-center gap-2.5 group text-start"
+              >
+                <div className="p-2 rounded-xl bg-white dark:bg-[#15201D] text-[#176B5B] dark:text-[#2DD4BF] group-hover:scale-105 transition-transform shrink-0 shadow-2xs">
+                  {categoryIconMap[cat.id] || <FolderOpen className="w-4 h-4" />}
+                </div>
+                <div className="min-w-0">
+                  <p className="font-bold text-xs text-[#18201D] dark:text-white group-hover:text-[#176B5B] dark:group-hover:text-[#2DD4BF] transition-colors truncate">
+                    {t('cat.' + cat.id) || cat.label}
+                  </p>
+                  <p className="text-[10px] text-[#66706B] dark:text-[#94A39D] truncate hidden sm:block">
+                    {language === 'en' ? (CATEGORY_DESCRIPTIONS_EN[cat.id] || cat.description) : cat.description}
+                  </p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ========================================================
+          6. RECENT FOUND ITEMS FEED
+      ======================================================== */}
+      <section className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-base sm:text-lg font-black text-[#18201D] dark:text-white">
+              {language === 'en' ? 'Recently Found Belongings' : 'أحدث المعثورات المدرسية'}
+            </h2>
+            <p className="text-xs text-[#66706B] dark:text-[#94A39D]">
+              {language === 'en' ? 'Items found across school premises waiting for owners' : 'أغراض تم تسليمها وتوثيقها بانتظار أصحابها'}
+            </p>
+          </div>
+          <Link href="/explore" className="text-xs font-bold text-[#176B5B] dark:text-[#2DD4BF] hover:underline flex items-center gap-1 group">
+            <span>{language === 'en' ? 'View All' : 'استعراض الكل'}</span>
+            <ArrowIcon className={`w-3.5 h-3.5 transition-transform ${isRtl ? 'group-hover:-translate-x-0.5' : 'group-hover:translate-x-0.5'}`} />
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {recentFoundItems.map((item) => (
             <ItemCard key={item.id} item={item} />
           ))}

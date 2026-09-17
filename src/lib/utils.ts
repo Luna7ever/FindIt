@@ -6,15 +6,17 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 /**
- * Deterministic Arabic date formatter with fixed 'Africa/Cairo' timezone
+ * Deterministic date formatter with fixed 'Africa/Cairo' timezone
  * Eliminates hydration mismatch between SSR and client renders.
+ * Supports both Arabic ('ar') and English ('en').
  */
-export function formatArabicDate(dateStr: string): string {
+export function formatAppDate(dateStr: string, lang: 'ar' | 'en' = 'ar'): string {
   try {
     const date = new Date(dateStr);
     if (isNaN(date.getTime())) return dateStr;
 
-    const formatter = new Intl.DateTimeFormat('ar-EG', {
+    const locale = lang === 'en' ? 'en-US' : 'ar-EG';
+    const formatter = new Intl.DateTimeFormat(locale, {
       timeZone: 'Africa/Cairo',
       month: 'short',
       day: 'numeric',
@@ -27,6 +29,10 @@ export function formatArabicDate(dateStr: string): string {
   } catch {
     return dateStr;
   }
+}
+
+export function formatArabicDate(dateStr: string, lang: 'ar' | 'en' = 'ar'): string {
+  return formatAppDate(dateStr, lang);
 }
 
 export function generate4DigitPin(): string {
@@ -50,13 +56,15 @@ export function maskStudentId(id?: string): string {
 export function getPublicReporterLabel(
   role?: string,
   isLost?: boolean,
-  custody?: string
+  custody?: string,
+  lang: 'ar' | 'en' = 'ar'
 ): string {
+  const isEn = lang === 'en';
   if (role === 'admin' || custody === 'at_office') {
-    return 'أمانات إدارة المدرسة';
+    return isEn ? 'School Administration Custody' : 'أمانات إدارة المدرسة';
   }
   if (isLost) {
-    return 'طالبة في المدرسة';
+    return isEn ? 'School Student' : 'طالبة في المدرسة';
   }
-  return 'أحد الطلاب (أمانة)';
+  return isEn ? 'Fellow Student (Goodwill)' : 'أحد الطلاب (أمانة)';
 }

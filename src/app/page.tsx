@@ -8,6 +8,7 @@ import { canAccessAdmin } from '@/lib/auth/permissions';
 import { CATEGORIES } from '@/lib/constants';
 import ItemCard from '@/components/ItemCard';
 import ItemVisual from '@/components/ItemVisual';
+import InstantSearchBar from '@/components/InstantSearchBar';
 import { getLocalizedItem, getLocalizedUser, CATEGORY_DESCRIPTIONS_EN } from '@/lib/i18n/seedDataTranslations';
 import { getCampusPeriod, getCampusGreeting, getCampusAtmosphere, CampusPeriod } from '@/lib/campusSchedule';
 import { 
@@ -49,7 +50,6 @@ const categoryIconMap: Record<string, React.ReactNode> = {
 export default function HomePage() {
   const router = useRouter();
   const { items, claims, currentUser, openQRScanner, openCertificateModal, dir, language, t } = useApp();
-  const [searchQuery, setSearchQuery] = useState('');
 
   const isAdmin = canAccessAdmin(currentUser);
   const isRtl = dir === 'rtl';
@@ -101,15 +101,6 @@ export default function HomePage() {
     return items.find((i) => i.id === 'item_found_calc_lab');
   }, [items]);
 
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      router.push(`/explore?q=${encodeURIComponent(searchQuery.trim())}`);
-    } else {
-      router.push('/explore');
-    }
-  };
-
   return (
     <div className="px-4 sm:px-6 py-6 sm:py-8 space-y-7 sm:space-y-8 max-w-5xl mx-auto text-[#18201D] dark:text-[#F1F5F3]" dir={dir}>
       
@@ -150,23 +141,8 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Integrated Instant Search Bar */}
-        <form onSubmit={handleSearchSubmit} className="relative pt-1">
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={language === 'en' ? 'Search items by keyword (e.g. calculator, watch, keys)...' : 'ابحث عن أي غرض (مثل: حاسبة، نظارة، مفاتيح، حقيبة)...'}
-            className="w-full py-3.5 px-4 ps-11 bg-white dark:bg-[#15201D] border border-[#E4E7E4] dark:border-[#263834] rounded-2xl shadow-xs text-xs sm:text-sm focus:border-[#176B5B] dark:focus:border-[#2DD4BF] focus:outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500 text-[#18201D] dark:text-white"
-          />
-          <Search className="w-4 h-4 text-slate-400 absolute top-1/2 -translate-y-1/2 start-4 pointer-events-none" />
-          <button
-            type="submit"
-            className="absolute top-1/2 -translate-y-1/2 end-2 px-4 py-2 min-h-[40px] rounded-xl bg-[#176B5B] dark:bg-[#2DD4BF] text-white dark:text-slate-950 text-xs font-bold hover:bg-[#125648] dark:hover:bg-[#14B8A6] transition-colors cursor-pointer flex items-center justify-center shadow-2xs"
-          >
-            {language === 'en' ? 'Search' : 'بحث'}
-          </button>
-        </form>
+        {/* Integrated Live Interactive Instant Search Bar */}
+        <InstantSearchBar />
       </section>
 
       {/* ========================================================

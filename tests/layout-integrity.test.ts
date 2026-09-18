@@ -43,6 +43,7 @@ function renderWithContext(ui: React.ReactElement, pathname: string | null = '/'
 const appShellSource = fs.readFileSync(path.resolve(__dirname, '../src/components/AppShell.tsx'), 'utf-8');
 const homePageSource = fs.readFileSync(path.resolve(__dirname, '../src/app/page.tsx'), 'utf-8');
 const dropzoneSource = fs.readFileSync(path.resolve(__dirname, '../src/components/EdgeVisionDropzone.tsx'), 'utf-8');
+const instantSearchSource = fs.readFileSync(path.resolve(__dirname, '../src/components/InstantSearchBar.tsx'), 'utf-8');
 const myItemsPageSource = fs.readFileSync(path.resolve(__dirname, '../src/app/my-items/page.tsx'), 'utf-8');
 const globalsCssSource = fs.readFileSync(path.resolve(__dirname, '../src/app/globals.css'), 'utf-8');
 
@@ -119,9 +120,9 @@ describe('Layout Integrity, Button Presence & Ergonomics Suite', () => {
     });
 
     it('1.7 Search form on Home page contains input field and dedicated submit button', () => {
-      assert.ok(homePageSource.includes('<form onSubmit={handleSearchSubmit}'), 'Home page must have search form');
-      assert.ok(homePageSource.includes('type="submit"'), 'Search form must have submit button');
-      assert.ok(homePageSource.includes('handleSearchSubmit'), 'Search form must have submit handler');
+      assert.ok(homePageSource.includes('<InstantSearchBar'), 'Home page must render InstantSearchBar');
+      assert.ok(instantSearchSource.includes('type="submit"'), 'Search form must have submit button');
+      assert.ok(instantSearchSource.includes('handleFormSubmit'), 'Search form must have submit handler');
     });
   });
 
@@ -145,7 +146,7 @@ describe('Layout Integrity, Button Presence & Ergonomics Suite', () => {
 
     it('2.3 HomePage search submit button meets >= 40px touch target standard', () => {
       assert.ok(
-        homePageSource.includes('min-h-[40px] rounded-xl bg-[#176B5B]'),
+        instantSearchSource.includes('min-h-[40px] rounded-xl bg-[#176B5B]'),
         'Search submit button must have min-h-[40px]'
       );
     });

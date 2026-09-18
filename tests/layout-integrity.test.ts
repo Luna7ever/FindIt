@@ -64,7 +64,6 @@ describe('Layout Integrity, Button Presence & Ergonomics Suite', () => {
       assert.ok(html.includes('href="/report"'), 'Report link must exist');
       assert.ok(html.includes('href="/integrity"'), 'Integrity link must exist');
       assert.ok(html.includes('href="/activities"'), 'Activities link must exist');
-      assert.ok(html.includes('href="/moral-bank"'), 'Moral Dilemmas Bank link must exist');
       assert.ok(html.includes('href="/admin/benchmark"'), 'ISEF Benchmark link must exist');
       assert.ok(html.includes('href="/my-items"'), 'My Items link must exist');
       assert.ok(html.includes('href="/settings"'), 'Settings link must exist');

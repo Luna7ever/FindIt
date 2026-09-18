@@ -19,7 +19,6 @@ import {
   LayoutDashboard,
   Users2,
   Lock,
-  BrainCircuit,
   Award,
   Sparkles,
   Trophy,
@@ -95,7 +94,6 @@ export default function AppShell({ children }: AppShellProps) {
   const isExplore = pathname === '/explore';
   const isReport = pathname === '/report';
   const isMyItems = pathname === '/my-items' || pathname === '/profile';
-  const isMoralBank = pathname?.startsWith('/moral-bank') ?? false;
   const isIntegrity = pathname === '/integrity';
   const isActivities = pathname === '/activities';
   const isLeaderboard = pathname === '/leaderboard';
@@ -299,23 +297,6 @@ export default function AppShell({ children }: AppShellProps) {
               </span>
             </Link>
 
-            {/* Moral Dilemmas Bank */}
-            <Link
-              href="/moral-bank"
-              className={`flex items-center justify-between px-3 py-2 rounded-xl transition-all ${
-                isMoralBank
-                  ? 'bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-[#122823] dark:to-[#173830] text-[#176B5B] dark:text-[#2DD4BF] font-black border border-emerald-200 dark:border-[#1E463D] shadow-2xs'
-                  : 'text-[#66706B] dark:text-[#94A39D] hover:text-[#18201D] dark:hover:text-white hover:bg-[#F1F3F0] dark:hover:bg-[#1C2724]'
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <BrainCircuit className={`w-4 h-4 ${isMoralBank ? 'text-indigo-500 animate-pulse' : 'text-indigo-600 dark:text-indigo-400'}`} />
-                <span>{language === 'en' ? 'Moral Dilemmas Bank' : 'بنك المواقف الأخلاقية'}</span>
-              </div>
-              <span className="px-1.5 py-0.5 rounded bg-indigo-100 dark:bg-indigo-950/60 text-indigo-900 dark:text-indigo-300 text-[8px] font-black">
-                {language === 'en' ? 'AI Dilemmas' : 'مواقف'}
-              </span>
-            </Link>
 
             {/* ISEF Benchmark Link */}
             <Link

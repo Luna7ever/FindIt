@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "tsx --test tests/production-suite.test.ts tests/integrity-service.test.ts tests/leaderboard-notifications.test.ts",
+    "test": "tsx --test tests/*.test.ts",
     "dev:vinext": "vinext dev",
     "build:vinext": "vinext build",
     "deploy:cloudflare": "vinext deploy"

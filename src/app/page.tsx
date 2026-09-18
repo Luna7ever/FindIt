@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
@@ -8,7 +8,8 @@ import { canAccessAdmin } from '@/lib/auth/permissions';
 import { CATEGORIES } from '@/lib/constants';
 import ItemCard from '@/components/ItemCard';
 import ItemVisual from '@/components/ItemVisual';
-import { getLocalizedItem, CATEGORY_DESCRIPTIONS_EN } from '@/lib/i18n/seedDataTranslations';
+import { getLocalizedItem, getLocalizedUser, CATEGORY_DESCRIPTIONS_EN } from '@/lib/i18n/seedDataTranslations';
+import { getCampusPeriod, getCampusGreeting, getCampusAtmosphere, CampusPeriod } from '@/lib/campusSchedule';
 import { 
   Search, 
   PlusCircle, 
@@ -54,6 +55,36 @@ export default function HomePage() {
   const isRtl = dir === 'rtl';
   const ArrowIcon = isRtl ? ArrowLeft : ArrowRight;
 
+  // Hydration-safe campus atmosphere schedule state (deterministic morning SSR fallback)
+  const [campusPeriod, setCampusPeriod] = useState<CampusPeriod>('morning');
+  const [, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+    setCampusPeriod(getCampusPeriod(new Date()));
+    const timer = setInterval(() => {
+      setCampusPeriod(getCampusPeriod(new Date()));
+    }, 60000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const localizedUser = useMemo(() => {
+    return getLocalizedUser(currentUser, language);
+  }, [currentUser, language]);
+
+  const campusAtmosphere = useMemo(() => {
+    return getCampusAtmosphere(campusPeriod, language, isAdmin);
+  }, [campusPeriod, language, isAdmin]);
+
+  const greetingText = useMemo(() => {
+    return getCampusGreeting(
+      { name: localizedUser.name, role: currentUser.role },
+      campusPeriod,
+      language,
+      isAdmin
+    );
+  }, [localizedUser.name, currentUser.role, campusPeriod, language, isAdmin]);
+
   // Recent Items
   const recentFoundItems = useMemo(() => {
     return items
@@ -89,11 +120,8 @@ export default function HomePage() {
         <div className="space-y-2">
           <div className="flex flex-wrap items-center gap-2">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E6F1ED] dark:bg-[#122823] text-[#176B5B] dark:text-[#2DD4BF] text-xs font-bold border border-[#176B5B]/30 dark:border-[#263834]">
-              <span>
-                {isAdmin 
-                  ? (language === 'en' ? 'Welcome, Ms. Moshira (School Principal) 🏛️' : 'مرحباً، أ/ مشيرة محمد (مديرة المدرسة) 🏛️') 
-                  : (language === 'en' ? `Good day, ${currentUser.name} 👋` : `مساء الخير، ${currentUser.name} 👋`)}
-              </span>
+              <span className="w-1.5 h-1.5 rounded-full bg-[#176B5B] dark:bg-[#2DD4BF] animate-pulse shrink-0" />
+              <span>{greetingText}</span>
             </div>
 
             {isAdmin && (
@@ -134,7 +162,7 @@ export default function HomePage() {
           <Search className="w-4 h-4 text-slate-400 absolute top-1/2 -translate-y-1/2 start-4 pointer-events-none" />
           <button
             type="submit"
-            className="absolute top-1/2 -translate-y-1/2 end-2 px-4 py-2 min-h-[38px] rounded-xl bg-[#176B5B] dark:bg-[#2DD4BF] text-white dark:text-slate-950 text-xs font-bold hover:bg-[#125648] dark:hover:bg-[#14B8A6] transition-colors cursor-pointer flex items-center justify-center shadow-2xs"
+            className="absolute top-1/2 -translate-y-1/2 end-2 px-4 py-2 min-h-[40px] rounded-xl bg-[#176B5B] dark:bg-[#2DD4BF] text-white dark:text-slate-950 text-xs font-bold hover:bg-[#125648] dark:hover:bg-[#14B8A6] transition-colors cursor-pointer flex items-center justify-center shadow-2xs"
           >
             {language === 'en' ? 'Search' : 'بحث'}
           </button>
@@ -144,66 +172,83 @@ export default function HomePage() {
       {/* ========================================================
           2. DUAL ACTION HERO CARDS (فقدت شيئاً؟ / عثرت على شيء؟)
       ======================================================== */}
-      <section className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4">
-        <Link
-          href="/report?type=lost"
-          className="app-card app-card-interactive p-5 sm:p-6 border-l-4 border-l-[#D97706] bg-white dark:bg-[#15201D] flex flex-col justify-between space-y-4 group text-start"
-        >
-          <div className="flex items-start justify-between">
-            <div className="p-3 rounded-2xl bg-[#FEF3C7] dark:bg-amber-950/60 text-[#D97706] dark:text-amber-400">
-              <Search className="w-6 h-6" />
-            </div>
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#FEF3C7] dark:bg-amber-950/60 text-[#92400E] dark:text-amber-300">
-              {language === 'en' ? 'Quick Search' : 'بحث فوري'}
+      <section className="space-y-3">
+        {/* Subtle Campus Atmosphere Context Ribbon */}
+        <div className="flex flex-wrap items-center justify-between gap-2 px-1 text-xs text-[#66706B] dark:text-[#94A39D]">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <span className="text-sm select-none shrink-0" aria-hidden="true">
+              {campusAtmosphere.icon}
+            </span>
+            <span className="font-medium text-[#18201D] dark:text-[#E2E8F0] truncate">
+              {t(campusAtmosphere.awarenessKey)}
             </span>
           </div>
+          <span className="text-[10px] sm:text-[11px] font-semibold text-[#176B5B] dark:text-[#2DD4BF] bg-[#E6F1ED]/80 dark:bg-[#122823]/80 px-2 py-0.5 rounded-md border border-[#176B5B]/20 dark:border-[#263834] shrink-0">
+            {campusAtmosphere.timeBracket} · {t(campusAtmosphere.periodNameKey || 'campus_morning_period')}
+          </span>
+        </div>
 
-          <div>
-            <h2 className="text-lg font-bold text-[#18201D] dark:text-white group-hover:text-[#D97706] transition-colors">
-              {language === 'en' ? 'Lost something?' : 'فقدت شيئاً؟'}
-            </h2>
-            <p className="text-xs text-[#66706B] dark:text-[#94A39D] mt-1 leading-relaxed">
-              {language === 'en' 
-                ? 'Register your item specs and the system will match it immediately with school findings.' 
-                : 'سجّلي مواصفات غرضك وسيقوم النظام بمطابقته فوراً مع معثورات المدرسة.'}
-            </p>
-          </div>
-
-          <div className="flex items-center gap-1.5 text-xs font-bold text-[#D97706] dark:text-amber-400 pt-1">
-            <span>{language === 'en' ? 'Report Lost Item' : 'ابدئي تسجيل المفقود'}</span>
-            <ArrowIcon className={`w-3.5 h-3.5 transition-transform ${isRtl ? 'group-hover:-translate-x-1' : 'group-hover:translate-x-1'}`} />
-          </div>
-        </Link>
-
-        <Link
-          href="/report?type=found"
-          className="app-card app-card-interactive p-5 sm:p-6 border-l-4 border-l-[#059669] bg-white dark:bg-[#15201D] flex flex-col justify-between space-y-4 group text-start"
-        >
-          <div className="flex items-start justify-between">
-            <div className="p-3 rounded-2xl bg-[#D1FAE5] dark:bg-emerald-950/60 text-[#059669] dark:text-emerald-400">
-              <PlusCircle className="w-6 h-6" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4">
+          <Link
+            href="/report?type=lost"
+            className="app-card app-card-interactive p-5 sm:p-6 border-l-4 border-l-[#D97706] bg-white dark:bg-[#15201D] flex flex-col justify-between space-y-4 group text-start"
+          >
+            <div className="flex items-start justify-between">
+              <div className="p-3 rounded-2xl bg-[#FEF3C7] dark:bg-amber-950/60 text-[#D97706] dark:text-amber-400">
+                <Search className="w-6 h-6" />
+              </div>
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#FEF3C7] dark:bg-amber-950/60 text-[#92400E] dark:text-amber-300">
+                {language === 'en' ? 'Quick Search' : 'بحث فوري'}
+              </span>
             </div>
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#D1FAE5] dark:bg-emerald-950/60 text-[#065F46] dark:text-emerald-300">
-              {language === 'en' ? 'Honesty' : 'أمانة'}
-            </span>
-          </div>
 
-          <div>
-            <h2 className="text-lg font-bold text-[#18201D] dark:text-white group-hover:text-[#059669] transition-colors">
-              {language === 'en' ? 'Found something?' : 'عثرت على شيء؟'}
-            </h2>
-            <p className="text-xs text-[#66706B] dark:text-[#94A39D] mt-1 leading-relaxed">
-              {language === 'en'
-                ? 'Thank you for your honesty! Record the item with a secret question to reach the owner safely.'
-                : 'شكراً لأمانتك! وثّقي الغرض مع سؤال سري لنصل إلى صاحبه الحقيقي بأمان.'}
-            </p>
-          </div>
+            <div>
+              <h2 className="text-lg font-bold text-[#18201D] dark:text-white group-hover:text-[#D97706] transition-colors">
+                {language === 'en' ? 'Lost something?' : 'فقدت شيئاً؟'}
+              </h2>
+              <p className="text-xs text-[#66706B] dark:text-[#94A39D] mt-1 leading-relaxed">
+                {language === 'en' 
+                  ? 'Register your item specs and the system will match it immediately with school findings.' 
+                  : 'سجّلي مواصفات غرضك وسيقوم النظام بمطابقته فوراً مع معثورات المدرسة.'}
+              </p>
+            </div>
 
-          <div className="flex items-center gap-1.5 text-xs font-bold text-[#059669] dark:text-emerald-400 pt-1">
-            <span>{language === 'en' ? 'Record Found Item' : 'تسجيل الأمانة الآن'}</span>
-            <ArrowIcon className={`w-3.5 h-3.5 transition-transform ${isRtl ? 'group-hover:-translate-x-1' : 'group-hover:translate-x-1'}`} />
-          </div>
-        </Link>
+            <div className="flex items-center gap-1.5 text-xs font-bold text-[#D97706] dark:text-amber-400 pt-1">
+              <span>{language === 'en' ? 'Report Lost Item' : 'ابدئي تسجيل المفقود'}</span>
+              <ArrowIcon className={`w-3.5 h-3.5 transition-transform ${isRtl ? 'group-hover:-translate-x-1' : 'group-hover:translate-x-1'}`} />
+            </div>
+          </Link>
+
+          <Link
+            href="/report?type=found"
+            className="app-card app-card-interactive p-5 sm:p-6 border-l-4 border-l-[#059669] bg-white dark:bg-[#15201D] flex flex-col justify-between space-y-4 group text-start"
+          >
+            <div className="flex items-start justify-between">
+              <div className="p-3 rounded-2xl bg-[#D1FAE5] dark:bg-emerald-950/60 text-[#059669] dark:text-emerald-400">
+                <PlusCircle className="w-6 h-6" />
+              </div>
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#D1FAE5] dark:bg-emerald-950/60 text-[#065F46] dark:text-emerald-300">
+                {language === 'en' ? 'Honesty' : 'أمانة'}
+              </span>
+            </div>
+
+            <div>
+              <h2 className="text-lg font-bold text-[#18201D] dark:text-white group-hover:text-[#059669] transition-colors">
+                {language === 'en' ? 'Found something?' : 'عثرت على شيء؟'}
+              </h2>
+              <p className="text-xs text-[#66706B] dark:text-[#94A39D] mt-1 leading-relaxed">
+                {language === 'en'
+                  ? 'Thank you for your honesty! Record the item with a secret question to reach the owner safely.'
+                  : 'شكراً لأمانتك! وثّقي الغرض مع سؤال سري لنصل إلى صاحبه الحقيقي بأمان.'}
+              </p>
+            </div>
+
+            <div className="flex items-center gap-1.5 text-xs font-bold text-[#059669] dark:text-emerald-400 pt-1">
+              <span>{language === 'en' ? 'Record Found Item' : 'تسجيل الأمانة الآن'}</span>
+              <ArrowIcon className={`w-3.5 h-3.5 transition-transform ${isRtl ? 'group-hover:-translate-x-1' : 'group-hover:translate-x-1'}`} />
+            </div>
+          </Link>
+        </div>
       </section>
 
       {/* ========================================================

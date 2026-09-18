@@ -515,7 +515,7 @@ export default function AppShell({ children }: AppShellProps) {
           <motion.button
             whileTap={{ scale: 0.92 }}
             onClick={() => setIsDrawerOpen(true)}
-            className="w-9 h-9 rounded-xl bg-[#F1F3F0] dark:bg-[#1C2724] hover:bg-[#E6F1ED] dark:hover:bg-[#23332F] text-[#18201D] dark:text-white hover:text-[#176B5B] dark:hover:text-[#2DD4BF] flex items-center justify-center border border-[#E4E7E4] dark:border-[#2D3E3A] transition-colors cursor-pointer shadow-2xs shrink-0"
+            className="w-10 h-10 min-w-[40px] min-h-[40px] rounded-xl bg-[#F1F3F0] dark:bg-[#1C2724] hover:bg-[#E6F1ED] dark:hover:bg-[#23332F] text-[#18201D] dark:text-white hover:text-[#176B5B] dark:hover:text-[#2DD4BF] flex items-center justify-center border border-[#E4E7E4] dark:border-[#2D3E3A] transition-colors cursor-pointer shadow-2xs shrink-0"
             title={t('drawer.title')}
             aria-label={t('drawer.title')}
           >

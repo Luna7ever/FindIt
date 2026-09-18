@@ -106,3 +106,38 @@ Integrity mode: demo
 - [ ] Uploading or capturing an item image in `/report` triggers sub-second visual feature extraction and populates detected fields with an AI badge.
 - [ ] `/match/[id]` displays the Explainable AI radar/breakdown showing exact visual and textual score factors.
 - [ ] `/admin/benchmark` runs live benchmark execution and renders the Confusion Matrix and comparative scientific metrics dynamically.
+
+## 2026-09-18T18:17:00Z
+
+Ensure zero visual overlap and clutter across FindIt's layout, verify all buttons exist and are accessible on desktop and mobile, and implement the subtle Dynamic Campus Time-of-Day Atmosphere & Greeting feature cleanly on the Home page.
+
+Working directory: d:\FindIt
+Integrity mode: development
+
+## Requirements
+
+### R1. Layout Audit, Button Integrity & Zero Visual Clutter
+- Thoroughly inspect desktop and mobile layouts to guarantee that no cards, banners, or text overlap or collide with each other.
+- Verify that all essential buttons (report lost/found, search, filters, navigation, claims, admin supervisory actions, moral bank, certificates) are present, fully visible, and not hidden behind any floating docks or headers.
+- Eliminate visual clutter and excessive density, preserving comfortable whitespace, clean padding, and calm typography.
+
+### R2. Subtle Dynamic Campus Time-of-Day Atmosphere & Greeting
+- Add a gentle, time-aware campus greeting in the Home page header that naturally adapts to the school day schedule:
+  - Early Morning (Assembly & 1st Period): "صباح الهمة والنشاط ☀️"
+  - Midday / Recess (Break Time): "استراحة موفقة 🥪 — تفقدي متعلقاتك"
+  - Dismissal / Afternoon: "دمتِ بخير 🏫 — تأكدي من حقيبتك وكتبك"
+  - Evening / After School: "مساء الخير 🌙"
+- Ensure the greeting integrates seamlessly into the existing authentic dual-action banner without adding visual clutter or crowding existing elements.
+- Support smooth Arabic (RTL) and English (LTR) localization and dark/light mode (Obsidian Emerald) harmony.
+
+## Acceptance Criteria
+
+### Visual & Functional Ergonomics
+- [ ] No visual overlap or element collisions on standard laptop (1280px–1920px) and mobile screens (360px–414px).
+- [ ] All action buttons across the Home page, navigation rail, and mobile dock are visible and comfortable to tap (minimum 40px touch targets).
+- [ ] The Home page maintains a calm, breathable layout with zero crowded borders or visual noise.
+- [ ] Dynamic campus greeting displays smoothly according to client time and respects user role (Student / School Admin).
+
+### Build & Integrity Verification
+- [ ] All 116+ automated unit and stress tests pass with 0 failures (`npx tsx --test tests/*.test.ts`).
+- [ ] Next.js 16 production build (`npm run build`) compiles cleanly with Turbopack and 0 TypeScript errors.

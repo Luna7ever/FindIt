@@ -180,7 +180,7 @@ export default function MyItemsPage() {
         
         <button
           onClick={() => setActiveTab('claims')}
-          className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer ${
+          className={`flex-1 min-h-[40px] py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer ${
             activeTab === 'claims'
               ? 'bg-white dark:bg-[#1C2B27] text-[#18201D] dark:text-white shadow-2xs'
               : 'text-[#66706B] dark:text-[#94A39D] hover:text-[#18201D] dark:hover:text-white'
@@ -195,7 +195,7 @@ export default function MyItemsPage() {
 
         <button
           onClick={() => setActiveTab('lost')}
-          className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+          className={`flex-1 min-h-[40px] py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center whitespace-nowrap cursor-pointer ${
             activeTab === 'lost'
               ? 'bg-white dark:bg-[#1C2B27] text-[#D97706] dark:text-amber-400 shadow-2xs'
               : 'text-[#66706B] dark:text-[#94A39D] hover:text-[#18201D] dark:hover:text-white'
@@ -206,7 +206,7 @@ export default function MyItemsPage() {
 
         <button
           onClick={() => setActiveTab('found')}
-          className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+          className={`flex-1 min-h-[40px] py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center whitespace-nowrap cursor-pointer ${
             activeTab === 'found'
               ? 'bg-white dark:bg-[#1C2B27] text-[#059669] dark:text-emerald-400 shadow-2xs'
               : 'text-[#66706B] dark:text-[#94A39D] hover:text-[#18201D] dark:hover:text-white'
@@ -217,7 +217,7 @@ export default function MyItemsPage() {
 
         <button
           onClick={() => setActiveTab('reunited')}
-          className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+          className={`flex-1 min-h-[40px] py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center whitespace-nowrap cursor-pointer ${
             activeTab === 'reunited'
               ? 'bg-white dark:bg-[#1C2B27] text-[#4F46E5] dark:text-indigo-400 shadow-2xs'
               : 'text-[#66706B] dark:text-[#94A39D] hover:text-[#18201D] dark:hover:text-white'

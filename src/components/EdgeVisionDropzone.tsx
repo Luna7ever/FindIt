@@ -492,9 +492,10 @@ export default function EdgeVisionDropzone({
                 type="button"
                 onClick={handleClearImage}
                 title={t('report.removeImage') || (language === 'en' ? 'Remove Image' : 'إزالة الصورة')}
-                className="absolute top-1 end-1 p-1 rounded-md bg-black/70 hover:bg-black text-white transition-colors cursor-pointer"
+                aria-label={t('report.removeImage') || (language === 'en' ? 'Remove Image' : 'إزالة الصورة')}
+                className="absolute top-1 end-1 min-w-[40px] min-h-[40px] rounded-lg bg-black/70 hover:bg-black text-white transition-colors cursor-pointer flex items-center justify-center shadow-xs z-10"
               >
-                <X className="w-3 h-3" />
+                <X className="w-4 h-4" />
               </button>
             </div>
 

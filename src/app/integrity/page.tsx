@@ -136,11 +136,76 @@ function StudentIntegrityFlow() {
   const activeScenario = useMemo(() => getLocalizedScenario(rawActiveScenario, language), [rawActiveScenario, language]);
   const primaryQuestion = activeScenario.questions[0];
 
-  // Robust Audio Engine: Synthesized Chime + Real Speech Synthesis on User Action
+  // Clean text for speech synthesis to eliminate digit mispronunciation or TTS glitch
+  const cleanSpeechText = (raw: string, lang: 'ar' | 'en') => {
+    let text = raw.replace(/[«»"“”'#_]/g, ' ').trim();
+    if (lang === 'ar') {
+      text = text
+        .replace(/\b500\b/g, 'خمسمائة')
+        .replace(/\b50\b/g, 'خمسين')
+        .replace(/\b52\b/g, 'اثنين وخمسين')
+        .replace(/\b25\b/g, 'خمسة وعشرين')
+        .replace(/\b10\b/g, 'عشرة')
+        .replace(/\b5\b/g, 'خمسة')
+        .replace(/\b4\b/g, 'أربعة')
+        .replace(/\b3\b/g, 'ثلاثة')
+        .replace(/\b2\b/g, 'اثنين')
+        .replace(/\b1\b/g, 'واحد')
+        .replace(/\b0\b/g, 'صفر')
+        .replace(/[:؛\-–]/g, '، ');
+    }
+    return text;
+  };
+
+  // Soft pedagogical feedback sound for answer clicks (pure sine, gentle acoustic)
+  const playFeedbackSound = (isIdeal: boolean) => {
+    if (typeof window === 'undefined' || isAudioMuted) return;
+    try {
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      if (ctx.state === 'suspended') ctx.resume();
+      const now = ctx.currentTime;
+
+      if (isIdeal) {
+        // Uplifting gentle two-tone chime: C5 -> G5
+        [523.25, 783.99].forEach((freq, idx) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, now + idx * 0.1);
+          gain.gain.setValueAtTime(0.0001, now + idx * 0.1);
+          gain.gain.linearRampToValueAtTime(0.02, now + idx * 0.1 + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.1 + 0.35);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now + idx * 0.1);
+          osc.stop(now + idx * 0.1 + 0.4);
+        });
+      } else {
+        // Gentle mellow single tone: F4
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(349.23, now);
+        gain.gain.setValueAtTime(0.0001, now);
+        gain.gain.linearRampToValueAtTime(0.02, now + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.3);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.35);
+      }
+    } catch {
+      // Graceful fallback
+    }
+  };
+
+  // Robust Audio Engine: Warm Organic Chime + Pure Natural Speech Synthesis
   const playScenarioAudio = () => {
     if (typeof window === 'undefined') return;
 
-    // 1. Web Audio API Chime (Immediately audible from device speakers, bypasses browser voice delays)
+    // 1. Soft Warm Acoustic Chime (Pure sine, gentle attack & decay, no harsh buzz)
     try {
       const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
       if (AudioCtx) {
@@ -149,44 +214,55 @@ function StudentIntegrityFlow() {
           ctx.resume();
         }
         const now = ctx.currentTime;
-        const freqs = [523.25, 659.25, 783.99]; // C5 - E5 - G5 major cinematic chord
+        // Warm A4 major triad chime (440Hz, 554.37Hz, 659.25Hz) - gentle and acoustic
+        const freqs = [440, 554.37, 659.25];
         freqs.forEach((freq, idx) => {
           const osc = ctx.createOscillator();
           const gain = ctx.createGain();
-          osc.type = 'triangle';
-          osc.frequency.setValueAtTime(freq, now + idx * 0.08);
-          gain.gain.setValueAtTime(0.06, now + idx * 0.08);
-          gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.08 + 0.45);
+          osc.type = 'sine'; // Pure smooth sine wave (no harsh harmonics)
+          osc.frequency.setValueAtTime(freq, now + idx * 0.09);
+          gain.gain.setValueAtTime(0.0001, now + idx * 0.09);
+          gain.gain.linearRampToValueAtTime(0.025, now + idx * 0.09 + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.09 + 0.5);
           osc.connect(gain);
           gain.connect(ctx.destination);
-          osc.start(now + idx * 0.08);
-          osc.stop(now + idx * 0.08 + 0.5);
+          osc.start(now + idx * 0.09);
+          osc.stop(now + idx * 0.09 + 0.55);
         });
       }
     } catch (e) {
       console.warn('AudioContext error', e);
     }
 
-    // 2. Web Speech Synthesis for Dialogue Narration
+    // 2. Web Speech Synthesis for Dialogue Narration (Plays after gentle 220ms chime finish)
     if (!isAudioMuted && 'speechSynthesis' in window) {
       window.speechSynthesis.cancel();
       window.speechSynthesis.resume();
 
-      const textToSpeak = activeScenario?.dilemmaQuote ? activeScenario.dilemmaQuote.replace(/[«»"]/g, '') : '';
+      const rawQuote = activeScenario?.dilemmaQuote || '';
+      const textToSpeak = cleanSpeechText(rawQuote, language);
+
       if (textToSpeak) {
-        const utterance = new SpeechSynthesisUtterance(textToSpeak);
-        utterance.lang = language === 'en' ? 'en-US' : 'ar-SA';
-        utterance.rate = 0.92;
-        utterance.pitch = 1.05;
+        setTimeout(() => {
+          if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+          const utterance = new SpeechSynthesisUtterance(textToSpeak);
+          utterance.lang = language === 'en' ? 'en-US' : 'ar-SA';
+          utterance.rate = 0.90;
+          utterance.pitch = 1.0;
 
-        // Pick best matching voice
-        const voices = window.speechSynthesis.getVoices();
-        const suitedVoice = voices.find((v) => language === 'en' ? v.lang.startsWith('en') : (v.lang.startsWith('ar') || v.name.includes('Arabic')));
-        if (suitedVoice) {
-          utterance.voice = suitedVoice;
-        }
+          // Pick best matching natural voice
+          const voices = window.speechSynthesis.getVoices();
+          const suitedVoice = voices.find((v) => 
+            language === 'en' 
+              ? v.lang.startsWith('en') 
+              : (v.lang.startsWith('ar') || v.name.includes('Arabic') || v.name.includes('Maged') || v.name.includes('Tarik') || v.name.includes('Hoda'))
+          );
+          if (suitedVoice) {
+            utterance.voice = suitedVoice;
+          }
 
-        window.speechSynthesis.speak(utterance);
+          window.speechSynthesis.speak(utterance);
+        }, 220);
       }
     }
   };
@@ -255,6 +331,9 @@ function StudentIntegrityFlow() {
 
     setSelectedOptionId(option.id);
     const isIdeal = option.score === 100;
+
+    // Play gentle auditory feedback sound
+    playFeedbackSound(isIdeal);
 
     // Save answer state for continuous flow
     setAnswersMap((prev) => ({

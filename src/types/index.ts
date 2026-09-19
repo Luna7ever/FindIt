@@ -185,6 +185,13 @@ export interface ScenarioVisualDetails {
   sceneImageUrl?: string;
 }
 
+export interface CharacterSpeaker {
+  name: string;
+  role: string;
+  avatarEmoji: string;
+  emotion: string;
+}
+
 export interface IntegrityScenario {
   id: string;
   title: string;
@@ -194,6 +201,7 @@ export interface IntegrityScenario {
   dilemmaQuote: string;
   cognitiveBasis: string;
   visualDetails: ScenarioVisualDetails;
+  characterSpeaker?: CharacterSpeaker;
   locationId: SchoolLocationId;
   videoUrl?: string;
   duration: string;

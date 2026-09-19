@@ -117,26 +117,45 @@ export default function LeaderboardPage() {
 
           {/* Action buttons */}
           <div className="flex items-center justify-center gap-3 pt-2 flex-wrap">
-            <button
-              onClick={() => openCertificateModal(currentUser)}
-              className="px-4 py-2.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-extrabold flex items-center gap-2 shadow-lg shadow-amber-500/20 transition-all hover:scale-105 cursor-pointer"
-            >
-              <Printer className="w-4 h-4" />
-              <span>{t('leaderboard.myCertBtn')}</span>
-            </button>
+            {currentUser.role !== 'admin' ? (
+              <button
+                onClick={() => openCertificateModal(currentUser)}
+                className="px-4 py-2.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-extrabold flex items-center gap-2 shadow-lg shadow-amber-500/20 transition-all hover:scale-105 cursor-pointer"
+              >
+                <Printer className="w-4 h-4" />
+                <span>{t('leaderboard.myCertBtn')}</span>
+              </button>
+            ) : (
+              <button
+                onClick={() => typeof window !== 'undefined' && window.print()}
+                className="px-4 py-2.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-extrabold flex items-center gap-2 shadow-lg shadow-amber-500/20 transition-all hover:scale-105 cursor-pointer"
+              >
+                <Printer className="w-4 h-4" />
+                <span>{language === 'en' ? 'Print School Honor Roll 🖨️' : 'طباعة لوحة الشرف المدرسية 🖨️'}</span>
+              </button>
+            )}
             <Link
               href="/activities"
               className="px-4 py-2.5 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-black flex items-center gap-1.5 transition-all shadow-md hover:scale-105"
             >
               <Award className="w-4 h-4" />
-              <span>{language === 'en' ? '🌟 School Quests' : '🌟 مهام وتطوع المدرسة'}</span>
+              <span>{language === 'en' ? (currentUser.role === 'admin' ? '🏛️ School Activities' : '🌟 School Quests') : (currentUser.role === 'admin' ? '🏛️ دليل الأنشطة المدرسية' : '🌟 مهام وتطوع المدرسة')}</span>
             </Link>
             <Link
               href="/integrity"
               className="px-4 py-2.5 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-bold flex items-center gap-1.5 transition-all backdrop-blur-md"
             >
-              <Sparkles className="w-4 h-4 text-emerald-300" />
-              <span>{t('leaderboard.challengeBtn')}</span>
+              {currentUser.role === 'admin' ? (
+                <>
+                  <ShieldCheck className="w-4 h-4 text-emerald-300" />
+                  <span>{language === 'en' ? 'Integrity Standards (Supervision)' : 'معايير النزاهة (إشراف)'}</span>
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-4 h-4 text-emerald-300" />
+                  <span>{t('leaderboard.challengeBtn')}</span>
+                </>
+              )}
             </Link>
           </div>
         </div>

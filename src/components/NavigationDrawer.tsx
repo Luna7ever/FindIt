@@ -336,7 +336,9 @@ export default function NavigationDrawer({
                           </span>
                         </div>
                         <p className="text-[10px] text-[#66706B] dark:text-[#94A39D]">
-                          {language === 'en' ? 'Quests & Volunteer Badges' : 'مهام وتحديات الأمانة والتطوع'}
+                          {isAdminUser 
+                            ? (language === 'en' ? 'Supervise & Approve Initiatives' : 'متابعة واعتماد مبادرات الطالبات')
+                            : (language === 'en' ? 'Quests & Volunteer Badges' : 'مهام وتحديات الأمانة والتطوع')}
                         </p>
                       </div>
                     </div>
@@ -393,36 +395,40 @@ export default function NavigationDrawer({
                       <div className="text-start">
                         <span className="text-xs font-bold leading-tight block">{t('nav.leaderboard')}</span>
                         <p className="text-[10px] text-[#66706B] dark:text-[#94A39D]">
-                          {t('settings.publicLeaderboardDesc')}
+                          {isAdminUser
+                            ? (language === 'en' ? 'School Honor Roll & Student Rankings' : 'لوحة شرف المدرسة وتكريم الطالبات')
+                            : t('settings.publicLeaderboardDesc')}
                         </p>
                       </div>
                     </div>
                     <ArrowIcon className="w-4 h-4 text-[#66706B] dark:text-[#94A39D]" />
                   </Link>
 
-                  {/* Official Certificate Action */}
-                  <button
-                    onClick={() => handleAction(onOpenCertificateModal)}
-                    className="w-full flex items-center justify-between p-2.5 rounded-2xl bg-white dark:bg-[#15201D] border border-[#E4E7E4] dark:border-[#263834] hover:bg-[#F8FAF9] dark:hover:bg-[#1C2724] transition-all text-start cursor-pointer"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-xl bg-teal-100 dark:bg-teal-950/60 text-teal-800 dark:text-teal-300 flex items-center justify-center">
-                        <Award className="w-4.5 h-4.5" />
-                      </div>
-                      <div className="text-start">
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-xs font-bold leading-tight text-[#18201D] dark:text-white">{t('drawer.certificate')}</span>
-                          <span className="px-1.5 py-0.5 rounded bg-teal-100 dark:bg-teal-950/60 text-teal-900 dark:text-teal-300 text-[8px] font-black">
-                            {t('drawer.verified')}
-                          </span>
+                  {/* Official Certificate Action (Available for Students Only) */}
+                  {!isAdminUser && (
+                    <button
+                      onClick={() => handleAction(onOpenCertificateModal)}
+                      className="w-full flex items-center justify-between p-2.5 rounded-2xl bg-white dark:bg-[#15201D] border border-[#E4E7E4] dark:border-[#263834] hover:bg-[#F8FAF9] dark:hover:bg-[#1C2724] transition-all text-start cursor-pointer"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-xl bg-teal-100 dark:bg-teal-950/60 text-teal-800 dark:text-teal-300 flex items-center justify-center">
+                          <Award className="w-4.5 h-4.5" />
                         </div>
-                        <p className="text-[10px] text-[#66706B] dark:text-[#94A39D]">
-                          {t('drawer.certificateDesc')}
-                        </p>
+                        <div className="text-start">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-xs font-bold leading-tight text-[#18201D] dark:text-white">{t('drawer.certificate')}</span>
+                            <span className="px-1.5 py-0.5 rounded bg-teal-100 dark:bg-teal-950/60 text-teal-900 dark:text-teal-300 text-[8px] font-black">
+                              {t('drawer.verified')}
+                            </span>
+                          </div>
+                          <p className="text-[10px] text-[#66706B] dark:text-[#94A39D]">
+                            {t('drawer.certificateDesc')}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                    <ArrowIcon className="w-4 h-4 text-[#66706B] dark:text-[#94A39D]" />
-                  </button>
+                      <ArrowIcon className="w-4 h-4 text-[#66706B] dark:text-[#94A39D]" />
+                    </button>
+                  )}
 
                 </div>
               </div>

@@ -6,6 +6,7 @@ import { INTEGRITY_SCENARIOS, SCHOOL_LOCATIONS } from '@/lib/constants';
 import { getLocalizedScenario } from '@/lib/i18n/scenarios';
 import { IntegrityOption, TrustTier } from '@/types';
 import TrustBadge from '@/components/TrustBadge';
+import AdminIntegritySupervisionView from '@/components/AdminIntegritySupervisionView';
 import confetti from 'canvas-confetti';
 import Link from 'next/link';
 import { 
@@ -97,7 +98,7 @@ function CircularScoreGauge({ score, size = 110, language = 'ar' }: { score: num
   );
 }
 
-export default function IntegrityPage() {
+function StudentIntegrityFlow() {
   const { 
     currentUser, 
     currentUserTrustTier, 
@@ -987,4 +988,14 @@ export default function IntegrityPage() {
 
     </div>
   );
+}
+
+export default function IntegrityPage() {
+  const { currentUser } = useApp();
+
+  if (currentUser.role === 'admin') {
+    return <AdminIntegritySupervisionView />;
+  }
+
+  return <StudentIntegrityFlow />;
 }

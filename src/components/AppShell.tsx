@@ -125,11 +125,11 @@ export default function AppShell({ children }: AppShellProps) {
     },
     { 
       id: 'integrity', 
-      label: t('nav.integrity'), 
+      label: isAdminUser ? (language === 'en' ? 'Standards' : 'معايير النزاهة') : t('nav.integrity'), 
       href: '/integrity', 
-      icon: Sparkles, 
+      icon: isAdminUser ? ShieldCheck : Sparkles, 
       isActive: isIntegrity,
-      hasPulse: true
+      hasPulse: !isAdminUser
     },
     { 
       id: 'my-items', 
@@ -271,11 +271,19 @@ export default function AppShell({ children }: AppShellProps) {
               }`}
             >
               <div className="flex items-center gap-3">
-                <Sparkles className={`w-4 h-4 ${isIntegrity ? 'text-amber-500 animate-pulse' : 'text-teal-600 dark:text-teal-400'}`} />
-                <span>{isAdminUser ? (language === 'en' ? 'Integrity Standards (Supervision)' : 'معايير ومواقف النزاهة (إشراف)') : t('nav.integrity')}</span>
+                {isAdminUser ? (
+                  <ShieldCheck className={`w-4 h-4 ${isIntegrity ? 'text-[#176B5B] dark:text-[#2DD4BF]' : 'text-teal-600 dark:text-teal-400'}`} />
+                ) : (
+                  <Sparkles className={`w-4 h-4 ${isIntegrity ? 'text-amber-500 animate-pulse' : 'text-teal-600 dark:text-teal-400'}`} />
+                )}
+                <span>{isAdminUser ? (language === 'en' ? 'Integrity Standards (Supervision)' : 'معايير النزاهة (إشراف)') : t('nav.integrity')}</span>
               </div>
-              <span className="px-1.5 py-0.5 rounded-md bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 text-[9px] font-black">
-                {isAdminUser ? (language === 'en' ? 'Supervisory' : 'إشراف') : t('nav.weeklyChallenge')}
+              <span className={`px-1.5 py-0.5 rounded-md text-[9px] font-black ${
+                isAdminUser
+                  ? 'bg-teal-100 dark:bg-teal-950/60 text-teal-900 dark:text-teal-300'
+                  : 'bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300'
+              }`}>
+                {isAdminUser ? (language === 'en' ? 'Supervisory' : 'إشراف إداري') : t('nav.weeklyChallenge')}
               </span>
             </Link>
 

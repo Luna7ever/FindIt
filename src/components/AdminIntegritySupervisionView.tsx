@@ -23,7 +23,8 @@ import {
   BarChart3,
   ChevronDown,
   ChevronUp,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Compass
 } from 'lucide-react';
 
 export default function AdminIntegritySupervisionView() {
@@ -227,8 +228,30 @@ export default function AdminIntegritySupervisionView() {
 
                 {/* Expanded Details Body */}
                 {isExpanded && (
-                  <div className="px-4 sm:px-6 pb-5 pt-1 space-y-4 border-t border-[#F1F3F0] dark:border-[#1F2B28] bg-slate-50/50 dark:bg-[#121917]/50 text-xs">
+                  <div className="px-4 sm:px-6 pb-5 pt-2 space-y-4 border-t border-[#F1F3F0] dark:border-[#1F2B28] bg-slate-50/50 dark:bg-[#121917]/50 text-xs">
                     
+                    {/* Visual AI Simulation Snapshot Banner */}
+                    {localized.visualDetails.sceneImageUrl && (
+                      <div className="relative aspect-[16/7] w-full rounded-2xl overflow-hidden border border-[#E4E7E4] dark:border-[#263834] shadow-xs group">
+                        <img
+                          src={localized.visualDetails.sceneImageUrl}
+                          alt={localized.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent flex items-end p-3.5 text-white">
+                          <div className="flex items-center justify-between w-full text-xs flex-wrap gap-2">
+                            <span className="font-bold flex items-center gap-1.5 text-[11px] bg-black/60 backdrop-blur-sm px-2.5 py-1 rounded-lg border border-white/20">
+                              <Compass className="w-3.5 h-3.5 text-[#34D399]" />
+                              {localized.visualDetails.locationBadge} — {localized.visualDetails.roomLabel}
+                            </span>
+                            <span className="text-[10px] text-amber-300 font-black bg-black/60 backdrop-blur-sm px-2.5 py-1 rounded-lg border border-amber-500/30">
+                              {localized.visualDetails.promptNote}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     {/* Dilemma Summary */}
                     <div className="space-y-1">
                       <span className="font-bold text-[#66706B] dark:text-[#94A39D] block">

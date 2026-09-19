@@ -131,7 +131,6 @@ function StudentIntegrityFlow() {
     return () => clearInterval(timer);
   }, []);
 
-  // Video timeline progress loop simulation
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (isPlaying) {
@@ -148,6 +147,51 @@ function StudentIntegrityFlow() {
   const rawActiveScenario = INTEGRITY_SCENARIOS[activeScenarioIndex] || INTEGRITY_SCENARIOS[0];
   const activeScenario = useMemo(() => getLocalizedScenario(rawActiveScenario, language), [rawActiveScenario, language]);
   const primaryQuestion = activeScenario.questions[0];
+
+  // Real browser speech synthesis audio playback for realistic dialogue narration
+  useEffect(() => {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+
+    if (!isPlaying || isAudioMuted) {
+      window.speechSynthesis.cancel();
+      return;
+    }
+
+    window.speechSynthesis.cancel();
+    const textToSpeak = activeScenario?.dilemmaQuote ? activeScenario.dilemmaQuote.replace(/[«»"]/g, '') : '';
+    if (!textToSpeak) return;
+
+    const utterance = new SpeechSynthesisUtterance(textToSpeak);
+    utterance.lang = language === 'en' ? 'en-US' : 'ar-SA';
+    utterance.rate = 0.95;
+    utterance.pitch = 1.0;
+
+    // Optional ambient sound effect using Web Audio API
+    try {
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      if (AudioCtx) {
+        const ctx = new AudioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(320, ctx.currentTime);
+        gain.gain.setValueAtTime(0.03, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.35);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.35);
+      }
+    } catch {
+      // Audio context might be restricted before user interaction
+    }
+
+    window.speechSynthesis.speak(utterance);
+
+    return () => {
+      window.speechSynthesis.cancel();
+    };
+  }, [isPlaying, isAudioMuted, activeScenario?.dilemmaQuote, language]);
 
   // Sync state when active scenario changes
   useEffect(() => {
@@ -714,9 +758,23 @@ function StudentIntegrityFlow() {
               </div>
 
               {/* Visual Scene Screen */}
-              <div className="relative aspect-[16/10] w-full bg-gradient-to-b from-slate-950 via-[#0B132B] to-[#0A0F1D] flex flex-col justify-between p-3.5 overflow-hidden">
-                {/* Procedural Thematic Grid Pattern */}
-                <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#176B5B_1.5px,transparent_1.5px)] [background-size:16px_16px]" />
+              <div className="relative aspect-[16/10] w-full bg-slate-950 flex flex-col justify-between p-3.5 overflow-hidden">
+                {/* Photorealistic AI Scene Background with Ken Burns Pan/Zoom Animation */}
+                {activeScenario.visualDetails.sceneImageUrl ? (
+                  <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                    <img
+                      src={activeScenario.visualDetails.sceneImageUrl}
+                      alt={activeScenario.title}
+                      className={`w-full h-full object-cover transition-transform duration-[14000ms] ease-out ${
+                        isPlaying ? 'scale-120 -translate-y-3 translate-x-1' : 'scale-100 translate-y-0 translate-x-0'
+                      }`}
+                    />
+                    {/* Cinematic Dark Gradient Vignette Overlay for UI Clarity */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-slate-950/70" />
+                  </div>
+                ) : (
+                  <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#176B5B_1.5px,transparent_1.5px)] [background-size:16px_16px]" />
+                )}
                 
                 {/* Viewfinder Camera Brackets */}
                 <div className="absolute top-2 left-2 w-4 h-4 border-t-2 border-l-2 border-emerald-500/40 pointer-events-none" />

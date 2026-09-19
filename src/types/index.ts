@@ -182,6 +182,7 @@ export interface ScenarioVisualDetails {
   locationBadge: string;
   roomLabel: string;
   promptNote: string;
+  sceneImageUrl?: string;
 }
 
 export interface IntegrityScenario {

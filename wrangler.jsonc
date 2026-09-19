@@ -9,5 +9,12 @@
   "assets": {
     "directory": "dist/client",
     "binding": "ASSETS"
-  }
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "findit-db",
+      "database_id": "findit-production-db"
+    }
+  ]
 }

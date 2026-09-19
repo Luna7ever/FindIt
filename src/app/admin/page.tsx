@@ -35,7 +35,9 @@ import {
   Clock,
   Cpu,
   HeartHandshake,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Cloud,
+  RefreshCw
 } from 'lucide-react';
 
 export default function AdminPage() {
@@ -55,6 +57,8 @@ export default function AdminPage() {
     approveSchoolActivity,
     rejectSchoolActivity,
     addToast,
+    syncStatus,
+    triggerCloudSync,
     dir,
     isRtl,
     language,
@@ -266,8 +270,25 @@ export default function AdminPage() {
           </p>
         </div>
 
-        {/* Top Control Buttons (Export Excel + Print) */}
-        <div className="flex items-center gap-2 w-full sm:w-auto">
+        {/* Top Control Buttons (Cloudflare Sync + Export Excel + Print) */}
+        <div className="flex items-center flex-wrap sm:flex-nowrap gap-2 w-full sm:w-auto">
+          <button
+            onClick={triggerCloudSync}
+            disabled={syncStatus.state === 'syncing'}
+            className="flex-1 sm:flex-none py-2 px-3.5 rounded-xl bg-sky-50 dark:bg-sky-950/60 hover:bg-sky-100 dark:hover:bg-sky-900/60 text-sky-800 dark:text-sky-300 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer shrink-0 border border-sky-200 dark:border-sky-800 shadow-2xs"
+            title={language === 'en' ? 'Sync data with Cloudflare D1 Edge Database' : 'مزامنة البيانات فورياً مع قاعدة بيانات Cloudflare D1 السحابية'}
+          >
+            <Cloud className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
+            <span>
+              {syncStatus.state === 'syncing' 
+                ? (language === 'en' ? 'Syncing...' : 'جارِ المزامنة...')
+                : syncStatus.state === 'offline'
+                ? (language === 'en' ? 'Offline (Local-First)' : 'محلي (أوفلاين)')
+                : (language === 'en' ? 'Cloudflare D1' : 'سحابة D1')}
+            </span>
+            <RefreshCw className={`w-3 h-3 text-sky-500 ${syncStatus.state === 'syncing' ? 'animate-spin' : ''}`} />
+          </button>
+
           <button
             onClick={handleExportCSV}
             className="flex-1 sm:flex-none py-2 px-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer shrink-0 border border-emerald-200 dark:border-emerald-800 shadow-2xs"

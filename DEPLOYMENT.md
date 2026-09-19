@@ -43,6 +43,27 @@ npx wrangler deploy
 
 ---
 
+## 3. Cloudflare D1 Database Setup
+
+FindIt uses **Cloudflare D1** (Serverless Edge SQL) for multi-tenant synchronization.
+
+### Create D1 Database:
+```bash
+npx wrangler d1 create findit-db
+```
+*(Copy the generated `database_id` into `wrangler.jsonc` under `d1_databases`)*
+
+### Run Database Migrations (Schema initialization):
+```bash
+# For local edge emulation:
+npx wrangler d1 execute findit-db --local --file=migrations/0001_initial_schema.sql
+
+# For production Cloudflare network:
+npx wrangler d1 execute findit-db --remote --file=migrations/0001_initial_schema.sql
+```
+
+---
+
 ## 3. Firebase Deployment
 
 To deploy security rules and compound indexes to Firebase:

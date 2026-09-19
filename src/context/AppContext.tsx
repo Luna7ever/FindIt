@@ -36,6 +36,7 @@ import { IntegrityService, EvaluationResult, ScenarioStatus } from '@/services/i
 import { canAccessAdmin, canDirectReunite, canDeleteItem } from '@/lib/auth/permissions';
 import { AuthorizationError, NotFoundError } from '@/lib/errors/AppError';
 import { logger } from '@/lib/logging/logger';
+import { cloudflareSyncService, SyncStatus } from '@/services/cloudflareSyncService';
 
 interface AppContextType {
   items: Item[];
@@ -96,6 +97,10 @@ interface AppContextType {
   t: (key: string) => string;
   dir: 'rtl' | 'ltr';
   isRtl: boolean;
+
+  // Cloudflare D1 Synchronization
+  syncStatus: SyncStatus;
+  triggerCloudSync: () => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -123,6 +128,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [isCertificateModalOpen, setIsCertificateModalOpen] = useState(false);
   const [certificateUser, setCertificateUser] = useState<UserProfile | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [syncStatus, setSyncStatus] = useState<SyncStatus>(cloudflareSyncService.getStatus());
+
+  // Subscribe to Cloudflare Sync Status
+  useEffect(() => {
+    return cloudflareSyncService.subscribe(setSyncStatus);
+  }, []);
 
   // Language & Theme State
   const [language, setLanguageState] = useState<AppLanguage>('ar');
@@ -333,6 +344,60 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       logger.error('Error saving current user to localStorage', { error: String(e) });
     }
   }, [currentUser, isLoaded]);
+
+  // Background Cloudflare D1 Sync Effect
+  useEffect(() => {
+    if (!isLoaded) return;
+    cloudflareSyncService.scheduleSync(() => ({
+      items,
+      claims,
+      activitySubmissions,
+    }));
+  }, [items, claims, activitySubmissions, isLoaded]);
+
+  // Explicit Cloud Sync Action
+  const triggerCloudSync = useCallback(async () => {
+    setToasts((prev) => [
+      ...prev,
+      {
+        id: `toast-${Date.now()}`,
+        title: language === 'ar' ? 'جارِ المزامنة السحابية...' : 'Syncing with Cloudflare...',
+        message: language === 'ar' ? 'يتم الاتصال بقاعدة بيانات Cloudflare D1 Edge' : 'Connecting to Cloudflare D1 Edge database',
+        type: 'info',
+        duration: 2500,
+      },
+    ]);
+
+    const result = await cloudflareSyncService.syncToCloudflare({
+      items,
+      claims,
+      activitySubmissions,
+    });
+
+    if (result.success) {
+      setToasts((prev) => [
+        ...prev,
+        {
+          id: `toast-${Date.now()}`,
+          title: language === 'ar' ? 'اكتملت المزامنة السحابية' : 'Cloud Sync Complete',
+          message: language === 'ar' ? 'تمت مزامنة جميع البيانات بنجاح مع Cloudflare D1' : 'All data successfully synchronized with Cloudflare D1',
+          type: 'success',
+          duration: 4000,
+        },
+      ]);
+    } else {
+      setToasts((prev) => [
+        ...prev,
+        {
+          id: `toast-${Date.now()}`,
+          title: language === 'ar' ? 'نمط عدم الاتصال (Local-First)' : 'Offline Local-First Mode',
+          message: language === 'ar' ? 'التطبيق يعمل محلياً بكفاءة 100%، وستتم المزامنة تلقائياً عند الاتصال' : 'Working locally at 100% efficiency, will sync when connection is restored',
+          type: 'warning',
+          duration: 4000,
+        },
+      ]);
+    }
+  }, [items, claims, activitySubmissions, language]);
 
   const setCurrentUserById = useCallback((userId: string) => {
     const user = users.find((u) => u.id === userId);
@@ -895,6 +960,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         t,
         dir,
         isRtl: dir === 'rtl',
+
+        // Cloudflare D1 Sync
+        syncStatus,
+        triggerCloudSync,
       }}
     >
       {children}

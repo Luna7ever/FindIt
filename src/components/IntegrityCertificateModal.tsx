@@ -79,7 +79,7 @@ export default function IntegrityCertificateModal({
 
   const tierLabel = language === 'en' ? tierTitleEn : tierTitleAr;
 
-  const serialNo = `EG-MOE-FINDIT-2026-${targetUser.id.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6) || '78421'}`;
+  const serialNo = `EG-MOE-ETHOS-2026-${targetUser.id.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6) || '78421'}`;
   
   const currentDateAr = new Date().toLocaleDateString('ar-EG', {
     year: 'numeric',
@@ -123,8 +123,8 @@ export default function IntegrityCertificateModal({
     if (navigator.share) {
       try {
         await navigator.share({
-          title: language === 'en' ? `School Integrity Certificate for ${targetUser.name}` : `شهادة شكر وتقدير معتمدة للطالب/ة ${targetUser.name}`,
-          text: language === 'en' ? `Proud to earn the School Integrity Certificate with ${points} points on FindIt!` : `فخورة بحصولي على شهادة سفير الأمانة المدرسية برصيد ${points} نقطة عبر منظومة FindIt!`,
+          title: language === 'en' ? `School Integrity & Participation Certificate for ${targetUser.name}` : `شهادة شكر وتقدير معتمدة في النزاهة والمشاركة المدرسية للطالب/ة ${targetUser.name}`,
+          text: language === 'en' ? `Proud to earn the School Integrity Certificate with ${points} points on ETHOS!` : `فخورة بحصولي على شهادة سفير النزاهة والمشاركة المدرسية برصيد ${points} نقطة عبر منظومة ETHOS!`,
           url: window.location.href,
         });
       } catch {
@@ -369,8 +369,8 @@ export default function IntegrityCertificateModal({
               ======================================================== */}
               <p className="text-[11px] sm:text-xs text-slate-800 dark:text-slate-200 max-w-2xl mx-auto leading-relaxed text-center font-medium px-2">
                 {language === 'en'
-                  ? `Conferred in high appreciation of exemplary moral integrity, voluntary dedication, and noble conduct in returning lost school belongings on FindIt.`
-                  : `تَقْدِيرًا لِسُلُوكِهِ / سُلُوكِهَا الخُلُقِيِّ الرَّفِيعِ، وَالأَمَانَةِ المِثَالِيَّةِ فِي حِفْظِ وَرَدِّ الأَمَانَاتِ المَدْرَسِيَّةِ، وَالمُشَارَكَةِ الإِيجَابِيَّةِ الفَاعِلَةِ فِي بِيئَتِنَا التَّعْلِيمِيَّةِ.`}
+                  ? `Conferred in high appreciation of exemplary moral integrity, voluntary dedication, and noble conduct on ETHOS.`
+                  : `تَقْدِيرًا لِسُلُوكِهِ / سُلُوكِهَا الخُلُقِيِّ الرَّفِيعِ، وَالأَمَانَةِ المِثَالِيَّةِ فِي حِفْظِ وَرَدِّ الأَمَانَاتِ المَدْرَسِيَّةِ، وَالمُشَارَكَةِ الإِيجَابِيَّةِ الفَاعِلَةِ فِي بِيئَتِنَا التَّعْلِيمِيَّةِ عَبْرَ مَنْظُومَةِ ETHOS.`}
               </p>
 
               {/* ========================================================
@@ -408,7 +408,7 @@ export default function IntegrityCertificateModal({
                     لجنة رعاية الأمانات المدرسية
                   </p>
                   <div className="font-serif italic text-xs text-blue-900 dark:text-blue-300 font-semibold py-0.5 select-none opacity-80">
-                    FindIt Committee
+                    ETHOS Committee
                   </div>
                   <p className="text-[8px] text-slate-400 font-mono">{currentDateAr}</p>
                 </div>
@@ -467,8 +467,8 @@ export default function IntegrityCertificateModal({
                   </div>
                   <p className="text-start leading-tight">
                     {language === 'en'
-                      ? 'Scan QR to verify on FindIt School Platform'
-                      : 'امسح الرمز للتحقق من صحة الوثيقة عبر منظومة FindIt المدرسية'}
+                      ? 'Scan QR to verify on ETHOS School Platform'
+                      : 'امسح الرمز للتحقق من صحة الوثيقة عبر منظومة ETHOS المدرسية'}
                   </p>
                 </div>
 

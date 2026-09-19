@@ -23,12 +23,12 @@ const appBaseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.findit-us.wor
 export const metadata: Metadata = {
   metadataBase: new URL(appBaseUrl),
   title: {
-    default: 'FindIt | مفقودات المدرسة — فُقِدَ. تَطابَقَ. عَادَ.',
-    template: '%s | FindIt',
+    default: 'ETHOS | منظومة النزاهة والمشاركة المدرسية وحفظ الأمانات',
+    template: '%s | ETHOS',
   },
-  description: 'منصة ذكية لمساعدة طلاب المدرسة على العثور على المفقودات واستردادها بأمان.',
-  applicationName: 'FindIt',
-  authors: [{ name: 'FindIt School Team' }],
+  description: 'المنظومة السلوكية الذكية لترسيخ قيم النزاهة والمشاركة المدرسية وحفظ الأمانات واسترداد المقتنيات.',
+  applicationName: 'ETHOS',
+  authors: [{ name: 'ETHOS Team' }],
   manifest: '/manifest.json',
   icons: {
     icon: '/icon.svg',
@@ -36,21 +36,21 @@ export const metadata: Metadata = {
     apple: '/icon.svg',
   },
   openGraph: {
-    title: 'FindIt | مفقودات المدرسة',
-    description: 'منصة ذكية لمساعدة طلاب المدرسة على العثور على المفقودات واستردادها بأمان.',
+    title: 'ETHOS | منظومة النزاهة والمشاركة المدرسية',
+    description: 'المنظومة السلوكية الذكية لترسيخ قيم النزاهة والمشاركة المدرسية وحفظ الأمانات.',
     url: appBaseUrl,
-    siteName: 'FindIt',
-    locale: 'ar_SA',
+    siteName: 'ETHOS',
+    locale: 'ar_EG',
     type: 'website',
   },
   twitter: {
     card: 'summary',
-    title: 'FindIt | مفقودات المدرسة',
-    description: 'منصة ذكية لمساعدة طلاب المدرسة على العثور على المفقودات واستردادها بأمان.',
+    title: 'ETHOS | منظومة النزاهة والمشاركة المدرسية',
+    description: 'المنظومة السلوكية الذكية لترسيخ قيم النزاهة والمشاركة المدرسية وحفظ الأمانات.',
   },
   appleWebApp: {
     capable: true,
-    title: 'FindIt',
+    title: 'ETHOS',
     statusBarStyle: 'default',
   },
 };

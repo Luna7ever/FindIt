@@ -74,9 +74,9 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-slate-100 dark:border-[#23332F] pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-slate-400 dark:text-[#94A39D]/70">
-          <p>{language === 'en' ? '© 2026 FindIt - Official School Lost & Found System.' : '© 2026 FindIt - منظومة المفقودات المدرسية المعتمدة.'}</p>
+          <p>{language === 'en' ? '© 2026 ETHOS - Official School Integrity & Custody System.' : '© 2026 ETHOS - منظومة النزاهة والمشاركة المدرسية وحفظ الأمانات.'}</p>
           <div className="flex items-center gap-1">
-            <span>{language === 'en' ? 'Designed to foster honesty & cooperation' : 'صُممت لتعزيز الأمانة والتعاون'}</span>
+            <span>{language === 'en' ? 'Designed to foster honesty & civic participation' : 'صُممت لتعزيز النزاهة والمشاركة المدرسية'}</span>
             <Heart className="w-3 h-3 text-rose-500 fill-rose-500" />
           </div>
         </div>

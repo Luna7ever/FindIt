@@ -59,12 +59,12 @@ export default function Navbar() {
               <div className="w-8 h-8 rounded-lg bg-emerald-700 flex items-center justify-center shadow-sm group-hover:bg-emerald-800 transition-colors">
                 <Compass className="w-4 h-4 text-white" />
               </div>
-              <div className="flex flex-col text-right">
-                <span className="font-bold text-base tracking-tight text-slate-900 leading-none">
-                  FindIt
+              <div className="flex flex-col text-start">
+                <span className="font-black text-base tracking-tight text-slate-900 dark:text-white leading-none">
+                  ETHOS
                 </span>
-                <span className="text-[10px] text-slate-500 font-medium mt-1">
-                  أمانات المدرسة
+                <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium mt-1">
+                  النزاهة والمشاركة المدرسية
                 </span>
               </div>
             </Link>

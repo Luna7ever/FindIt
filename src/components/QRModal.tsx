@@ -85,7 +85,7 @@ export default function QRModal({ isOpen, onClose }: QRModalProps) {
           <div className="bg-[#F1F3F0] dark:bg-[#1C2B27] rounded-2xl p-4 flex flex-col items-center text-center border border-[#E4E7E4] dark:border-[#2D3E3A]">
             <div className="w-full flex items-center justify-between border-b border-[#E4E7E4] dark:border-[#2D3E3A] pb-2 mb-2">
               <span className="text-[10px] font-bold text-[#66706B] dark:text-[#94A39D] tracking-wider uppercase">
-                FindIt POINT
+                ETHOS POINT
               </span>
               <span className="text-[10px] text-[#176B5B] dark:text-[#2DD4BF] font-bold">
                 {language === 'en' ? 'Custody Station' : 'نقطة أمانات'}

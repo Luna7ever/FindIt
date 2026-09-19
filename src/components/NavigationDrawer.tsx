@@ -612,7 +612,7 @@ export default function NavigationDrawer({
             <div className="px-5 py-3 border-t border-[#E4E7E4] dark:border-[#23332F] bg-slate-50 dark:bg-[#182220] flex items-center justify-between shrink-0 text-[11px] text-[#66706B] dark:text-[#94A39D]">
               <div className="flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="font-mono font-semibold">FindIt v4.3</span>
+                <span className="font-mono font-semibold">ETHOS v4.3</span>
               </div>
               <button
                 onClick={handleResetData}

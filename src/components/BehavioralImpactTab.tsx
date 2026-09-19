@@ -222,7 +222,7 @@ export default function BehavioralImpactTab() {
             <div className="flex items-center gap-2">
               <BarChart3 className="w-4 h-4 text-[#176B5B] dark:text-[#2DD4BF]" />
               <h3 className="text-sm sm:text-base font-black text-[#18201D] dark:text-white">
-                {isEn ? 'Empirical Field Metrics Comparison (Before vs After FindIt)' : 'المقارنة الميدانية التجريبية (قبل المنظومة مقابل بعدها)'}
+                {isEn ? 'Empirical Field Metrics Comparison (Before vs After ETHOS)' : 'المقارنة الميدانية التجريبية (قبل المنظومة مقابل بعد ETHOS)'}
               </h3>
             </div>
             <span className="text-[11px] font-mono text-[#66706B] dark:text-[#94A39D]">
@@ -265,7 +265,7 @@ export default function BehavioralImpactTab() {
 
                     <div className="p-3 rounded-xl bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/50">
                       <span className="text-[10px] text-emerald-800 dark:text-emerald-300 block font-sans font-bold">
-                        {isEn ? 'After (FindIt Nudge)' : 'بعد المنظومة (سلوك الأمانة)'}
+                        {isEn ? 'After (ETHOS Nudge)' : 'بعد المنظومة (سلوك الأمانة والمشاركة)'}
                       </span>
                       <span className={`text-base sm:text-lg font-black mt-0.5 block ${m.color}`}>
                         {m.after}

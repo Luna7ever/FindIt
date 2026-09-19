@@ -229,7 +229,7 @@ export default function AdminPage() {
       const link = document.createElement('a');
       const dateSlug = new Date().toISOString().slice(0, 10);
       link.href = url;
-      link.setAttribute('download', `FindIt_School_Ledger_${dateSlug}.csv`);
+      link.setAttribute('download', `ETHOS_School_Ledger_${dateSlug}.csv`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -1215,7 +1215,7 @@ export default function AdminPage() {
                 className="bg-white dark:bg-[#15201D] border-2 border-dashed border-[#CBD3CE] dark:border-[#263834] rounded-2xl p-4 sm:p-5 flex flex-col items-center text-center space-y-3 shadow-2xs"
               >
                 <div className="w-full flex items-center justify-between border-b border-[#E4E7E4] dark:border-[#23332F] pb-2">
-                  <span className="font-black text-xs text-[#18201D] dark:text-white">FindIt SCHOOL</span>
+                  <span className="font-black text-xs text-[#18201D] dark:text-white">ETHOS SCHOOL</span>
                   <span className="text-[10px] text-[#176B5B] dark:text-emerald-400 font-bold">{t('admin.schoolSmartPoint')}</span>
                 </div>
 

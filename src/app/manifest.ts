@@ -2,9 +2,9 @@ import { MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'FindIt — منصة مفقودات المدرسة',
-    short_name: 'FindIt',
-    description: 'منصة ذكية لمساعدة طلاب المدرسة على العثور على المفقودات واستردادها بأمان.',
+    name: 'ETHOS — منظومة النزاهة والمشاركة المدرسية وحفظ الأمانات',
+    short_name: 'ETHOS',
+    description: 'المنظومة السلوكية الذكية لترسيخ قيم النزاهة والمشاركة المدرسية وحفظ الأمانات.',
     start_url: '/',
     display: 'standalone',
     background_color: '#F7F7F4',

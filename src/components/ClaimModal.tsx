@@ -23,7 +23,7 @@ interface ClaimModalProps {
 
 export default function ClaimModal({ itemId, isOpen, onClose }: ClaimModalProps) {
   const router = useRouter();
-  const { getItemById, submitClaim, getClaimForCurrentUserAndItem, dir, language } = useApp();
+  const { getItemById, submitClaim, getClaimForCurrentUserAndItem, dir, language, addToast } = useApp();
 
   const [answerText, setAnswerText] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
@@ -40,7 +40,11 @@ export default function ClaimModal({ itemId, isOpen, onClose }: ClaimModalProps)
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!answerText.trim()) {
-      alert(language === 'en' ? 'Please enter the answer to the secret question' : 'يرجى كتابة الإجابة على السؤال السري');
+      addToast(
+        language === 'en' ? 'Answer Required' : 'إجابة السؤال مطلوبة',
+        language === 'en' ? 'Please enter the answer to the secret question' : 'يرجى كتابة الإجابة على السؤال السري',
+        'warning'
+      );
       return;
     }
 

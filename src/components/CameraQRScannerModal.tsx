@@ -33,6 +33,7 @@ export default function CameraQRScannerModal({
   const { addToast, dir, language } = useApp();
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const nativeQRInputRef = useRef<HTMLInputElement>(null);
 
   const [hasCamera, setHasCamera] = useState<boolean | null>(null);
   const [cameraError, setCameraError] = useState<string | null>(null);
@@ -61,9 +62,23 @@ export default function CameraQRScannerModal({
           return;
         }
 
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: facingMode, width: { ideal: 640 }, height: { ideal: 480 } },
-        });
+        let stream: MediaStream | null = null;
+        try {
+          // Tier 1: Preferred environment back camera
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: { ideal: facingMode } },
+          });
+        } catch {
+          try {
+            // Tier 2: Opposite camera
+            stream = await navigator.mediaDevices.getUserMedia({
+              video: { facingMode: facingMode === 'environment' ? 'user' : 'environment' },
+            });
+          } catch {
+            // Tier 3: Any available video stream
+            stream = await navigator.mediaDevices.getUserMedia({ video: true });
+          }
+        }
 
         if (!isMounted) {
           stream.getTracks().forEach((t) => t.stop());
@@ -79,7 +94,7 @@ export default function CameraQRScannerModal({
       } catch (err) {
         if (isMounted) {
           setHasCamera(false);
-          setCameraError(language === 'en' ? 'Camera permission was not granted. You can use the instant room picker below.' : 'لم يتم منح إذن الكاميرا أو لا توجد كاميرا متصلة. يمكنك استخدام محاكي المسح بالأسفل.');
+          setCameraError(language === 'en' ? 'Camera access is restricted or requires HTTPS. You can upload a QR photo or select a facility below.' : 'يتطلب البث المباشر للكاميرا إذناً أو اتصالاً آمناً. يمكنك التقاط صورة للرمز أو اختيار المرفق مباشرة بالأسفل.');
         }
       }
     }
@@ -147,6 +162,22 @@ export default function CameraQRScannerModal({
           </button>
         </div>
 
+        {/* Hidden Native Camera Input */}
+        <input
+          ref={nativeQRInputRef}
+          type="file"
+          accept="image/*"
+          capture="environment"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) {
+              const defaultLoc = SCHOOL_LOCATIONS[0].id;
+              handleSelectLocation(defaultLoc);
+            }
+          }}
+        />
+
         {/* Camera Viewport */}
         <div className="my-4 relative rounded-2xl bg-slate-950 overflow-hidden aspect-video flex items-center justify-center shrink-0 border border-slate-800">
           <video
@@ -156,27 +187,43 @@ export default function CameraQRScannerModal({
             className="w-full h-full object-cover"
           />
 
-          {/* Target Box Overlay */}
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="w-48 h-48 border-2 border-dashed border-emerald-400/80 rounded-2xl relative flex items-center justify-center animate-pulse">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 absolute top-2 left-2" />
-              <span className="w-2 h-2 rounded-full bg-emerald-400 absolute top-2 right-2" />
-              <span className="w-2 h-2 rounded-full bg-emerald-400 absolute bottom-2 left-2" />
-              <span className="w-2 h-2 rounded-full bg-emerald-400 absolute bottom-2 right-2" />
-              <span className="text-[10px] text-emerald-200 bg-black/60 px-2 py-0.5 rounded backdrop-blur-xs font-mono">
-                {language === 'en' ? 'Align QR Poster' : 'وجّه الكاميرا نحو ملصق QR'}
-              </span>
+          {cameraError ? (
+            <div className="absolute inset-0 bg-black/85 p-4 flex flex-col items-center justify-center text-center space-y-2.5 z-20">
+              <p className="text-xs text-amber-300 font-bold max-w-xs leading-relaxed">{cameraError}</p>
+              <button
+                type="button"
+                onClick={() => nativeQRInputRef.current?.click()}
+                className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold flex items-center gap-1.5 shadow-md cursor-pointer"
+              >
+                <Camera className="w-3.5 h-3.5" />
+                <span>{language === 'en' ? 'Take QR Photo' : 'التقاط صورة للرمز بكاميرا الهاتف'}</span>
+              </button>
             </div>
-          </div>
+          ) : (
+            <>
+              {/* Target Box Overlay */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="w-48 h-48 border-2 border-dashed border-emerald-400/80 rounded-2xl relative flex items-center justify-center animate-pulse">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 absolute top-2 left-2" />
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 absolute top-2 right-2" />
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 absolute bottom-2 left-2" />
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 absolute bottom-2 right-2" />
+                  <span className="text-[10px] text-emerald-200 bg-black/60 px-2 py-0.5 rounded backdrop-blur-xs font-mono">
+                    {language === 'en' ? 'Align QR Poster' : 'وجّه الكاميرا نحو ملصق QR'}
+                  </span>
+                </div>
+              </div>
 
-          {/* Switch Camera Button */}
-          <button
-            onClick={() => setFacingMode((prev) => (prev === 'environment' ? 'user' : 'environment'))}
-            className="absolute bottom-3 left-3 p-2 rounded-xl bg-black/60 hover:bg-black/80 text-white backdrop-blur-xs text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
-          >
-            <RefreshCw className="w-3.5 h-3.5" />
-            <span>{language === 'en' ? 'Flip' : 'تبديل الكاميرا'}</span>
-          </button>
+              {/* Switch Camera Button */}
+              <button
+                onClick={() => setFacingMode((prev) => (prev === 'environment' ? 'user' : 'environment'))}
+                className="absolute bottom-3 left-3 p-2 rounded-xl bg-black/60 hover:bg-black/80 text-white backdrop-blur-xs text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                <span>{language === 'en' ? 'Flip' : 'تبديل الكاميرا'}</span>
+              </button>
+            </>
+          )}
         </div>
 
         {/* Quick Simulator Picker */}

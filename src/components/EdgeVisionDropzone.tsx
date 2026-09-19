@@ -9,6 +9,7 @@ import {
   DemoPreset,
 } from '@/lib/vision/edgeVisionEngine';
 import { getLocalizedColorName } from '@/lib/i18n/seedDataTranslations';
+import { compressImage } from '@/lib/utils';
 import {
   Camera,
   UploadCloud,
@@ -47,7 +48,7 @@ export default function EdgeVisionDropzone({
   onImageSelected,
   currentImageUrl,
 }: EdgeVisionDropzoneProps) {
-  const { language, t, dir } = useApp();
+  const { language, t, dir, addToast } = useApp();
   const [previewUrl, setPreviewUrl] = useState<string>(currentImageUrl || '');
   const [features, setFeatures] = useState<VisualFeatures | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -59,6 +60,7 @@ export default function EdgeVisionDropzone({
   const [activePresetId, setActivePresetId] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const nativeCameraInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
@@ -80,21 +82,41 @@ export default function EdgeVisionDropzone({
 
   const handleStartCamera = async () => {
     setCameraError(null);
+
+    // If mediaDevices is restricted (e.g. non-HTTPS on mobile), immediately open native OS camera
+    if (typeof navigator === 'undefined' || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      if (nativeCameraInputRef.current) {
+        nativeCameraInputRef.current.click();
+        return;
+      }
+      setCameraError(
+        language === 'en'
+          ? 'Direct camera access is not supported in this browser. Please use file upload or demo presets.'
+          : 'المتصفح لا يدعم الوصول المباشر للكاميرا. يرجى رفع ملف أو استخدام النماذج التجريبية.'
+      );
+      return;
+    }
+
     setIsCameraActive(true);
 
     try {
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        setCameraError(
-          language === 'en'
-            ? 'Direct camera access is not supported in this browser. Please use file upload or demo presets.'
-            : 'المتصفح لا يدعم الوصول المباشر للكاميرا. يرجى رفع ملف أو استخدام النماذج التجريبية.'
-        );
-        return;
+      let stream: MediaStream | null = null;
+      try {
+        // Preferred environment back camera
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 } },
+        });
+      } catch {
+        try {
+          // Front camera fallback
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: 'user' },
+          });
+        } catch {
+          // Any available video camera fallback
+          stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        }
       }
-
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment', width: { ideal: 640 }, height: { ideal: 480 } },
-      });
 
       streamRef.current = stream;
       if (videoRef.current) {
@@ -102,11 +124,17 @@ export default function EdgeVisionDropzone({
         videoRef.current.play().catch(() => {});
       }
     } catch {
-      setCameraError(
-        language === 'en'
-          ? 'Camera permission denied or camera unavailable. Please upload a photo or pick a demo preset.'
-          : 'لم يتم منح إذن الكاميرا أو لا توجد كاميرا متصلة. يرجى رفع صورة أو اختيار نموذج تجريبي.'
-      );
+      // If WebRTC fails or is denied by OS, seamlessly trigger native mobile camera
+      if (nativeCameraInputRef.current) {
+        nativeCameraInputRef.current.click();
+        setIsCameraActive(false);
+      } else {
+        setCameraError(
+          language === 'en'
+            ? 'Camera permission denied or camera unavailable. Please upload a photo or pick a demo preset.'
+            : 'لم يتم منح إذن الكاميرا أو لا توجد كاميرا متصلة. يرجى رفع صورة أو اختيار نموذج تجريبي.'
+        );
+      }
     }
   };
 
@@ -138,8 +166,11 @@ export default function EdgeVisionDropzone({
       const rawDataUrl = snapCanvas.toDataURL('image/jpeg', 0.85);
       handleStopCamera();
 
+      // Compress snapshot to ~100KB max 1024px to prevent memory exhaustion
+      const compressedDataUrl = await compressImage(rawDataUrl, 1024, 0.82);
+
       // Process through edge vision engine
-      const { dataUrl, features: extracted } = await processBrowserImage(rawDataUrl);
+      const { dataUrl, features: extracted } = await processBrowserImage(compressedDataUrl);
       const elapsed = Math.round(performance.now() - startTime);
       setLatencyMs(elapsed || 18);
 
@@ -160,14 +191,22 @@ export default function EdgeVisionDropzone({
 
   const handleFileChange = async (file: File) => {
     if (!file || !file.type.startsWith('image/')) {
-      alert(language === 'en' ? 'Please select an image file' : 'يرجى اختيار ملف صورة صالح');
+      addToast(
+        language === 'en' ? 'Invalid File' : 'ملف غير صالح',
+        language === 'en' ? 'Please select an image file' : 'يرجى اختيار ملف صورة صالح',
+        'warning'
+      );
       return;
     }
 
     try {
       setIsProcessing(true);
       const startTime = performance.now();
-      const { dataUrl, features: extracted } = await processBrowserImage(file);
+
+      // Automatic client-side canvas compression: drops 5MB photos to ~100KB
+      const compressedDataUrl = await compressImage(file, 1024, 0.82);
+
+      const { dataUrl, features: extracted } = await processBrowserImage(compressedDataUrl);
       const elapsed = Math.round(performance.now() - startTime);
       setLatencyMs(elapsed || 22);
 
@@ -363,15 +402,28 @@ export default function EdgeVisionDropzone({
           />
 
           {cameraError && (
-            <div className="absolute inset-0 bg-black/85 p-4 flex flex-col items-center justify-center text-center space-y-3">
+            <div className="absolute inset-0 bg-black/85 p-4 flex flex-col items-center justify-center text-center space-y-3 z-20">
               <p className="text-xs text-rose-300 font-bold max-w-xs">{cameraError}</p>
-              <button
-                type="button"
-                onClick={handleStopCamera}
-                className="px-3 py-1.5 rounded-xl bg-white/20 hover:bg-white/30 text-white text-xs font-bold"
-              >
-                {t('report.cameraClose') || (language === 'en' ? 'Close Camera' : 'إلغاء الكاميرا')}
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleStopCamera();
+                    nativeCameraInputRef.current?.click();
+                  }}
+                  className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-md"
+                >
+                  <Camera className="w-3.5 h-3.5" />
+                  <span>{language === 'en' ? 'Open Phone Camera' : 'فتح كاميرا الهاتف مباشرة'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleStopCamera}
+                  className="px-3 py-2 rounded-xl bg-white/20 hover:bg-white/30 text-white text-xs font-bold cursor-pointer"
+                >
+                  {t('report.cameraClose') || (language === 'en' ? 'Cancel' : 'إلغاء')}
+                </button>
+              </div>
             </div>
           )}
 
@@ -423,6 +475,18 @@ export default function EdgeVisionDropzone({
             ref={fileInputRef}
             type="file"
             accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) handleFileChange(file);
+            }}
+          />
+
+          <input
+            ref={nativeCameraInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
             className="hidden"
             onChange={(e) => {
               const file = e.target.files?.[0];

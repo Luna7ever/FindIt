@@ -46,7 +46,7 @@ const categoryIcons: Record<string, React.ReactNode> = {
 function ReportWizardContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { addItem, openQRScanner, dir, language, t } = useApp();
+  const { addItem, openQRScanner, dir, language, t, addToast } = useApp();
 
   const initialType: ItemType = searchParams.get('type') === 'found' ? 'found' : 'lost';
   const initialLocation = (searchParams.get('locationId') || searchParams.get('location')) as SchoolLocationId || 'science_lab';
@@ -112,7 +112,11 @@ function ReportWizardContent() {
   const handleNext = () => {
     if (currentStep === 1) {
       if (!title.trim()) {
-        alert(language === 'en' ? 'Please enter item title to continue' : 'يرجى إدخال اسم أو عنوان الغرض للمتابعة');
+        addToast(
+          language === 'en' ? 'Item Title Required' : 'اسم الغرض مطلوب',
+          language === 'en' ? 'Please enter item title to continue' : 'يرجى إدخال اسم أو عنوان الغرض للمتابعة',
+          'warning'
+        );
         return;
       }
       setCurrentStep(2);
@@ -130,7 +134,11 @@ function ReportWizardContent() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !description.trim()) {
-      alert(language === 'en' ? 'Please fill all required fields' : 'يرجى إكمال البيانات المطلوبة');
+      addToast(
+        language === 'en' ? 'Missing Details' : 'بيانات مطلوبة',
+        language === 'en' ? 'Please fill all required fields' : 'يرجى إكمال البيانات المطلوبة (اسم ووصف الغرض)',
+        'warning'
+      );
       return;
     }
 
@@ -154,9 +162,19 @@ function ReportWizardContent() {
         custody: type === 'found' ? custody : undefined,
       });
 
+      addToast(
+        language === 'en' ? 'Report Published!' : 'تم نشر البلاغ بنجاح!',
+        language === 'en' ? 'Your item has been recorded in the school registry' : 'تم توثيق الغرض في سجل المدرسة وبدء المطابقة الذكية',
+        'success'
+      );
+
       router.push(`/items/${newItem.id}`);
     } catch (err) {
-      alert(err instanceof Error ? err.message : (language === 'en' ? 'An error occurred while saving the report' : 'حدث خطأ أثناء حفظ البلاغ'));
+      addToast(
+        language === 'en' ? 'Error' : 'خطأ في الحفظ',
+        err instanceof Error ? err.message : (language === 'en' ? 'An error occurred while saving the report' : 'حدث خطأ أثناء حفظ البلاغ'),
+        'error'
+      );
       setIsSubmitting(false);
     }
   };

@@ -46,7 +46,7 @@ export default function ActivitySubmissionModal({
   onClose,
   onSuccess,
 }: ActivitySubmissionModalProps) {
-  const { submitSchoolActivity, language, dir, t } = useApp();
+  const { submitSchoolActivity, language, dir, t, addToast } = useApp();
   const [notes, setNotes] = useState('');
   const [selectedLocation, setSelectedLocation] = useState<SchoolLocationId | ''>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -59,15 +59,17 @@ export default function ActivitySubmissionModal({
   const triggerCelebration = () => {
     try {
       confetti({
-        particleCount: 60,
+        particleCount: 80,
         spread: 70,
         origin: { y: 0.6 },
-        colors: ['#2DD4BF', '#10B981', '#F59E0B', '#3B82F6'],
+        colors: ['#176B5B', '#2DD4BF', '#F59E0B', '#10B981'],
       });
-    } catch {}
+    } catch {
+      // Confetti fallback
+    }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
@@ -77,6 +79,17 @@ export default function ActivitySubmissionModal({
       
       if (res.isInstant) {
         triggerCelebration();
+        addToast(
+          language === 'en' ? 'Quest Completed!' : 'تم إنجاز المهمة بنجاح!',
+          language === 'en' ? 'Goodwill points added to your profile' : 'تمت إضافة نقاط المبادرة لرصيدك فورياً',
+          'success'
+        );
+      } else {
+        addToast(
+          language === 'en' ? 'Submission Received' : 'تم استلام التوثيق',
+          language === 'en' ? 'Sent to administration for approval' : 'تم إرسال التوثيق للإدارة للمراجعة والاعتماد',
+          'info'
+        );
       }
 
       setIsSubmitting(false);
@@ -84,7 +97,11 @@ export default function ActivitySubmissionModal({
       if (onSuccess) onSuccess();
     } catch (err) {
       setIsSubmitting(false);
-      alert(err instanceof Error ? err.message : 'حدث خطأ أثناء حفظ التوثيق');
+      addToast(
+        language === 'en' ? 'Submission Error' : 'خطأ في الحفظ',
+        err instanceof Error ? err.message : (language === 'en' ? 'An error occurred while saving documentation' : 'حدث خطأ أثناء حفظ التوثيق'),
+        'error'
+      );
     }
   };
 

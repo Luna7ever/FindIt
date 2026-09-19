@@ -290,11 +290,8 @@ export default function IntegrityCertificateModal({
                   </p>
                 </div>
 
-                {/* Center: Basmala & Golden Eagle Emblem */}
+                {/* Center: Golden Eagle Emblem */}
                 <div className="flex flex-col items-center justify-center shrink-0 px-2">
-                  <p className="font-serif text-[11px] sm:text-xs font-bold text-amber-900 dark:text-amber-300 tracking-wider mb-0.5">
-                    بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
-                  </p>
                   <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-gradient-to-tr from-amber-500 to-amber-600 p-0.5 shadow-xs flex items-center justify-center">
                     <div className="w-full h-full rounded-full bg-[#FAF8F2] dark:bg-[#121B18] flex items-center justify-center p-1">
                       <svg viewBox="0 0 64 64" className="w-6 h-6 text-amber-600 dark:text-amber-400 fill-current" aria-label="Eagle of Egypt">

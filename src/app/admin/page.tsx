@@ -54,6 +54,7 @@ export default function AdminPage() {
     activitySubmissions,
     approveSchoolActivity,
     rejectSchoolActivity,
+    addToast,
     dir,
     isRtl,
     language,
@@ -174,6 +175,79 @@ export default function AdminPage() {
   const pendingClaims = claims.filter((c) => c.status === 'pending');
   const pendingActivities = (activitySubmissions || []).filter((a) => a.status === 'pending');
 
+  // Dynamic CSV/Excel Export Handler
+  const handleExportCSV = () => {
+    try {
+      // Simplified headers as selected
+      const headers = language === 'en'
+        ? ['#', 'Item Title', 'Location', 'Date', 'Type', 'Status & Custody', 'Reporter']
+        : ['م', 'اسم الغرض / الأمانة', 'المكان', 'التاريخ', 'نوع البلاغ', 'حالة الأمانة والتسليم', 'المبلّغ'];
+
+      const rows = filteredItems.map((item, idx) => {
+        const loc = SCHOOL_LOCATIONS.find((l) => l.id === item.locationId);
+        const locName = loc ? getLocalizedLocation(loc, language).name : (item.locationId || '-');
+        const formattedDate = formatAppDate(item.createdAt, language);
+        
+        const typeStr = item.type === 'found' 
+          ? (language === 'en' ? 'Found Item' : 'أمانة معثور عليها')
+          : (language === 'en' ? 'Lost Item' : 'غرض مفقود');
+
+        let statusStr = '';
+        if (item.status === 'reunited') {
+          statusStr = language === 'en' ? 'Reunited with Owner' : 'تم التسليم للمالك';
+        } else if (item.custody === 'at_office') {
+          statusStr = language === 'en' ? 'At Lost & Found Office' : 'في مكتب الأمانات المدرسية';
+        } else {
+          statusStr = language === 'en' ? 'Pending Handover' : 'قيد المتابعة / مع الطالب';
+        }
+
+        const reporterName = item.reportedBy?.name || (language === 'en' ? 'Anonymous' : 'مجهول');
+
+        return [
+          idx + 1,
+          `"${(item.title || '').replace(/"/g, '""')}"`,
+          `"${locName.replace(/"/g, '""')}"`,
+          `"${formattedDate.replace(/"/g, '""')}"`,
+          `"${typeStr.replace(/"/g, '""')}"`,
+          `"${statusStr.replace(/"/g, '""')}"`,
+          `"${reporterName.replace(/"/g, '""')}"`
+        ];
+      });
+
+      // UTF-8 BOM (\uFEFF) ensures Arabic renders accurately without mojibake in Microsoft Excel
+      const csvContent = '\uFEFF' + [
+        headers.join(','),
+        ...rows.map(row => row.join(','))
+      ].join('\r\n');
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      const dateSlug = new Date().toISOString().slice(0, 10);
+      link.href = url;
+      link.setAttribute('download', `FindIt_School_Ledger_${dateSlug}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      addToast(
+        language === 'en' ? 'Export Successful' : 'تم التصدير بنجاح',
+        language === 'en' 
+          ? `Exported ${filteredItems.length} records to Excel/CSV` 
+          : `تم تحميل كشف رسمي يضم (${filteredItems.length}) سجلاً بصيغة Excel/CSV`,
+        'success'
+      );
+    } catch (err) {
+      console.error('Failed to export CSV', err);
+      addToast(
+        language === 'en' ? 'Export Failed' : 'فشل التصدير',
+        language === 'en' ? 'An error occurred while generating CSV' : 'حدث خطأ أثناء إنشاء ملف الإكسيل',
+        'error'
+      );
+    }
+  };
+
   return (
     <div className="px-3 sm:px-6 py-4 sm:py-8 max-w-5xl mx-auto space-y-4 sm:space-y-6 w-full text-start font-sans" dir={dir}>
       
@@ -192,13 +266,25 @@ export default function AdminPage() {
           </p>
         </div>
 
-        <button
-          onClick={() => window.print()}
-          className="w-full sm:w-auto py-2 px-3.5 rounded-xl bg-[#F1F3F0] dark:bg-[#1C2B27] hover:bg-[#E4E7E4] dark:hover:bg-[#23332F] text-[#18201D] dark:text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer shrink-0 border border-transparent dark:border-[#2D3E3A]"
-        >
-          <Printer className="w-3.5 h-3.5" />
-          <span>{t('admin.printReport')}</span>
-        </button>
+        {/* Top Control Buttons (Export Excel + Print) */}
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <button
+            onClick={handleExportCSV}
+            className="flex-1 sm:flex-none py-2 px-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer shrink-0 border border-emerald-200 dark:border-emerald-800 shadow-2xs"
+            title={language === 'en' ? 'Export filtered items to Excel/CSV' : 'تصدير الكشف المعروض إلى ملف إكسيل معتمد'}
+          >
+            <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+            <span>{language === 'en' ? 'Export to Excel' : 'تصدير كشف (Excel)'}</span>
+          </button>
+
+          <button
+            onClick={() => window.print()}
+            className="flex-1 sm:flex-none py-2 px-3.5 rounded-xl bg-[#F1F3F0] dark:bg-[#1C2B27] hover:bg-[#E4E7E4] dark:hover:bg-[#23332F] text-[#18201D] dark:text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer shrink-0 border border-transparent dark:border-[#2D3E3A]"
+          >
+            <Printer className="w-3.5 h-3.5" />
+            <span>{t('admin.printReport')}</span>
+          </button>
+        </div>
       </div>
 
       {/* Action Toast Alert */}

@@ -784,14 +784,20 @@ function StudentIntegrityFlow() {
 
                 {/* Live Stream / Scenario Note Badge */}
                 <div className="relative z-10 flex items-center justify-between text-[10px]">
-                  <span className="px-2.5 py-1 rounded-lg bg-black/75 text-amber-300 font-bold border border-amber-500/30 flex items-center gap-1.5 shadow-sm">
+                  <span className="px-2.5 py-1 rounded-lg bg-black/80 text-amber-300 font-bold border border-amber-500/30 flex items-center gap-1.5 shadow-sm">
                     <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
                     <span>{activeScenario.visualDetails.promptNote}</span>
                   </span>
                   
-                  <div className="flex items-center gap-1.5 font-mono text-[9px] text-emerald-400 bg-slate-900/80 px-2 py-0.5 rounded border border-emerald-500/20">
-                    <Radio className="w-2.5 h-2.5 animate-pulse text-rose-400" />
-                    <span>REC 1080p</span>
+                  <div className="flex items-center gap-2">
+                    <span className="px-2 py-0.5 rounded-full bg-emerald-950/80 text-emerald-300 border border-emerald-500/30 text-[9px] font-bold flex items-center gap-1">
+                      <Sparkles className="w-2.5 h-2.5 text-amber-400" />
+                      <span>{language === 'en' ? 'AI Human Simulation' : 'محاكاة واقعية بالذكاء الاصطناعي'}</span>
+                    </span>
+                    <div className="flex items-center gap-1 font-mono text-[9px] text-emerald-400 bg-slate-900/90 px-2 py-0.5 rounded border border-emerald-500/20">
+                      <Radio className="w-2.5 h-2.5 animate-pulse text-rose-400" />
+                      <span>REC 1080p</span>
+                    </div>
                   </div>
                 </div>
 
@@ -823,9 +829,14 @@ function StudentIntegrityFlow() {
                 {/* Dilemma Quote Box inside Cinema Screen */}
                 <div className="relative z-10 space-y-1.5">
                   <div className="p-2.5 rounded-xl bg-slate-950/85 backdrop-blur-md border border-white/20 text-center shadow-md">
-                    <span className="text-[9px] font-bold text-slate-400 block mb-0.5">
-                      {language === 'en' ? '💬 Simulated Dialogue:' : '💬 الحوار المحاكي للموقف:'}
-                    </span>
+                    <div className="flex items-center justify-between gap-2 mb-0.5">
+                      <span className="text-[9px] font-bold text-slate-400">
+                        {language === 'en' ? '💬 Simulated Dialogue:' : '💬 الحوار المحاكي للموقف:'}
+                      </span>
+                      <span className="text-[9px] text-emerald-400/90 font-medium">
+                        {language === 'en' ? '🎭 Realistic AI Actor' : '🎭 شخصية ممثل بالذكاء الاصطناعي'}
+                      </span>
+                    </div>
                     <p className="text-[11px] sm:text-xs font-black text-amber-200 leading-snug">
                       «{activeScenario.dilemmaQuote}»
                     </p>

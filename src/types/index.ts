@@ -123,6 +123,7 @@ export interface Item {
   status: ItemStatus;
   reportedBy: UserProfile;
   createdAt: string;
+  updatedAt?: string;
   reunitedAt?: string;
   matchedItemId?: string;
   visualFeatures?: VisualFeatures;
@@ -137,6 +138,7 @@ export interface Claim {
   status: ClaimStatus;
   handoverPin: string;
   createdAt: string;
+  updatedAt?: string;
   approvedAt?: string;
   completedAt?: string;
 }

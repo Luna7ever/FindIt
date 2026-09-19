@@ -345,7 +345,65 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   }, [currentUser, isLoaded]);
 
-  // Background Cloudflare D1 Sync Effect
+  // Bidirectional Pull & Merge from Cloudflare
+  const pullAndMerge = useCallback(async () => {
+    try {
+      const remoteData = await cloudflareSyncService.pullFromCloudflare();
+      if (!remoteData) return;
+
+      if (Array.isArray(remoteData.items) && remoteData.items.length > 0) {
+        setItems((current) => {
+          const map = new Map(current.map((item) => [item.id, item]));
+          let hasNew = false;
+          remoteData.items!.forEach((remoteItem) => {
+            const existing = map.get(remoteItem.id);
+            if (!existing) {
+              map.set(remoteItem.id, remoteItem);
+              hasNew = true;
+            } else if (remoteItem.updatedAt && (!existing.updatedAt || remoteItem.updatedAt > existing.updatedAt)) {
+              map.set(remoteItem.id, { ...existing, ...remoteItem });
+              hasNew = true;
+            }
+          });
+          return hasNew ? Array.from(map.values()) : current;
+        });
+      }
+
+      if (Array.isArray(remoteData.claims) && remoteData.claims.length > 0) {
+        setClaims((current) => {
+          const map = new Map(current.map((claim) => [claim.id, claim]));
+          let hasNew = false;
+          remoteData.claims!.forEach((remoteClaim) => {
+            const existing = map.get(remoteClaim.id);
+            if (!existing) {
+              map.set(remoteClaim.id, remoteClaim);
+              hasNew = true;
+            } else if (remoteClaim.updatedAt && (!existing.updatedAt || remoteClaim.updatedAt > existing.updatedAt)) {
+              map.set(remoteClaim.id, { ...existing, ...remoteClaim });
+              hasNew = true;
+            }
+          });
+          return hasNew ? Array.from(map.values()) : current;
+        });
+      }
+    } catch (e) {
+      // Safe local fallback
+    }
+  }, []);
+
+  // Initial pull and periodic multi-device sync
+  useEffect(() => {
+    if (!isLoaded) return;
+    pullAndMerge();
+
+    const interval = setInterval(() => {
+      pullAndMerge();
+    }, 10000); // Check for updates every 10 seconds
+
+    return () => clearInterval(interval);
+  }, [isLoaded, pullAndMerge]);
+
+  // Background Cloudflare D1 Push Effect
   useEffect(() => {
     if (!isLoaded) return;
     cloudflareSyncService.scheduleSync(() => ({
@@ -362,7 +420,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       {
         id: `toast-${Date.now()}`,
         title: language === 'ar' ? 'جارِ المزامنة السحابية...' : 'Syncing with Cloudflare...',
-        message: language === 'ar' ? 'يتم الاتصال بقاعدة بيانات Cloudflare D1 Edge' : 'Connecting to Cloudflare D1 Edge database',
+        message: language === 'ar' ? 'يتم الاتصال بقاعدة بيانات Cloudflare D1 Edge وتبادل البيانات' : 'Connecting to Cloudflare D1 Edge database & exchanging data',
         type: 'info',
         duration: 2500,
       },
@@ -374,13 +432,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       activitySubmissions,
     });
 
+    await pullAndMerge();
+
     if (result.success) {
       setToasts((prev) => [
         ...prev,
         {
           id: `toast-${Date.now()}`,
           title: language === 'ar' ? 'اكتملت المزامنة السحابية' : 'Cloud Sync Complete',
-          message: language === 'ar' ? 'تمت مزامنة جميع البيانات بنجاح مع Cloudflare D1' : 'All data successfully synchronized with Cloudflare D1',
+          message: language === 'ar' ? 'تم تبادل ومزامنة جميع البلاغات بين الأجهزة بنجاح' : 'All reports & claims synchronized across devices',
           type: 'success',
           duration: 4000,
         },
@@ -397,7 +457,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         },
       ]);
     }
-  }, [items, claims, activitySubmissions, language]);
+  }, [items, claims, activitySubmissions, language, pullAndMerge]);
 
   const setCurrentUserById = useCallback((userId: string) => {
     const user = users.find((u) => u.id === userId);

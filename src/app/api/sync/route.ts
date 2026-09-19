@@ -159,15 +159,27 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Always update edge memory store for hybrid availability
+    // Smart dictionary merge for edge memory store (multi-device union)
     if (Array.isArray(payload.items)) {
-      edgeMemoryStore.items = payload.items;
+      const existingItemMap = new Map(edgeMemoryStore.items.map((i) => [i.id, i]));
+      payload.items.forEach((item) => {
+        existingItemMap.set(item.id, { ...existingItemMap.get(item.id), ...item });
+      });
+      edgeMemoryStore.items = Array.from(existingItemMap.values());
     }
     if (Array.isArray(payload.claims)) {
-      edgeMemoryStore.claims = payload.claims;
+      const existingClaimMap = new Map(edgeMemoryStore.claims.map((c) => [c.id, c]));
+      payload.claims.forEach((claim) => {
+        existingClaimMap.set(claim.id, { ...existingClaimMap.get(claim.id), ...claim });
+      });
+      edgeMemoryStore.claims = Array.from(existingClaimMap.values());
     }
     if (Array.isArray(payload.activitySubmissions)) {
-      edgeMemoryStore.activitySubmissions = payload.activitySubmissions;
+      const existingActMap = new Map(edgeMemoryStore.activitySubmissions.map((a) => [a.id, a]));
+      payload.activitySubmissions.forEach((act) => {
+        existingActMap.set(act.id, { ...existingActMap.get(act.id), ...act });
+      });
+      edgeMemoryStore.activitySubmissions = Array.from(existingActMap.values());
     }
     edgeMemoryStore.lastSyncedAt = now;
 

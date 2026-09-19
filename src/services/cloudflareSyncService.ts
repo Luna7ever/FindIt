@@ -141,6 +141,46 @@ class CloudflareSyncService {
     }, delayMs);
   }
 
+  /**
+   * Pull items, claims, and activities from Cloudflare D1 / Edge API
+   */
+  public async pullFromCloudflare(): Promise<{
+    items?: Item[];
+    claims?: Claim[];
+    activitySubmissions?: ActivitySubmission[];
+    syncedAt?: string;
+  } | null> {
+    if (typeof navigator !== 'undefined' && !navigator.onLine) {
+      return null;
+    }
+
+    try {
+      const response = await fetch('/api/sync?entity=all', {
+        method: 'GET',
+        cache: 'no-store',
+      });
+
+      if (!response.ok) {
+        return null;
+      }
+
+      const data = await response.json();
+      if (data.status === 'ok') {
+        this.lastSyncedAt = data.syncedAt;
+        return {
+          items: data.items,
+          claims: data.claims,
+          activitySubmissions: data.activities,
+          syncedAt: data.syncedAt,
+        };
+      }
+      return null;
+    } catch (err) {
+      logger.warn('Failed to pull from Cloudflare D1', { error: String(err) });
+      return null;
+    }
+  }
+
   private triggerDebouncedSync() {
     // Triggers when back online
   }

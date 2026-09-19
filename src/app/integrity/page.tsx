@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useApp } from '@/context/AppContext';
 import { INTEGRITY_SCENARIOS, SCHOOL_LOCATIONS } from '@/lib/constants';
 import { getLocalizedScenario } from '@/lib/i18n/scenarios';
@@ -117,11 +117,12 @@ function StudentIntegrityFlow() {
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
   const [isTestCompleted, setIsTestCompleted] = useState(false);
 
-  // Cinema Player animated playback state & audio simulation
+  // Cinema Player animated playback state & audio engine
   const [isPlaying, setIsPlaying] = useState(false);
   const [isAudioMuted, setIsAudioMuted] = useState(false);
   const [videoProgress, setVideoProgress] = useState(0);
   const [playedSeconds, setPlayedSeconds] = useState(0);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   // Live ticking clock for countdown display with hydration safety
   const [mounted, setMounted] = useState(false);
@@ -135,6 +136,20 @@ function StudentIntegrityFlow() {
   const rawActiveScenario = INTEGRITY_SCENARIOS[activeScenarioIndex] || INTEGRITY_SCENARIOS[0];
   const activeScenario = useMemo(() => getLocalizedScenario(rawActiveScenario, language), [rawActiveScenario, language]);
   const primaryQuestion = activeScenario.questions[0];
+
+  // Stop audio and reset state when switching scenarios
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
+    setIsPlaying(false);
+    setVideoProgress(0);
+    setPlayedSeconds(0);
+  }, [activeScenarioIndex]);
 
   // Clean text for speech synthesis to eliminate digit mispronunciation or TTS glitch
   const cleanSpeechText = (raw: string, lang: 'ar' | 'en') => {
@@ -201,41 +216,9 @@ function StudentIntegrityFlow() {
     }
   };
 
-  // Robust Audio Engine: Warm Organic Chime + Pure Natural Speech Synthesis
-  const playScenarioAudio = () => {
-    if (typeof window === 'undefined') return;
-
-    // 1. Soft Warm Acoustic Chime (Pure sine, gentle attack & decay, no harsh buzz)
-    try {
-      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-      if (AudioCtx) {
-        const ctx = new AudioCtx();
-        if (ctx.state === 'suspended') {
-          ctx.resume();
-        }
-        const now = ctx.currentTime;
-        // Warm A4 major triad chime (440Hz, 554.37Hz, 659.25Hz) - gentle and acoustic
-        const freqs = [440, 554.37, 659.25];
-        freqs.forEach((freq, idx) => {
-          const osc = ctx.createOscillator();
-          const gain = ctx.createGain();
-          osc.type = 'sine'; // Pure smooth sine wave (no harsh harmonics)
-          osc.frequency.setValueAtTime(freq, now + idx * 0.09);
-          gain.gain.setValueAtTime(0.0001, now + idx * 0.09);
-          gain.gain.linearRampToValueAtTime(0.025, now + idx * 0.09 + 0.02);
-          gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.09 + 0.5);
-          osc.connect(gain);
-          gain.connect(ctx.destination);
-          osc.start(now + idx * 0.09);
-          osc.stop(now + idx * 0.09 + 0.55);
-        });
-      }
-    } catch (e) {
-      console.warn('AudioContext error', e);
-    }
-
-    // 2. Web Speech Synthesis for Dialogue Narration (Plays after gentle 220ms chime finish)
-    if (!isAudioMuted && 'speechSynthesis' in window) {
+  // Fallback speech synthesis in case audio element is blocked by browser policy
+  const fallbackSpeechSynthesis = () => {
+    if (!isAudioMuted && typeof window !== 'undefined' && 'speechSynthesis' in window) {
       window.speechSynthesis.cancel();
       window.speechSynthesis.resume();
 
@@ -243,50 +226,65 @@ function StudentIntegrityFlow() {
       const textToSpeak = cleanSpeechText(rawQuote, language);
 
       if (textToSpeak) {
-        setTimeout(() => {
-          if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
-          const utterance = new SpeechSynthesisUtterance(textToSpeak);
-          utterance.lang = language === 'en' ? 'en-US' : 'ar-SA';
-          utterance.rate = 0.90;
-          utterance.pitch = 1.0;
+        const utterance = new SpeechSynthesisUtterance(textToSpeak);
+        utterance.lang = language === 'en' ? 'en-US' : 'ar-SA';
+        utterance.rate = 0.90;
+        utterance.pitch = 1.0;
 
-          // Pick best matching natural voice
-          const voices = window.speechSynthesis.getVoices();
-          const suitedVoice = voices.find((v) => 
-            language === 'en' 
-              ? v.lang.startsWith('en') 
-              : (v.lang.startsWith('ar') || v.name.includes('Arabic') || v.name.includes('Maged') || v.name.includes('Tarik') || v.name.includes('Hoda'))
-          );
-          if (suitedVoice) {
-            utterance.voice = suitedVoice;
-          }
-          utterance.onstart = () => {
-            setIsPlaying(true);
-          };
-          utterance.onend = () => {
-            setIsPlaying(false);
-          };
-          utterance.onerror = () => {
-            setIsPlaying(false);
-          };
+        const voices = window.speechSynthesis.getVoices();
+        const suitedVoice = voices.find((v) => 
+          language === 'en' 
+            ? v.lang.startsWith('en') 
+            : (v.lang.startsWith('ar') || v.name.includes('Arabic') || v.name.includes('Maged') || v.name.includes('Tarik') || v.name.includes('Hoda'))
+        );
+        if (suitedVoice) {
+          utterance.voice = suitedVoice;
+        }
+        utterance.onstart = () => setIsPlaying(true);
+        utterance.onend = () => setIsPlaying(false);
+        utterance.onerror = () => setIsPlaying(false);
 
-          window.speechSynthesis.speak(utterance);
-
-          // Mobile safety timeout in case voice engine does not fire onend
-          setTimeout(() => {
-            setIsPlaying(false);
-          }, 6500);
-        }, 220);
+        window.speechSynthesis.speak(utterance);
+        setTimeout(() => setIsPlaying(false), 7000);
       }
+    }
+  };
+
+  // Primary High-Fidelity Audio Engine (Real Authentic Human Voice from static MP3)
+  const playScenarioAudio = () => {
+    if (typeof window === 'undefined') return;
+
+    if (isAudioMuted) {
+      setIsAudioMuted(false);
+    }
+
+    if (audioRef.current && activeScenario.audioUrl) {
+      audioRef.current.muted = false;
+      audioRef.current.currentTime = 0;
+      const playPromise = audioRef.current.play();
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            setIsPlaying(true);
+          })
+          .catch((err) => {
+            console.warn('HTML5 audio play blocked or error, falling back to speech synthesis:', err);
+            fallbackSpeechSynthesis();
+          });
+      }
+    } else {
+      fallbackSpeechSynthesis();
     }
   };
 
   const handleTogglePlay = () => {
     if (!isPlaying) {
-      setIsPlaying(true);
       playScenarioAudio();
     } else {
       setIsPlaying(false);
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
       if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
         window.speechSynthesis.cancel();
       }
@@ -296,11 +294,17 @@ function StudentIntegrityFlow() {
   const handleToggleMute = () => {
     if (isAudioMuted) {
       setIsAudioMuted(false);
+      if (audioRef.current) {
+        audioRef.current.muted = false;
+      }
       if (isPlaying) {
         playScenarioAudio();
       }
     } else {
       setIsAudioMuted(true);
+      if (audioRef.current) {
+        audioRef.current.muted = true;
+      }
       if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
         window.speechSynthesis.cancel();
       }
@@ -342,6 +346,11 @@ function StudentIntegrityFlow() {
   // Handle Option Click (Instant Feedback & Evaluation)
   const handleSelectOption = (option: IntegrityOption) => {
     if (selectedOptionId) return; // Prevent double clicking on same step
+
+    if (audioRef.current) {
+      audioRef.current.pause();
+    }
+    setIsPlaying(false);
 
     setSelectedOptionId(option.id);
     const isIdeal = option.score === 100;
@@ -855,10 +864,38 @@ function StudentIntegrityFlow() {
           ======================================================== */}
           <div className="lg:col-span-5 flex flex-col justify-between space-y-3">
             
-            {/* 1. Pure Clean Cinema Viewport (Zero Visual Clutter on Actors) */}
-            <div className="rounded-2xl bg-[#0F172A] text-white border border-slate-800 overflow-hidden shadow-lg flex flex-col">
+            {/* 1. Pure Clean Cinema Viewport with Real Moving Simulation & Interactive Dialogue HUD */}
+            <div className={`rounded-2xl bg-[#0F172A] text-white overflow-hidden shadow-xl flex flex-col transition-all duration-500 ${
+              isPlaying ? 'ring-2 ring-emerald-500/70 shadow-emerald-950/50' : 'border border-slate-800'
+            }`}>
               
-              {/* Minimal Top Info Bar */}
+              {/* Hidden HTML5 Audio Element */}
+              <audio
+                ref={audioRef}
+                src={activeScenario.audioUrl}
+                preload="auto"
+                playsInline
+                onPlay={() => setIsPlaying(true)}
+                onPause={() => setIsPlaying(false)}
+                onEnded={() => {
+                  setIsPlaying(false);
+                  setVideoProgress(100);
+                }}
+                onTimeUpdate={() => {
+                  if (audioRef.current && audioRef.current.duration) {
+                    const cur = audioRef.current.currentTime;
+                    const dur = audioRef.current.duration;
+                    setPlayedSeconds(Math.floor(cur));
+                    setVideoProgress(Math.min(100, Math.round((cur / dur) * 100)));
+                  }
+                }}
+                onError={(e) => {
+                  console.warn('Audio tag playback error:', e);
+                }}
+                className="hidden"
+              />
+
+              {/* Top Info & Control Bar */}
               <div className="px-3.5 py-2.5 bg-slate-900/95 border-b border-slate-800 flex items-center justify-between text-xs">
                 <div className="flex items-center gap-2">
                   <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#176B5B] text-white flex items-center gap-1 shadow-2xs">
@@ -895,38 +932,171 @@ function StudentIntegrityFlow() {
                 </div>
               </div>
 
-              {/* Clean Cinematic Character Viewport: NO brackets, NO overlapping badges on the actors */}
-              <div className="relative aspect-[16/10] w-full bg-slate-950 overflow-hidden group">
+              {/* Dynamic Interactive Character Viewport */}
+              <div className="relative aspect-[16/10] w-full bg-slate-950 overflow-hidden group select-none">
                 {activeScenario.visualDetails.sceneImageUrl ? (
                   <div className="absolute inset-0 overflow-hidden">
                     <img
                       src={activeScenario.visualDetails.sceneImageUrl}
                       alt={activeScenario.title}
-                      className={`w-full h-full object-cover transition-transform duration-700 ${
-                        isPlaying ? 'scale-105 filter brightness-105' : 'scale-100'
+                      className={`w-full h-full object-cover transition-all duration-1000 ease-out ${
+                        isPlaying ? 'scale-108 -translate-y-1 brightness-105 contrast-105' : 'scale-100'
                       }`}
                     />
-                    {/* Subtle Cinematic Vignette (keeps the actor brightly visible) */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-slate-950/30 pointer-events-none" />
+                    {/* Subtle Cinematic Vignette */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-slate-950/30 pointer-events-none" />
                   </div>
                 ) : (
                   <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#176B5B_1.5px,transparent_1.5px)]" />
                 )}
 
-                {/* Minimal Subtle Floating Prompt Tag (Bottom of Image, Non-intrusive) */}
-                <div className="absolute bottom-2.5 inset-x-2.5 flex items-center justify-between pointer-events-none z-10">
-                  <span className="px-2.5 py-1 rounded-lg bg-black/75 backdrop-blur-sm text-amber-300 text-[10px] font-bold border border-amber-500/30 flex items-center gap-1.5 shadow-md">
+                {/* Top-Right: Live Audio Frequency Visualizer (Animated Equalizer Bars) */}
+                {isPlaying && (
+                  <div className="absolute top-3 end-3 z-20 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/75 backdrop-blur-md border border-emerald-500/40 shadow-lg animate-in fade-in duration-200">
+                    <Volume2 className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
+                    <div className="flex items-end gap-0.5 h-3.5">
+                      {[45, 90, 60, 100, 75, 45, 85, 95, 50, 70, 80, 60].map((h, i) => (
+                        <div
+                          key={i}
+                          className="w-0.5 bg-emerald-400 rounded-full transition-all duration-150 animate-pulse"
+                          style={{
+                            height: `${h}%`,
+                            animationDelay: `${i * 80}ms`,
+                            animationDuration: '350ms'
+                          }}
+                        />
+                      ))}
+                    </div>
+                    <span className="text-[9px] font-black text-emerald-300 font-mono">
+                      {language === 'en' ? 'LIVE AUDIO' : 'صوت حي'}
+                    </span>
+                  </div>
+                )}
+
+                {/* Top-Left: Scenario Note Badge */}
+                <div className="absolute top-3 start-3 z-20 pointer-events-none">
+                  <span className="px-2.5 py-1 rounded-lg bg-black/70 backdrop-blur-sm text-amber-300 text-[10px] font-bold border border-amber-500/30 flex items-center gap-1.5 shadow-md">
                     <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
                     <span>{activeScenario.visualDetails.promptNote}</span>
                   </span>
-
-                  {isPlaying && (
-                    <span className="px-2.5 py-0.5 rounded-full bg-emerald-950/90 text-emerald-300 border border-emerald-500/40 text-[9px] font-black flex items-center gap-1 shadow-md">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                      <span>{language === 'en' ? 'Speaking Live' : 'حوار حي'}</span>
-                    </span>
-                  )}
                 </div>
+
+                {/* Center: Tap to Play/Listen Inviting Control when Idle */}
+                {!isPlaying && !selectedOption && (
+                  <div className="absolute inset-0 flex items-center justify-center p-4 z-20">
+                    <button
+                      type="button"
+                      onClick={handleTogglePlay}
+                      className="px-4 py-2.5 rounded-2xl bg-black/75 hover:bg-black/90 backdrop-blur-md border border-white/20 hover:border-emerald-400/50 text-white flex items-center gap-3 shadow-2xl transition-all hover:scale-105 active:scale-95 cursor-pointer group"
+                    >
+                      <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#176B5B] to-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/40 group-hover:scale-110 transition-transform">
+                        <Play className="w-4 h-4 fill-white ml-0.5" />
+                      </div>
+                      <div className="text-start">
+                        <span className="text-xs font-black block text-white">
+                          {language === 'en' ? 'Play Spoken Scene' : 'استمع للموقف بصوت الشخصية'}
+                        </span>
+                        <span className="text-[10px] text-emerald-300 font-medium">
+                          {activeScenario.characterSpeaker?.name || 'حوار حي تفاعلي'}
+                        </span>
+                      </div>
+                    </button>
+                  </div>
+                )}
+
+                {/* In-Video Decision Outcome HUD (Bandersnatch Reaction Stage) */}
+                {selectedOption && (
+                  <div className={`absolute inset-0 z-30 flex flex-col items-center justify-end p-4 text-center backdrop-blur-xs animate-in fade-in duration-300 ${
+                    selectedOption.score === 100 
+                      ? 'bg-gradient-to-t from-emerald-950/95 via-emerald-950/80 to-transparent' 
+                      : 'bg-gradient-to-t from-rose-950/95 via-rose-950/80 to-transparent'
+                  }`}>
+                    <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shadow-lg mb-1.5 border ${
+                      selectedOption.score === 100 
+                        ? 'bg-emerald-500/30 border-emerald-400 text-emerald-300' 
+                        : 'bg-rose-500/30 border-rose-400 text-rose-300'
+                    }`}>
+                      {selectedOption.score === 100 ? (
+                        <Trophy className="w-5 h-5 text-amber-300 animate-bounce" />
+                      ) : (
+                        <AlertCircle className="w-5 h-5 text-rose-200 animate-pulse" />
+                      )}
+                    </div>
+
+                    <span className={`px-3 py-0.5 rounded-full text-[11px] font-black shadow-md mb-1 text-white ${
+                      selectedOption.score === 100 ? 'bg-emerald-600' : 'bg-rose-600'
+                    }`}>
+                      {selectedOption.score === 100 
+                        ? (language === 'en' ? '🌟 Character Reaction: Convinced & Grateful' : '🌟 ردة الفعل: اقتناع وامتثال تام لموقفك!') 
+                        : (language === 'en' ? '⚠️ Character Reaction: Trust Compromised' : '⚠️ ردة الفعل: الموقف تدهور وضاعت فرصة التوجيه!')}
+                    </span>
+
+                    <p className="text-xs font-bold text-white max-w-sm leading-snug mb-3 drop-shadow">
+                      {selectedOption.score === 100 
+                        ? `«${activeScenario.characterSpeaker?.name || ''}: ${language === 'en' ? 'Thank you for reminding me of our principles and standing up for integrity!' : 'كلامك صح تماماً.. شكراً لأنك نبهتني وحميتني من الخطأ!'}»`
+                        : (selectedOption.whyWrong || selectedOption.feedback)}
+                    </p>
+
+                    <div className="flex items-center gap-2">
+                      {selectedOption.score < 100 && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedOptionId(null);
+                            playScenarioAudio();
+                          }}
+                          className="px-3.5 py-1.5 rounded-xl bg-white/20 hover:bg-white/30 text-white font-bold text-xs flex items-center gap-1 cursor-pointer transition-colors"
+                        >
+                          <RefreshCw className="w-3.5 h-3.5" />
+                          <span>{language === 'en' ? 'Try Another Response' : 'جرّب رداً آخر'}</span>
+                        </button>
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={handleNextStep}
+                        className={`px-4 py-1.5 rounded-xl font-black text-xs shadow-lg flex items-center gap-1.5 cursor-pointer transition-transform hover:scale-105 active:scale-95 ${
+                          selectedOption.score === 100 
+                            ? 'bg-white hover:bg-emerald-50 text-emerald-950 shadow-xl' 
+                            : 'bg-rose-600 hover:bg-rose-500 text-white'
+                        }`}
+                      >
+                        <span>{activeScenarioIndex === INTEGRITY_SCENARIOS.length - 1 ? (language === 'en' ? 'Final Results 🏆' : 'النتيجة والشهادة 🏆') : (language === 'en' ? 'Next Scenario' : 'الانتقال للموقف التالي')}</span>
+                        {isRtl ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Subtitle Dialogue Box inside the Video (When not answered yet) */}
+                {!selectedOption && (
+                  <div className="absolute bottom-2.5 inset-x-2.5 z-20 pointer-events-none">
+                    <div className="p-2 sm:p-2.5 rounded-xl bg-slate-950/85 backdrop-blur-md border border-slate-700/60 shadow-xl text-center space-y-1">
+                      <div className="flex items-center justify-between gap-2 px-1">
+                        <span className="text-[10px] font-extrabold text-amber-300 flex items-center gap-1">
+                          <span>{activeScenario.characterSpeaker?.avatarEmoji || '🗣️'}</span>
+                          <span>{activeScenario.characterSpeaker?.name}:</span>
+                        </span>
+                        {isPlaying && (
+                          <span className="text-[9px] text-emerald-400 font-bold animate-pulse">
+                            {language === 'en' ? 'Speaking now...' : 'يتحدث الآن...'}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs sm:text-sm font-black text-white drop-shadow leading-snug">
+                        «{activeScenario.dilemmaQuote}»
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Bottom Audio Progress Timeline */}
+              <div className="w-full bg-slate-800 h-1 relative overflow-hidden">
+                <div 
+                  className="h-full bg-gradient-to-r from-[#176B5B] via-emerald-400 to-teal-300 transition-all duration-200"
+                  style={{ width: `${videoProgress}%` }}
+                />
               </div>
 
             </div>

@@ -204,6 +204,7 @@ export interface IntegrityScenario {
   characterSpeaker?: CharacterSpeaker;
   locationId: SchoolLocationId;
   videoUrl?: string;
+  audioUrl?: string;
   duration: string;
   badgeName: string;
   pointsAwarded: number;

@@ -118,9 +118,10 @@ function StudentIntegrityFlow() {
   const [isTestCompleted, setIsTestCompleted] = useState(false);
 
   // Cinema Player animated playback state & audio simulation
-  const [isPlaying, setIsPlaying] = useState(true);
+  const [isPlaying, setIsPlaying] = useState(false);
   const [isAudioMuted, setIsAudioMuted] = useState(false);
-  const [videoProgress, setVideoProgress] = useState(25);
+  const [videoProgress, setVideoProgress] = useState(0);
+  const [playedSeconds, setPlayedSeconds] = useState(0);
 
   // Live ticking clock for countdown display with hydration safety
   const [mounted, setMounted] = useState(false);
@@ -131,67 +132,105 @@ function StudentIntegrityFlow() {
     return () => clearInterval(timer);
   }, []);
 
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (isPlaying) {
-      interval = setInterval(() => {
-        setVideoProgress((prev) => {
-          if (prev >= 100) return 0;
-          return prev + 3;
-        });
-      }, 350);
-    }
-    return () => clearInterval(interval);
-  }, [isPlaying]);
-
   const rawActiveScenario = INTEGRITY_SCENARIOS[activeScenarioIndex] || INTEGRITY_SCENARIOS[0];
   const activeScenario = useMemo(() => getLocalizedScenario(rawActiveScenario, language), [rawActiveScenario, language]);
   const primaryQuestion = activeScenario.questions[0];
 
-  // Real browser speech synthesis audio playback for realistic dialogue narration
-  useEffect(() => {
-    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+  // Robust Audio Engine: Synthesized Chime + Real Speech Synthesis on User Action
+  const playScenarioAudio = () => {
+    if (typeof window === 'undefined') return;
 
-    if (!isPlaying || isAudioMuted) {
-      window.speechSynthesis.cancel();
-      return;
-    }
-
-    window.speechSynthesis.cancel();
-    const textToSpeak = activeScenario?.dilemmaQuote ? activeScenario.dilemmaQuote.replace(/[«»"]/g, '') : '';
-    if (!textToSpeak) return;
-
-    const utterance = new SpeechSynthesisUtterance(textToSpeak);
-    utterance.lang = language === 'en' ? 'en-US' : 'ar-SA';
-    utterance.rate = 0.95;
-    utterance.pitch = 1.0;
-
-    // Optional ambient sound effect using Web Audio API
+    // 1. Web Audio API Chime (Immediately audible from device speakers, bypasses browser voice delays)
     try {
       const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
       if (AudioCtx) {
         const ctx = new AudioCtx();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(320, ctx.currentTime);
-        gain.gain.setValueAtTime(0.03, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.35);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start();
-        osc.stop(ctx.currentTime + 0.35);
+        if (ctx.state === 'suspended') {
+          ctx.resume();
+        }
+        const now = ctx.currentTime;
+        const freqs = [523.25, 659.25, 783.99]; // C5 - E5 - G5 major cinematic chord
+        freqs.forEach((freq, idx) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+          gain.gain.setValueAtTime(0.06, now + idx * 0.08);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.08 + 0.45);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now + idx * 0.08);
+          osc.stop(now + idx * 0.08 + 0.5);
+        });
       }
-    } catch {
-      // Audio context might be restricted before user interaction
+    } catch (e) {
+      console.warn('AudioContext error', e);
     }
 
-    window.speechSynthesis.speak(utterance);
-
-    return () => {
+    // 2. Web Speech Synthesis for Dialogue Narration
+    if (!isAudioMuted && 'speechSynthesis' in window) {
       window.speechSynthesis.cancel();
-    };
-  }, [isPlaying, isAudioMuted, activeScenario?.dilemmaQuote, language]);
+      window.speechSynthesis.resume();
+
+      const textToSpeak = activeScenario?.dilemmaQuote ? activeScenario.dilemmaQuote.replace(/[«»"]/g, '') : '';
+      if (textToSpeak) {
+        const utterance = new SpeechSynthesisUtterance(textToSpeak);
+        utterance.lang = language === 'en' ? 'en-US' : 'ar-SA';
+        utterance.rate = 0.92;
+        utterance.pitch = 1.05;
+
+        // Pick best matching voice
+        const voices = window.speechSynthesis.getVoices();
+        const suitedVoice = voices.find((v) => language === 'en' ? v.lang.startsWith('en') : (v.lang.startsWith('ar') || v.name.includes('Arabic')));
+        if (suitedVoice) {
+          utterance.voice = suitedVoice;
+        }
+
+        window.speechSynthesis.speak(utterance);
+      }
+    }
+  };
+
+  const handleTogglePlay = () => {
+    if (!isPlaying) {
+      setIsPlaying(true);
+      playScenarioAudio();
+    } else {
+      setIsPlaying(false);
+      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+    }
+  };
+
+  const handleToggleMute = () => {
+    if (isAudioMuted) {
+      setIsAudioMuted(false);
+      if (isPlaying) {
+        playScenarioAudio();
+      }
+    } else {
+      setIsAudioMuted(true);
+      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+    }
+  };
+
+  // Live video progress & seconds timeline loop
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isPlaying) {
+      interval = setInterval(() => {
+        setPlayedSeconds((sec) => sec + 1);
+        setVideoProgress((prev) => {
+          if (prev >= 100) return 0;
+          return prev + 2;
+        });
+      }, 300);
+    }
+    return () => clearInterval(interval);
+  }, [isPlaying]);
 
   // Sync state when active scenario changes
   useEffect(() => {
@@ -740,37 +779,39 @@ function StudentIntegrityFlow() {
 
                 <div className="flex items-center gap-1.5">
                   <button
-                    onClick={() => setIsAudioMuted(!isAudioMuted)}
-                    className="p-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors cursor-pointer"
-                    title={isAudioMuted ? 'تشغيل المؤثرات الصوتية' : 'كتم المؤثرات'}
+                    type="button"
+                    onClick={handleToggleMute}
+                    className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors cursor-pointer"
+                    title={isAudioMuted ? 'تشغيل الصوت' : 'كتم الصوت'}
                   >
-                    {isAudioMuted ? <VolumeX className="w-3.5 h-3.5 text-rose-400" /> : <Volume2 className="w-3.5 h-3.5 text-emerald-400" />}
+                    {isAudioMuted ? <VolumeX className="w-4 h-4 text-rose-400" /> : <Volume2 className="w-4 h-4 text-emerald-400" />}
                   </button>
 
                   <button
-                    onClick={() => setIsPlaying(!isPlaying)}
-                    className="px-2 py-0.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-[10px] font-bold transition-colors flex items-center gap-1 border border-white/10 cursor-pointer"
+                    type="button"
+                    onClick={handleTogglePlay}
+                    className="px-2.5 py-1 rounded-full bg-[#176B5B] hover:bg-[#125648] text-white text-[11px] font-bold transition-all flex items-center gap-1.5 shadow-sm cursor-pointer"
                   >
-                    {isPlaying ? <Pause className="w-2.5 h-2.5" /> : <Play className="w-2.5 h-2.5 fill-current" />}
-                    <span>{isPlaying ? (language === 'en' ? 'Pause ⏸️' : 'إيقاف ⏸️') : (language === 'en' ? 'Play ▶️' : 'تشغيل ▶️')}</span>
+                    {isPlaying ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3 fill-current" />}
+                    <span>{isPlaying ? (language === 'en' ? 'Pause ⏸️' : 'إيقاف ⏸️') : (language === 'en' ? 'Play Video ▶️' : 'تشغيل المشهد ▶️')}</span>
                   </button>
                 </div>
               </div>
 
               {/* Visual Scene Screen */}
               <div className="relative aspect-[16/10] w-full bg-slate-950 flex flex-col justify-between p-3.5 overflow-hidden">
-                {/* Photorealistic AI Scene Background with Ken Burns Pan/Zoom Animation */}
+                {/* Photorealistic AI Scene Background with Continuous Ken Burns Camera Movement */}
                 {activeScenario.visualDetails.sceneImageUrl ? (
                   <div className="absolute inset-0 overflow-hidden pointer-events-none">
                     <img
                       src={activeScenario.visualDetails.sceneImageUrl}
                       alt={activeScenario.title}
-                      className={`w-full h-full object-cover transition-transform duration-[14000ms] ease-out ${
-                        isPlaying ? 'scale-120 -translate-y-3 translate-x-1' : 'scale-100 translate-y-0 translate-x-0'
+                      className={`w-full h-full object-cover animate-ken-burns ${
+                        isPlaying ? '' : 'animate-ken-burns-paused'
                       }`}
                     />
                     {/* Cinematic Dark Gradient Vignette Overlay for UI Clarity */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-slate-950/70" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/35 to-slate-950/70" />
                   </div>
                 ) : (
                   <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#176B5B_1.5px,transparent_1.5px)] [background-size:16px_16px]" />
@@ -784,7 +825,7 @@ function StudentIntegrityFlow() {
 
                 {/* Live Stream / Scenario Note Badge */}
                 <div className="relative z-10 flex items-center justify-between text-[10px]">
-                  <span className="px-2.5 py-1 rounded-lg bg-black/80 text-amber-300 font-bold border border-amber-500/30 flex items-center gap-1.5 shadow-sm">
+                  <span className="px-2.5 py-1 rounded-lg bg-black/85 text-amber-300 font-bold border border-amber-500/30 flex items-center gap-1.5 shadow-sm">
                     <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
                     <span>{activeScenario.visualDetails.promptNote}</span>
                   </span>
@@ -801,26 +842,34 @@ function StudentIntegrityFlow() {
                   </div>
                 </div>
 
-                {/* Center Play/Pause Interactive Ripple Button */}
-                <div className="relative z-10 my-auto text-center">
+                {/* Center Play/Pause Interactive Ripple Button & Audio Prompt */}
+                <div className="relative z-10 my-auto text-center flex flex-col items-center gap-2">
                   <button
-                    onClick={() => setIsPlaying(!isPlaying)}
-                    className="w-13 h-13 mx-auto rounded-full bg-gradient-to-tr from-[#176B5B] to-emerald-400 text-white flex items-center justify-center shadow-lg shadow-emerald-950/70 hover:scale-105 active:scale-95 transition-all ring-4 ring-white/10 group cursor-pointer"
+                    type="button"
+                    onClick={handleTogglePlay}
+                    className="py-2.5 px-5 rounded-full bg-gradient-to-r from-[#176B5B] to-emerald-500 hover:from-[#125648] hover:to-emerald-400 text-white flex items-center gap-2 shadow-2xl shadow-emerald-950/90 hover:scale-105 active:scale-95 transition-all ring-4 ring-white/20 group cursor-pointer"
                   >
                     {isPlaying ? (
-                      <Pause className="w-5 h-5 text-white fill-current" />
+                      <>
+                        <Pause className="w-5 h-5 text-white fill-current" />
+                        <span className="text-xs font-black">{language === 'en' ? 'Pause Video' : 'إيقاف المشهد'}</span>
+                      </>
                     ) : (
-                      <Play className="w-5 h-5 text-white fill-current translate-x-[-1px] group-hover:scale-110 transition-transform" />
+                      <>
+                        <Play className="w-5 h-5 text-white fill-current" />
+                        <span className="text-xs font-black">{language === 'en' ? '▶️ Play Video & Audio' : '▶️ تشغيل الفيديو والمحاكاة الصوتية'}</span>
+                      </>
                     )}
                   </button>
                   
                   {/* Simulated Voice Waveform */}
                   {!isAudioMuted && isPlaying && (
-                    <div className="flex items-center justify-center gap-1 mt-2">
-                      <span className="w-1 h-2 bg-emerald-400 rounded-full animate-bounce [animation-delay:0ms]" />
-                      <span className="w-1 h-3.5 bg-teal-400 rounded-full animate-bounce [animation-delay:150ms]" />
-                      <span className="w-1 h-5 bg-amber-300 rounded-full animate-bounce [animation-delay:300ms]" />
-                      <span className="w-1 h-3 bg-teal-400 rounded-full animate-bounce [animation-delay:450ms]" />
+                    <div className="flex items-center justify-center gap-1.5 mt-1 bg-black/60 backdrop-blur-sm px-3 py-1 rounded-full border border-emerald-500/30">
+                      <span className="text-[10px] text-emerald-300 font-bold ml-1">{language === 'en' ? 'Playing Audio' : 'جاري تشغيل الصوت'}</span>
+                      <span className="w-1 h-2.5 bg-emerald-400 rounded-full animate-bounce [animation-delay:0ms]" />
+                      <span className="w-1 h-4.5 bg-teal-400 rounded-full animate-bounce [animation-delay:150ms]" />
+                      <span className="w-1 h-6 bg-amber-300 rounded-full animate-bounce [animation-delay:300ms]" />
+                      <span className="w-1 h-4 bg-teal-400 rounded-full animate-bounce [animation-delay:450ms]" />
                       <span className="w-1 h-2 bg-emerald-400 rounded-full animate-bounce [animation-delay:200ms]" />
                     </div>
                   )}
@@ -828,14 +877,19 @@ function StudentIntegrityFlow() {
 
                 {/* Dilemma Quote Box inside Cinema Screen */}
                 <div className="relative z-10 space-y-1.5">
-                  <div className="p-2.5 rounded-xl bg-slate-950/85 backdrop-blur-md border border-white/20 text-center shadow-md">
+                  <div className="p-2.5 rounded-xl bg-slate-950/90 backdrop-blur-md border border-white/20 text-center shadow-md">
                     <div className="flex items-center justify-between gap-2 mb-0.5">
                       <span className="text-[9px] font-bold text-slate-400">
                         {language === 'en' ? '💬 Simulated Dialogue:' : '💬 الحوار المحاكي للموقف:'}
                       </span>
-                      <span className="text-[9px] text-emerald-400/90 font-medium">
-                        {language === 'en' ? '🎭 Realistic AI Actor' : '🎭 شخصية ممثل بالذكاء الاصطناعي'}
-                      </span>
+                      <button
+                        type="button"
+                        onClick={playScenarioAudio}
+                        className="text-[10px] text-emerald-400 hover:text-emerald-300 font-black flex items-center gap-1 cursor-pointer bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-500/30"
+                      >
+                        <Volume2 className="w-3 h-3" />
+                        <span>{language === 'en' ? 'Replay Voice 🔊' : 'إعادة نطق الحوار 🔊'}</span>
+                      </button>
                     </div>
                     <p className="text-[11px] sm:text-xs font-black text-amber-200 leading-snug">
                       «{activeScenario.dilemmaQuote}»
@@ -844,14 +898,16 @@ function StudentIntegrityFlow() {
 
                   {/* Progress Timeline */}
                   <div className="flex items-center gap-2">
-                    <span className="text-[9px] font-mono text-slate-400">00:15</span>
-                    <div className="flex-1 h-1.5 bg-white/15 rounded-full overflow-hidden">
+                    <span className="text-[9px] font-mono text-slate-300 font-bold">
+                      00:{String(playedSeconds % 60).padStart(2, '0')}
+                    </span>
+                    <div className="flex-1 h-1.5 bg-white/20 rounded-full overflow-hidden">
                       <div 
                         className="h-full bg-gradient-to-r from-[#176B5B] via-emerald-400 to-amber-300 transition-all duration-300 rounded-full"
                         style={{ width: `${videoProgress}%` }}
                       />
                     </div>
-                    <span className="text-[9px] font-mono text-slate-400">{activeScenario.duration}</span>
+                    <span className="text-[9px] font-mono text-slate-300 font-bold">{activeScenario.duration}</span>
                   </div>
                 </div>
 

@@ -1130,14 +1130,14 @@ export default function AdminPage() {
           TAB 6: ISEF Benchmark
       ======================================================== */}
       {activeTab === 'benchmark' && (
-        <div className="space-y-4 text-start animate-in fade-in">
-          <div className="p-6 rounded-2xl bg-white dark:bg-[#15201D] border border-[#E4E7E4] dark:border-[#263834] space-y-4">
+        <div className="space-y-4 text-start animate-in fade-in w-full max-w-full">
+          <div className="p-4 sm:p-6 rounded-2xl bg-white dark:bg-[#15201D] border border-[#E4E7E4] dark:border-[#263834] space-y-4 w-full max-w-full overflow-hidden">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div>
+              <div className="min-w-0 flex-1">
                 <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#D1FAE5] dark:bg-emerald-950/80 text-[#065F46] dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
                   Regeneron ISEF 2026 Engine
                 </span>
-                <h2 className="text-lg font-bold text-[#18201D] dark:text-white mt-1">
+                <h2 className="text-base sm:text-lg font-bold text-[#18201D] dark:text-white mt-1 break-words">
                   {language === 'en' ? 'Multimodal AI Scientific Benchmarking Suite' : 'منظومة التقييم العلمي التجريبي لنظام الذكاء الاصطناعي'}
                 </h2>
                 <p className="text-xs text-[#66706B] dark:text-[#94A39D] mt-1 max-w-xl">
@@ -1149,7 +1149,7 @@ export default function AdminPage() {
 
               <Link
                 href="/admin/benchmark"
-                className="py-2.5 px-5 rounded-xl bg-[#176B5B] dark:bg-[#2DD4BF] hover:bg-[#125648] dark:hover:bg-[#14B8A6] text-white dark:text-[#18201D] font-bold text-xs transition-all shadow-xs flex items-center justify-center gap-2 shrink-0 cursor-pointer"
+                className="w-full sm:w-auto py-2.5 px-5 rounded-xl bg-[#176B5B] dark:bg-[#2DD4BF] hover:bg-[#125648] dark:hover:bg-[#14B8A6] text-white dark:text-[#18201D] font-bold text-xs transition-all shadow-xs flex items-center justify-center gap-2 shrink-0 cursor-pointer"
               >
                 <Cpu className="w-4 h-4" />
                 <span>{language === 'en' ? 'Open Full Benchmark Suite' : 'فتح منصة التقييم والنتائج الكاملة'}</span>

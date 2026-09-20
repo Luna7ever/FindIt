@@ -145,10 +145,10 @@ export default function HomePage() {
                 {language === 'en' ? 'We are here to help.' : 'خلّينا نساعدك تلاقيه.'}
               </span>
             </h1>
-            <p className="text-xs sm:text-sm text-[#66706B] dark:text-[#94A39D] mt-1 max-w-2xl leading-relaxed truncate sm:whitespace-normal">
+            <p className="text-xs sm:text-sm text-[#66706B] dark:text-[#94A39D] mt-1 max-w-2xl leading-relaxed">
               {language === 'en'
-                ? 'Smart, confidential school platform connecting lost and found belongings.'
-                : 'المنظومة الذكية لمطابقة المفقودات والأمانات داخل الحرم المدرسي بأمان وسرية.'}
+                ? 'Behavioral platform promoting student integrity, civic responsibility, and ethical custody within the school community.'
+                : 'المنظومة السلوكية الذكية لترسيخ قيم النزاهة والمواطنة الإيجابية وحفظ الأمانات والمقتنيات داخل المدرسة.'}
             </p>
           </div>
         </div>

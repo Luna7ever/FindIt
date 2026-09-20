@@ -52,19 +52,19 @@ export default function AdminIntegritySupervisionView() {
   };
 
   return (
-    <div className="px-3 sm:px-6 py-4 max-w-6xl mx-auto space-y-6 text-start font-sans" dir={dir}>
+    <div className="w-full max-w-full overflow-x-hidden min-w-0 px-3 sm:px-6 py-4 max-w-6xl mx-auto space-y-6 text-start font-sans" dir={dir}>
       
       {/* ========================================================
           1. OFFICIAL ADMINISTRATIVE BANNER
       ======================================================== */}
-      <div className="p-5 sm:p-6 bg-white dark:bg-[#15201D] border border-[#E4E7E4] dark:border-[#263834] rounded-2xl shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4 transition-colors duration-300">
-        <div className="space-y-1.5 flex-1">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#18201D] dark:bg-[#1C2B27] border border-[#176B5B]/30 dark:border-[#2D3E3A] text-white text-[11px] font-black">
-            <ShieldCheck className="w-4 h-4 text-[#34D399]" />
-            <span>{isEn ? 'Supervisory & Educational Standards Board' : 'لوحة الإشراف الإداري والتربوي — م. مشيرة'}</span>
+      <div className="p-4 sm:p-6 bg-white dark:bg-[#15201D] border border-[#E4E7E4] dark:border-[#263834] rounded-2xl shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4 transition-colors duration-300 w-full max-w-full overflow-hidden">
+        <div className="space-y-1.5 flex-1 min-w-0">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#18201D] dark:bg-[#1C2B27] border border-[#176B5B]/30 dark:border-[#2D3E3A] text-white text-[11px] font-black max-w-full">
+            <ShieldCheck className="w-4 h-4 text-[#34D399] shrink-0" />
+            <span className="truncate">{isEn ? 'Supervisory & Educational Standards Board' : 'لوحة الإشراف الإداري والتربوي — م. مشيرة'}</span>
           </div>
           
-          <h1 className="text-xl sm:text-2xl font-black text-[#18201D] dark:text-white">
+          <h1 className="text-lg sm:text-2xl font-black text-[#18201D] dark:text-white leading-tight">
             {isEn ? 'Accredited School Integrity Standards & Student Analytics' : 'معايير ومواقف النزاهة المدرسية المعتمدة والبيانات الميدانية'}
           </h1>
           
@@ -75,21 +75,21 @@ export default function AdminIntegritySupervisionView() {
           </p>
         </div>
 
-        {/* Top Control Buttons */}
-        <div className="flex items-center gap-2.5 w-full md:w-auto shrink-0">
+        {/* Top Control Buttons (Stacked vertically on mobile to prevent overflow) */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full md:w-auto shrink-0">
           <button
             onClick={handlePrint}
-            className="flex-1 md:flex-none py-2.5 px-4 rounded-xl bg-[#F1F3F0] dark:bg-[#1C2B27] hover:bg-[#E4E7E4] dark:hover:bg-[#23332F] text-[#18201D] dark:text-white text-xs font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer border border-[#E4E7E4] dark:border-[#263834] shadow-2xs"
+            className="w-full sm:w-auto py-2.5 px-4 rounded-xl bg-[#F1F3F0] dark:bg-[#1C2B27] hover:bg-[#E4E7E4] dark:hover:bg-[#23332F] text-[#18201D] dark:text-white text-xs font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer border border-[#E4E7E4] dark:border-[#263834] shadow-2xs"
           >
-            <Printer className="w-4 h-4 text-[#176B5B] dark:text-[#2DD4BF]" />
+            <Printer className="w-4 h-4 text-[#176B5B] dark:text-[#2DD4BF] shrink-0" />
             <span>{isEn ? 'Print Official Standards Report' : 'طباعة تقرير المعايير المعتمدة'}</span>
           </button>
 
           <Link
             href="/admin"
-            className="flex-1 md:flex-none py-2.5 px-4 rounded-xl bg-[#176B5B] dark:bg-[#2DD4BF] text-white dark:text-[#18201D] text-xs font-black hover:bg-[#125648] dark:hover:bg-[#14B8A6] transition-colors flex items-center justify-center gap-1.5 shadow-xs cursor-pointer"
+            className="w-full sm:w-auto py-2.5 px-4 rounded-xl bg-[#176B5B] dark:bg-[#2DD4BF] text-white dark:text-[#18201D] text-xs font-black hover:bg-[#125648] dark:hover:bg-[#14B8A6] transition-colors flex items-center justify-center gap-1.5 shadow-xs cursor-pointer"
           >
-            <Building2 className="w-4 h-4" />
+            <Building2 className="w-4 h-4 shrink-0" />
             <span>{isEn ? 'Admin Portal' : 'لوحة الإدارة 🏛️'}</span>
           </Link>
         </div>
@@ -98,51 +98,51 @@ export default function AdminIntegritySupervisionView() {
       {/* ========================================================
           2. KEY FIELD COMPLIANCE KPIS (DATA & ANALYTICS ONLY)
       ======================================================== */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3 w-full max-w-full">
         {/* Compliance Rate */}
-        <div className="p-4 bg-white dark:bg-[#15201D] border border-[#E4E7E4] dark:border-[#263834] rounded-2xl shadow-xs space-y-1">
-          <div className="flex items-center justify-between text-[11px] font-bold text-[#66706B] dark:text-[#94A39D]">
-            <span>{isEn ? 'Ethical Decision Compliance' : 'معدل التزام الطالبات بالمعايير'}</span>
-            <TrendingUp className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+        <div className="p-3 sm:p-4 bg-white dark:bg-[#15201D] border border-[#E4E7E4] dark:border-[#263834] rounded-2xl shadow-xs space-y-1 min-w-0 overflow-hidden flex flex-col justify-between">
+          <div className="flex items-center justify-between gap-1 text-[11px] font-bold text-[#66706B] dark:text-[#94A39D] min-w-0">
+            <span className="truncate min-w-0 flex-1">{isEn ? 'Ethical Decision Compliance' : 'معدل التزام الطالبات بالمعايير'}</span>
+            <TrendingUp className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
           </div>
-          <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400">94.6%</div>
-          <p className="text-[10px] text-[#66706B] dark:text-[#94A39D]">
+          <div className="text-xl sm:text-2xl font-black text-emerald-600 dark:text-emerald-400 truncate">94.6%</div>
+          <p className="text-[10px] text-[#66706B] dark:text-[#94A39D] truncate">
             {isEn ? '+42.6% increase over baseline' : 'ارتفاع بمقدار +42.6% مقارنة بالبداية'}
           </p>
         </div>
 
         {/* Evaluated Students */}
-        <div className="p-4 bg-white dark:bg-[#15201D] border border-[#E4E7E4] dark:border-[#263834] rounded-2xl shadow-xs space-y-1">
-          <div className="flex items-center justify-between text-[11px] font-bold text-[#66706B] dark:text-[#94A39D]">
-            <span>{isEn ? 'Assessed Student Body' : 'إجمالي الطالبات الخاضعات للتقييم'}</span>
-            <Users2 className="w-4 h-4 text-teal-600 dark:text-teal-400" />
+        <div className="p-3 sm:p-4 bg-white dark:bg-[#15201D] border border-[#E4E7E4] dark:border-[#263834] rounded-2xl shadow-xs space-y-1 min-w-0 overflow-hidden flex flex-col justify-between">
+          <div className="flex items-center justify-between gap-1 text-[11px] font-bold text-[#66706B] dark:text-[#94A39D] min-w-0">
+            <span className="truncate min-w-0 flex-1">{isEn ? 'Assessed Student Body' : 'إجمالي الطالبات الخاضعات للتقييم'}</span>
+            <Users2 className="w-4 h-4 text-teal-600 dark:text-teal-400 shrink-0" />
           </div>
-          <div className="text-2xl font-black text-[#18201D] dark:text-white">120</div>
-          <p className="text-[10px] text-[#66706B] dark:text-[#94A39D]">
+          <div className="text-xl sm:text-2xl font-black text-[#18201D] dark:text-white truncate">120</div>
+          <p className="text-[10px] text-[#66706B] dark:text-[#94A39D] truncate">
             {isEn ? 'Comprehensive survey cohort' : 'عينة المسح الميداني المعتمدة'}
           </p>
         </div>
 
         {/* Handover Acceleration */}
-        <div className="p-4 bg-white dark:bg-[#15201D] border border-[#E4E7E4] dark:border-[#263834] rounded-2xl shadow-xs space-y-1">
-          <div className="flex items-center justify-between text-[11px] font-bold text-[#66706B] dark:text-[#94A39D]">
-            <span>{isEn ? 'Fast Handover Rate (<24h)' : 'تسليم الأمانات في أقل من 24 ساعة'}</span>
-            <Clock className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+        <div className="p-3 sm:p-4 bg-white dark:bg-[#15201D] border border-[#E4E7E4] dark:border-[#263834] rounded-2xl shadow-xs space-y-1 min-w-0 overflow-hidden flex flex-col justify-between">
+          <div className="flex items-center justify-between gap-1 text-[11px] font-bold text-[#66706B] dark:text-[#94A39D] min-w-0">
+            <span className="truncate min-w-0 flex-1">{isEn ? 'Fast Handover Rate (<24h)' : 'تسليم الأمانات في أقل من 24 ساعة'}</span>
+            <Clock className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
           </div>
-          <div className="text-2xl font-black text-amber-600 dark:text-amber-400">+84.1%</div>
-          <p className="text-[10px] text-[#66706B] dark:text-[#94A39D]">
+          <div className="text-xl sm:text-2xl font-black text-amber-600 dark:text-amber-400 truncate">+84.1%</div>
+          <p className="text-[10px] text-[#66706B] dark:text-[#94A39D] truncate">
             {isEn ? 'From 4.2 days down to 45 min' : 'انخفض من 4.2 أيام إلى 45 دقيقة'}
           </p>
         </div>
 
         {/* Disputes Reduced */}
-        <div className="p-4 bg-white dark:bg-[#15201D] border border-[#E4E7E4] dark:border-[#263834] rounded-2xl shadow-xs space-y-1">
-          <div className="flex items-center justify-between text-[11px] font-bold text-[#66706B] dark:text-[#94A39D]">
-            <span>{isEn ? 'Dispute Reduction' : 'انخفاض النزاعات والادعاءات'}</span>
-            <CheckCircle2 className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
+        <div className="p-3 sm:p-4 bg-white dark:bg-[#15201D] border border-[#E4E7E4] dark:border-[#263834] rounded-2xl shadow-xs space-y-1 min-w-0 overflow-hidden flex flex-col justify-between">
+          <div className="flex items-center justify-between gap-1 text-[11px] font-bold text-[#66706B] dark:text-[#94A39D] min-w-0">
+            <span className="truncate min-w-0 flex-1">{isEn ? 'Dispute Reduction' : 'انخفاض النزاعات والادعاءات'}</span>
+            <CheckCircle2 className="w-4 h-4 text-cyan-600 dark:text-cyan-400 shrink-0" />
           </div>
-          <div className="text-2xl font-black text-cyan-600 dark:text-cyan-400">-90.3%</div>
-          <p className="text-[10px] text-[#66706B] dark:text-[#94A39D]">
+          <div className="text-xl sm:text-2xl font-black text-cyan-600 dark:text-cyan-400 truncate">-90.3%</div>
+          <p className="text-[10px] text-[#66706B] dark:text-[#94A39D] truncate">
             {isEn ? 'Secret question & PIN zero-fraud' : 'صفر احتيال بفضل السؤال السري والـ PIN'}
           </p>
         </div>
@@ -151,12 +151,12 @@ export default function AdminIntegritySupervisionView() {
       {/* ========================================================
           3. THE 5 ACCREDITED SCHOOL INTEGRITY STANDARDS
       ======================================================== */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
+      <div className="space-y-4 w-full max-w-full">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div className="min-w-0">
             <h2 className="text-base sm:text-lg font-black text-[#18201D] dark:text-white flex items-center gap-2">
-              <BookOpen className="w-5 h-5 text-[#176B5B] dark:text-[#2DD4BF]" />
-              <span>{isEn ? 'Approved School Ethical Standards Directory' : 'دليل المعايير الأخلاقية الخمسة المعتمدة بالمدرسة'}</span>
+              <BookOpen className="w-5 h-5 text-[#176B5B] dark:text-[#2DD4BF] shrink-0" />
+              <span className="truncate">{isEn ? 'Approved School Ethical Standards Directory' : 'دليل المعايير الأخلاقية الخمسة المعتمدة بالمدرسة'}</span>
             </h2>
             <p className="text-xs text-[#66706B] dark:text-[#94A39D] mt-0.5">
               {isEn 
@@ -165,7 +165,7 @@ export default function AdminIntegritySupervisionView() {
             </p>
           </div>
 
-          <span className="text-xs font-bold text-[#176B5B] dark:text-[#2DD4BF] bg-[#E6F1ED] dark:bg-[#122823] px-3 py-1 rounded-full border border-[#176B5B]/20">
+          <span className="text-xs font-bold text-[#176B5B] dark:text-[#2DD4BF] bg-[#E6F1ED] dark:bg-[#122823] px-3 py-1 rounded-full border border-[#176B5B]/20 shrink-0 self-start sm:self-auto">
             5 / 5 {isEn ? 'Standards Accredited' : 'معايير معتمدة'}
           </span>
         </div>

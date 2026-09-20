@@ -460,7 +460,7 @@ function StudentIntegrityFlow() {
   }, [userPoints]);
 
   return (
-    <div className="px-3 sm:px-6 py-4 max-w-6xl mx-auto space-y-4 text-start font-sans" dir={dir}>
+    <div className="w-full max-w-full overflow-x-hidden min-w-0 px-3 sm:px-6 py-4 max-w-6xl mx-auto space-y-4 text-start font-sans" dir={dir}>
       
       {/* ========================================================
           1. RICH TOP BAR: IDENTITY, 5-SEGMENTS, COUNTDOWN, CONTROLS

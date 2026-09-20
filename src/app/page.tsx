@@ -9,7 +9,6 @@ import { CATEGORIES } from '@/lib/constants';
 import ItemCard from '@/components/ItemCard';
 import ItemVisual from '@/components/ItemVisual';
 import InstantSearchBar from '@/components/InstantSearchBar';
-import UserAvatar from '@/components/UserAvatar';
 import { getLocalizedItem, getLocalizedUser, CATEGORY_DESCRIPTIONS_EN } from '@/lib/i18n/seedDataTranslations';
 import { getCampusPeriod, getCampusGreeting, getCampusAtmosphere, CampusPeriod } from '@/lib/campusSchedule';
 import { 
@@ -56,8 +55,6 @@ export default function HomePage() {
     items, 
     claims, 
     currentUser, 
-    users, 
-    setCurrentUserById, 
     openQRScanner, 
     openCertificateModal, 
     dir, 
@@ -118,51 +115,6 @@ export default function HomePage() {
   return (
     <div className="w-full max-w-full overflow-x-hidden px-4 sm:px-6 py-6 sm:py-8 space-y-7 sm:space-y-8 max-w-5xl mx-auto text-[#18201D] dark:text-[#F1F5F3]" dir={dir}>
       
-      {/* ========================================================
-          0. QUICK PERSONA SWITCHER STRIP (Instant Testing on Mobile & Desktop)
-      ======================================================== */}
-      <section className="w-full max-w-full min-w-0 flex items-center justify-between gap-2 p-2 sm:p-2.5 rounded-2xl bg-white dark:bg-[#15201D] border border-[#E4E7E4] dark:border-[#263834] shadow-xs overflow-hidden">
-        <div className="flex items-center gap-2 min-w-0 flex-1 overflow-hidden">
-          <UserAvatar
-            size="sm"
-            name={currentUser.name}
-            role={currentUser.role}
-            avatarUrl={currentUser.avatar}
-            showBadge={isAdmin}
-          />
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-1.5 min-w-0">
-              <span className="text-xs font-black text-[#18201D] dark:text-white truncate block">
-                {localizedUser.name}
-              </span>
-              <span className="px-1.5 py-0.2 rounded-md bg-[#E6F1ED] dark:bg-[#122823] text-[#176B5B] dark:text-[#2DD4BF] text-[9px] font-black shrink-0">
-                {currentUser.role === 'admin' ? t('app.adminBadge') : `${currentUser.goodwillPoints || 0} ${t('nav.points')}`}
-              </span>
-            </div>
-            <p className="text-[10px] text-[#66706B] dark:text-[#94A39D] truncate block">
-              {currentUser.grade}
-            </p>
-          </div>
-        </div>
-
-        {/* 1-Tap Persona Selector (Malak, Moshira, Aseel) */}
-        <div className="flex items-center gap-1 shrink-0">
-          {users.slice(0, 3).map((u) => (
-            <button
-              key={u.id}
-              onClick={() => setCurrentUserById(u.id)}
-              className={`px-2 py-1 rounded-lg text-[10px] font-black transition-all cursor-pointer ${
-                currentUser.id === u.id
-                  ? 'bg-[#176B5B] dark:bg-[#2DD4BF] text-white dark:text-slate-950 shadow-xs'
-                  : 'bg-[#F1F3F0] dark:bg-[#1C2724] text-[#66706B] dark:text-[#94A39D] hover:text-[#18201D] dark:hover:text-white'
-              }`}
-              title={u.name}
-            >
-              {u.name.replace(/^أ\/\s*/, '').split(' ')[0]}
-            </button>
-          ))}
-        </div>
-      </section>
 
       {/* ========================================================
           1. PERSONALIZED HERO GREETING & SEARCH BAR

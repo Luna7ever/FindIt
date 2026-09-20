@@ -22,6 +22,12 @@ export const SEED_ITEMS_EN: Record<string, Partial<Item>> = {
     locationDetails: 'Classroom 11-A (Science)',
     description: 'Hardcover brown notebook containing calculus exercises and solutions.',
   },
+  item_aseel_found_drawing_set: {
+    title: 'Complete Rotring Technical Drawing Set',
+    locationDetails: 'Found near the projector in the Computer Technology Lab',
+    description: 'Black leather case containing precision compass, dividers, and rulers.',
+    secretQuestion: 'What letter is engraved on the metal compass?',
+  },
   item_found_airpods: {
     title: 'Apple AirPods Pro Wireless Earbuds',
     locationDetails: 'In the quiet reading pod on the 1st floor next to the window',
@@ -69,6 +75,10 @@ export const DEMO_USERS_EN: Record<string, Partial<UserProfile>> = {
   user_malak: {
     name: 'Malak M. Farouk',
     grade: 'Grade 11 - Science',
+  },
+  user_aseel: {
+    name: 'Aseel Ahmed',
+    grade: 'Grade 11 - Science (Integrity Ambassador)',
   },
   user_moshira: {
     name: 'Ms. Moshira Mohamed',

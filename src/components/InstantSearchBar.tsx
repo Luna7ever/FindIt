@@ -148,9 +148,9 @@ export default function InstantSearchBar({
     : 'ابحث عن أي غرض (مثل: حاسبة، نظارة، مفاتيح، حقيبة)...';
 
   return (
-    <div ref={containerRef} className={`relative pt-1 ${className}`} dir={dir}>
+    <div ref={containerRef} className={`relative pt-1 overflow-visible ${className}`} dir={dir}>
       {/* Search Input Form */}
-      <form onSubmit={handleFormSubmit} className="relative">
+      <form onSubmit={handleFormSubmit} className="relative overflow-visible">
         <input
           ref={inputRef}
           type="text"
@@ -165,19 +165,19 @@ export default function InstantSearchBar({
           aria-expanded={isOpen}
           aria-autocomplete="list"
           aria-controls="instant-search-dropdown"
-          className="w-full py-3.5 px-4 ps-11 pe-24 bg-white dark:bg-[#15201D] border border-[#E4E7E4] dark:border-[#263834] rounded-2xl shadow-xs text-xs sm:text-sm focus:border-[#176B5B] dark:focus:border-[#2DD4BF] focus:ring-2 focus:ring-[#176B5B]/10 dark:focus:ring-[#2DD4BF]/10 focus:outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500 text-[#18201D] dark:text-white"
+          className="w-full py-3 px-3.5 sm:py-3.5 sm:px-4 ps-10 sm:ps-11 pe-24 sm:pe-28 bg-white dark:bg-[#15201D] border border-[#E4E7E4] dark:border-[#263834] rounded-2xl shadow-xs text-xs sm:text-sm focus:border-[#176B5B] dark:focus:border-[#2DD4BF] focus:ring-2 focus:ring-[#176B5B]/10 dark:focus:ring-[#2DD4BF]/10 focus:outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500 text-[#18201D] dark:text-white"
         />
 
         {/* Magnifying Glass Icon */}
-        <Search className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute top-1/2 -translate-y-1/2 start-4 pointer-events-none" />
+        <Search className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute top-1/2 -translate-y-1/2 start-3 sm:start-4 pointer-events-none" />
 
         {/* Action Controls: Clear Button + Submit Button */}
-        <div className="absolute top-1/2 -translate-y-1/2 end-2 flex items-center gap-1.5">
+        <div className="absolute top-1/2 -translate-y-1/2 end-1.5 sm:end-2 flex items-center gap-1 sm:gap-1.5 shrink-0 z-10">
           {searchQuery.length > 0 && (
             <button
               type="button"
               onClick={handleClear}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer shrink-0"
               title={language === 'en' ? 'Clear search' : 'مسح نص البحث'}
               aria-label={language === 'en' ? 'Clear search' : 'مسح نص البحث'}
             >
@@ -187,7 +187,7 @@ export default function InstantSearchBar({
 
           <button
             type="submit"
-            className="px-3.5 sm:px-4 py-2 min-h-[40px] rounded-xl bg-[#176B5B] dark:bg-[#2DD4BF] text-white dark:text-slate-950 text-xs font-bold hover:bg-[#125648] dark:hover:bg-[#14B8A6] transition-colors cursor-pointer flex items-center justify-center shadow-2xs"
+            className="min-w-[52px] sm:min-w-[64px] px-3 sm:px-4 py-2 min-h-[40px] rounded-xl bg-[#176B5B] dark:bg-[#2DD4BF] text-white dark:text-slate-950 text-xs font-bold hover:bg-[#125648] dark:hover:bg-[#14B8A6] transition-colors cursor-pointer flex items-center justify-center shrink-0 shadow-2xs"
           >
             {language === 'en' ? 'Search' : 'بحث'}
           </button>

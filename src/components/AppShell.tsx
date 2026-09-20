@@ -532,21 +532,21 @@ export default function AppShell({ children }: AppShellProps) {
         {/* End side: Quick Theme, Language, Notification & Profile */}
         <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
           
-          {/* Quick Theme Toggle Button (Tablet/Desktop, also inside Drawer) */}
+          {/* Quick Theme Toggle Button (Available on Mobile and Desktop) */}
           <motion.button
             whileTap={{ scale: 0.9 }}
             onClick={() => {
               const nextTheme = resolvedTheme === 'dark' ? 'light' : 'dark';
               setTheme(nextTheme);
             }}
-            className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#F1F3F0] dark:bg-[#1C2724] hover:bg-[#E6F1ED] dark:hover:bg-[#23332F] text-[#66706B] dark:text-[#2DD4BF] border border-[#E4E7E4] dark:border-[#2D3E3A] hidden sm:flex items-center justify-center transition-colors cursor-pointer shadow-2xs shrink-0"
+            className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#F1F3F0] dark:bg-[#1C2724] hover:bg-[#E6F1ED] dark:hover:bg-[#23332F] text-[#66706B] dark:text-[#2DD4BF] border border-[#E4E7E4] dark:border-[#2D3E3A] flex items-center justify-center transition-colors cursor-pointer shadow-2xs shrink-0"
             title={resolvedTheme === 'dark' ? t('settings.themeLight') : t('settings.themeDark')}
             aria-label={resolvedTheme === 'dark' ? t('settings.themeLight') : t('settings.themeDark')}
           >
             {resolvedTheme === 'dark' ? (
-              <Sun className="w-4 h-4 text-amber-400" />
+              <Sun className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400" />
             ) : (
-              <Moon className="w-4 h-4 text-[#18201D]" />
+              <Moon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#18201D]" />
             )}
           </motion.button>
 
@@ -595,12 +595,12 @@ export default function AppShell({ children }: AppShellProps) {
       <main className="flex-1 flex flex-col min-w-0 safe-bottom-space">
         <AnimatePresence mode="wait">
           <motion.div
-            key={pathname + language + theme}
-            initial={{ opacity: 0, y: 8 }}
+            key={pathname}
+            initial={false}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.2, ease: "easeOut" }}
-            className="w-full max-w-5xl mx-auto flex-1 flex flex-col"
+            transition={{ duration: 0.15, ease: "easeOut" }}
+            className="w-full max-w-5xl mx-auto flex-1 flex flex-col pb-[90px] md:pb-0"
           >
             {children}
           </motion.div>
@@ -614,7 +614,7 @@ export default function AppShell({ children }: AppShellProps) {
           - Tactile haptic feedback on tap
           - Rich active indicator with spring physics
       ======================================================== */}
-      <div className="md:hidden fixed bottom-3 left-0 right-0 z-40 px-3 max-w-lg mx-auto pointer-events-none">
+      <div className="md:hidden fixed bottom-3 left-0 right-0 z-40 mobile-bottom-dock-container px-3 max-w-lg mx-auto pointer-events-none">
         <nav className="pointer-events-auto bg-white/92 dark:bg-[#141C1A]/92 backdrop-blur-2xl border border-slate-200/90 dark:border-[#23332F] shadow-2xl shadow-slate-900/15 rounded-3xl p-1.5 flex items-center justify-between relative ring-1 ring-black/5 dark:ring-white/5">
           {mobileTabs.map((tab) => {
             const Icon = tab.icon;

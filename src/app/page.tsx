@@ -9,6 +9,7 @@ import { CATEGORIES } from '@/lib/constants';
 import ItemCard from '@/components/ItemCard';
 import ItemVisual from '@/components/ItemVisual';
 import InstantSearchBar from '@/components/InstantSearchBar';
+import UserAvatar from '@/components/UserAvatar';
 import { getLocalizedItem, getLocalizedUser, CATEGORY_DESCRIPTIONS_EN } from '@/lib/i18n/seedDataTranslations';
 import { getCampusPeriod, getCampusGreeting, getCampusAtmosphere, CampusPeriod } from '@/lib/campusSchedule';
 import { 
@@ -32,7 +33,8 @@ import {
   CupSoda,
   Camera,
   Award,
-  Cpu
+  Cpu,
+  ShoppingBag
 } from 'lucide-react';
 
 const categoryIconMap: Record<string, React.ReactNode> = {
@@ -44,12 +46,24 @@ const categoryIconMap: Record<string, React.ReactNode> = {
   sports: <Trophy className="w-4 h-4" />,
   bottles: <CupSoda className="w-4 h-4" />,
   keys: <KeyRound className="w-4 h-4" />,
+  bags: <ShoppingBag className="w-4 h-4" />,
   personal: <FolderOpen className="w-4 h-4" />,
 };
 
 export default function HomePage() {
   const router = useRouter();
-  const { items, claims, currentUser, openQRScanner, openCertificateModal, dir, language, t } = useApp();
+  const { 
+    items, 
+    claims, 
+    currentUser, 
+    users, 
+    setCurrentUserById, 
+    openQRScanner, 
+    openCertificateModal, 
+    dir, 
+    language, 
+    t 
+  } = useApp();
 
   const isAdmin = canAccessAdmin(currentUser);
   const isRtl = dir === 'rtl';
@@ -102,26 +116,72 @@ export default function HomePage() {
   }, [items]);
 
   return (
-    <div className="px-4 sm:px-6 py-6 sm:py-8 space-y-7 sm:space-y-8 max-w-5xl mx-auto text-[#18201D] dark:text-[#F1F5F3]" dir={dir}>
+    <div className="w-full max-w-full overflow-x-hidden px-4 sm:px-6 py-6 sm:py-8 space-y-7 sm:space-y-8 max-w-5xl mx-auto text-[#18201D] dark:text-[#F1F5F3]" dir={dir}>
       
+      {/* ========================================================
+          0. QUICK PERSONA SWITCHER STRIP (Instant Testing on Mobile & Desktop)
+      ======================================================== */}
+      <section className="w-full max-w-full min-w-0 flex items-center justify-between gap-2 p-2 sm:p-2.5 rounded-2xl bg-white dark:bg-[#15201D] border border-[#E4E7E4] dark:border-[#263834] shadow-xs overflow-hidden">
+        <div className="flex items-center gap-2 min-w-0 flex-1 overflow-hidden">
+          <UserAvatar
+            size="sm"
+            name={currentUser.name}
+            role={currentUser.role}
+            avatarUrl={currentUser.avatar}
+            showBadge={isAdmin}
+          />
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <span className="text-xs font-black text-[#18201D] dark:text-white truncate block">
+                {localizedUser.name}
+              </span>
+              <span className="px-1.5 py-0.2 rounded-md bg-[#E6F1ED] dark:bg-[#122823] text-[#176B5B] dark:text-[#2DD4BF] text-[9px] font-black shrink-0">
+                {currentUser.role === 'admin' ? t('app.adminBadge') : `${currentUser.goodwillPoints || 0} ${t('nav.points')}`}
+              </span>
+            </div>
+            <p className="text-[10px] text-[#66706B] dark:text-[#94A39D] truncate block">
+              {currentUser.grade}
+            </p>
+          </div>
+        </div>
+
+        {/* 1-Tap Persona Selector (Malak, Moshira, Aseel) */}
+        <div className="flex items-center gap-1 shrink-0">
+          {users.slice(0, 3).map((u) => (
+            <button
+              key={u.id}
+              onClick={() => setCurrentUserById(u.id)}
+              className={`px-2 py-1 rounded-lg text-[10px] font-black transition-all cursor-pointer ${
+                currentUser.id === u.id
+                  ? 'bg-[#176B5B] dark:bg-[#2DD4BF] text-white dark:text-slate-950 shadow-xs'
+                  : 'bg-[#F1F3F0] dark:bg-[#1C2724] text-[#66706B] dark:text-[#94A39D] hover:text-[#18201D] dark:hover:text-white'
+              }`}
+              title={u.name}
+            >
+              {u.name.replace(/^أ\/\s*/, '').split(' ')[0]}
+            </button>
+          ))}
+        </div>
+      </section>
+
       {/* ========================================================
           1. PERSONALIZED HERO GREETING & SEARCH BAR
       ======================================================== */}
-      <section className="space-y-4 text-start pt-1">
+      <section className="space-y-4 text-start pt-1 w-full max-w-full min-w-0 overflow-hidden">
         <div className="space-y-2">
           <div className="flex flex-wrap items-center gap-2">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E6F1ED] dark:bg-[#122823] text-[#176B5B] dark:text-[#2DD4BF] text-xs font-bold border border-[#176B5B]/30 dark:border-[#263834]">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E6F1ED] dark:bg-[#122823] text-[#176B5B] dark:text-[#2DD4BF] text-xs font-bold border border-[#176B5B]/30 dark:border-[#263834] max-w-full">
               <span className="w-1.5 h-1.5 rounded-full bg-[#176B5B] dark:bg-[#2DD4BF] animate-pulse shrink-0" />
-              <span>{greetingText}</span>
+              <span className="truncate">{greetingText}</span>
             </div>
 
             {isAdmin && (
               <Link
                 href="/admin"
-                className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#176B5B] hover:bg-[#125648] text-white text-xs font-bold transition-all shadow-2xs"
+                className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#176B5B] hover:bg-[#125648] text-white text-xs font-bold transition-all shadow-2xs shrink-0"
               >
                 <Building2 className="w-3.5 h-3.5" />
-                <span>{language === 'en' ? 'Open Admin Portal 🏛️' : 'الانتقال إلى لوحة الإدارة 🏛️'}</span>
+                <span>{language === 'en' ? 'Admin Portal 🏛️' : 'لوحة الإدارة 🏛️'}</span>
               </Link>
             )}
           </div>
@@ -133,7 +193,7 @@ export default function HomePage() {
                 {language === 'en' ? 'We are here to help.' : 'خلّينا نساعدك تلاقيه.'}
               </span>
             </h1>
-            <p className="text-xs sm:text-sm text-[#66706B] dark:text-[#94A39D] mt-1 max-w-2xl leading-relaxed">
+            <p className="text-xs sm:text-sm text-[#66706B] dark:text-[#94A39D] mt-1 max-w-2xl leading-relaxed truncate sm:whitespace-normal">
               {language === 'en'
                 ? 'Smart, confidential school platform connecting lost and found belongings.'
                 : 'المنظومة الذكية لمطابقة المفقودات والأمانات داخل الحرم المدرسي بأمان وسرية.'}
@@ -149,7 +209,7 @@ export default function HomePage() {
           2. DUAL ACTION HERO CARDS (فقدت شيئاً؟ / عثرت على شيء؟)
       ======================================================== */}
       <section className="space-y-3">
-        {/* Subtle Campus Atmosphere Context Ribbon */}
+        {/* Subtle Campus Atmosphere Context Ribbon with Two Distinct Badges */}
         <div className="flex flex-wrap items-center justify-between gap-2 px-1 text-xs text-[#66706B] dark:text-[#94A39D]">
           <div className="flex items-center gap-1.5 min-w-0">
             <span className="text-sm select-none shrink-0" aria-hidden="true">
@@ -159,19 +219,30 @@ export default function HomePage() {
               {t(campusAtmosphere.awarenessKey)}
             </span>
           </div>
-          <span className="text-[10px] sm:text-[11px] font-semibold text-[#176B5B] dark:text-[#2DD4BF] bg-[#E6F1ED]/80 dark:bg-[#122823]/80 px-2 py-0.5 rounded-md border border-[#176B5B]/20 dark:border-[#263834] shrink-0">
-            {campusAtmosphere.timeBracket} · {t(campusAtmosphere.periodNameKey || 'campus_morning_period')}
-          </span>
+
+          <div className="flex items-center gap-1.5 shrink-0 flex-wrap">
+            {/* Badge 1: Online Reporting & Tracking 24/7 */}
+            <span className="inline-flex items-center gap-1 text-[10px] sm:text-[11px] font-bold text-[#059669] dark:text-[#34D399] bg-[#ECFDF5] dark:bg-[#064E3B]/40 px-2 py-0.5 rounded-md border border-[#059669]/20 dark:border-[#064E3B]">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#059669] dark:bg-[#34D399] animate-pulse shrink-0" />
+              <span>{language === 'en' ? 'Online: 24/7' : 'البلاغات أونلاين: 24/7'}</span>
+            </span>
+
+            {/* Badge 2: Physical Office Retrieval Hours */}
+            <span className="inline-flex items-center gap-1 text-[10px] sm:text-[11px] font-semibold text-[#176B5B] dark:text-[#2DD4BF] bg-[#E6F1ED]/80 dark:bg-[#122823]/80 px-2 py-0.5 rounded-md border border-[#176B5B]/20 dark:border-[#263834] shrink-0">
+              <span className="sr-only">{campusAtmosphere.timeBracket} · {t(campusAtmosphere.periodNameKey || 'campus_morning_period')}</span>
+              <span>{language === 'en' ? 'Office: 08:00 – 16:00 (Morning Period)' : 'مكتب استلام الأمانات: 08:00 – 16:00 (الفترة الصباحية)'}</span>
+            </span>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4">
           <Link
             href="/report?type=lost"
-            className="app-card app-card-interactive p-5 sm:p-6 border-l-4 border-l-[#D97706] bg-white dark:bg-[#15201D] flex flex-col justify-between space-y-4 group text-start"
+            className="app-card app-card-interactive p-4 sm:p-6 border-l-4 border-l-[#D97706] bg-white dark:bg-[#15201D] flex flex-col justify-between space-y-3 sm:space-y-4 group text-start shadow-xs"
           >
             <div className="flex items-start justify-between">
-              <div className="p-3 rounded-2xl bg-[#FEF3C7] dark:bg-amber-950/60 text-[#D97706] dark:text-amber-400">
-                <Search className="w-6 h-6" />
+              <div className="p-2.5 sm:p-3 rounded-2xl bg-[#FEF3C7] dark:bg-amber-950/60 text-[#D97706] dark:text-amber-400">
+                <Search className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
               <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#FEF3C7] dark:bg-amber-950/60 text-[#92400E] dark:text-amber-300">
                 {language === 'en' ? 'Quick Search' : 'بحث فوري'}
@@ -179,10 +250,10 @@ export default function HomePage() {
             </div>
 
             <div>
-              <h2 className="text-lg font-bold text-[#18201D] dark:text-white group-hover:text-[#D97706] transition-colors">
+              <h2 className="text-base sm:text-lg font-bold text-[#18201D] dark:text-white group-hover:text-[#D97706] transition-colors">
                 {language === 'en' ? 'Lost something?' : 'فقدت شيئاً؟'}
               </h2>
-              <p className="text-xs text-[#66706B] dark:text-[#94A39D] mt-1 leading-relaxed">
+              <p className="text-xs text-[#66706B] dark:text-[#94A39D] mt-1 leading-relaxed line-clamp-2 sm:line-clamp-none">
                 {language === 'en' 
                   ? 'Register your item specs and the system will match it immediately with school findings.' 
                   : 'سجّلي مواصفات غرضك وسيقوم النظام بمطابقته فوراً مع معثورات المدرسة.'}
@@ -197,11 +268,11 @@ export default function HomePage() {
 
           <Link
             href="/report?type=found"
-            className="app-card app-card-interactive p-5 sm:p-6 border-l-4 border-l-[#059669] bg-white dark:bg-[#15201D] flex flex-col justify-between space-y-4 group text-start"
+            className="app-card app-card-interactive p-4 sm:p-6 border-l-4 border-l-[#059669] bg-white dark:bg-[#15201D] flex flex-col justify-between space-y-3 sm:space-y-4 group text-start shadow-xs"
           >
             <div className="flex items-start justify-between">
-              <div className="p-3 rounded-2xl bg-[#D1FAE5] dark:bg-emerald-950/60 text-[#059669] dark:text-emerald-400">
-                <PlusCircle className="w-6 h-6" />
+              <div className="p-2.5 sm:p-3 rounded-2xl bg-[#D1FAE5] dark:bg-emerald-950/60 text-[#059669] dark:text-emerald-400">
+                <PlusCircle className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
               <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#D1FAE5] dark:bg-emerald-950/60 text-[#065F46] dark:text-emerald-300">
                 {language === 'en' ? 'Honesty' : 'أمانة'}
@@ -209,10 +280,10 @@ export default function HomePage() {
             </div>
 
             <div>
-              <h2 className="text-lg font-bold text-[#18201D] dark:text-white group-hover:text-[#059669] transition-colors">
+              <h2 className="text-base sm:text-lg font-bold text-[#18201D] dark:text-white group-hover:text-[#059669] transition-colors">
                 {language === 'en' ? 'Found something?' : 'عثرت على شيء؟'}
               </h2>
-              <p className="text-xs text-[#66706B] dark:text-[#94A39D] mt-1 leading-relaxed">
+              <p className="text-xs text-[#66706B] dark:text-[#94A39D] mt-1 leading-relaxed line-clamp-2 sm:line-clamp-none">
                 {language === 'en'
                   ? 'Thank you for your honesty! Record the item with a secret question to reach the owner safely.'
                   : 'شكراً لأمانتك! وثّقي الغرض مع سؤال سري لنصل إلى صاحبه الحقيقي بأمان.'}
@@ -231,7 +302,7 @@ export default function HomePage() {
           3. HIGH-MATCH SPOTLIGHT CARD (When Match Exists)
       ======================================================== */}
       {malakLostCalc && matchingFoundCalc && currentUser.id === 'user_malak' && (
-        <section className="bg-gradient-to-br from-emerald-50 via-teal-50/40 to-white dark:from-[#122823] dark:via-[#16352E] dark:to-[#15201D] p-5 sm:p-6 rounded-3xl border border-emerald-300/50 dark:border-[#263834] shadow-sm space-y-4">
+        <section className="bg-gradient-to-br from-emerald-50 via-teal-50/40 to-white dark:from-[#122823] dark:via-[#16352E] dark:to-[#15201D] p-4 sm:p-6 rounded-3xl border border-emerald-300/50 dark:border-[#263834] shadow-sm space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-[#176B5B] dark:bg-[#2DD4BF] animate-ping" />
@@ -254,11 +325,11 @@ export default function HomePage() {
                   className="w-full h-full"
                 />
               </div>
-              <div className="text-start">
-                <h3 className="font-extrabold text-sm sm:text-base text-[#18201D] dark:text-white">
+              <div className="text-start min-w-0">
+                <h3 className="font-extrabold text-sm sm:text-base text-[#18201D] dark:text-white truncate">
                   {getLocalizedItem(matchingFoundCalc, language).title}
                 </h3>
-                <p className="text-xs text-[#66706B] dark:text-[#94A39D] mt-0.5">
+                <p className="text-xs text-[#66706B] dark:text-[#94A39D] mt-0.5 truncate">
                   {language === 'en' ? 'Found in Science Lab - matches your lost calculator specs' : 'عُثر عليها في معمل العلوم - تطابق مواصفات حاسبتك المفقودة'}
                 </p>
               </div>
@@ -294,7 +365,7 @@ export default function HomePage() {
                 {language === 'en' ? '+50 pts' : '+50ن'}
               </span>
             </div>
-            <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate hidden sm:block">
+            <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate block">
               {language === 'en' ? 'Quests & Badges' : 'مهام وتحديات وأوسمة'}
             </p>
           </div>
@@ -311,7 +382,7 @@ export default function HomePage() {
             <p className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-[#176B5B] dark:group-hover:text-[#2DD4BF] truncate">
               {language === 'en' ? 'QR Scanner' : 'مسح الباركود'}
             </p>
-            <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate hidden sm:block">
+            <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate block">
               {language === 'en' ? 'Instant room matching' : 'تحديد موقع المعمل فورياً'}
             </p>
           </div>
@@ -328,7 +399,7 @@ export default function HomePage() {
             <p className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-amber-950 dark:group-hover:text-amber-300 truncate">
               {language === 'en' ? 'Leaderboard' : 'لوحة الشرف'}
             </p>
-            <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate hidden sm:block">
+            <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate block">
               {language === 'en' ? 'Integrity Honor Roll' : 'تصنيف أبطال الأمانة'}
             </p>
           </div>
@@ -347,7 +418,7 @@ export default function HomePage() {
                 ? (language === 'en' ? 'Certificate' : 'معاينة الشهادة') 
                 : (language === 'en' ? 'My Certificate' : 'شهادتي الرسمية')}
             </p>
-            <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate hidden sm:block">
+            <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate block">
               {isAdmin 
                 ? (language === 'en' ? 'Official student template' : 'نموذج التكريم المعتمد') 
                 : (language === 'en' ? 'Verified honor doc' : 'توثيق سفير النزاهة')}
@@ -385,7 +456,7 @@ export default function HomePage() {
                   <p className="font-bold text-xs text-[#18201D] dark:text-white group-hover:text-[#176B5B] dark:group-hover:text-[#2DD4BF] transition-colors truncate">
                     {t('cat.' + cat.id) || cat.label}
                   </p>
-                  <p className="text-[10px] text-[#66706B] dark:text-[#94A39D] truncate hidden sm:block">
+                  <p className="text-[10px] text-[#66706B] dark:text-[#94A39D] truncate block">
                     {language === 'en' ? (CATEGORY_DESCRIPTIONS_EN[cat.id] || cat.description) : cat.description}
                   </p>
                 </div>

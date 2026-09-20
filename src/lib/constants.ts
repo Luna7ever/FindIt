@@ -72,6 +72,17 @@ export const DEMO_USERS: UserProfile[] = [
     goodwillPoints: 0,
   },
   {
+    id: 'user_aseel',
+    name: 'أسيل أحمد',
+    email: 'aseel.ahmed@school.edu',
+    role: 'student',
+    grade: 'الصف الحادي عشر - علمي',
+    avatar: '',
+    returnedCount: 3,
+    isTrusted: true,
+    goodwillPoints: 85,
+  },
+  {
     id: 'student_finder_sara',
     name: 'سارة القحطاني',
     email: 'sara.q@school.edu',
@@ -244,21 +255,40 @@ export const INITIAL_SEED_ITEMS: Item[] = [
     createdAt: '2026-08-29T15:30:00.000Z',
   },
 
-  // 4. MALAK'S REUNITED NOTEBOOK (Demonstrating Reunited History)
+  // 4. MALAK'S REUNITED NOTEBOOK (Demonstrating Reunited History)  // 4. MALAK'S REUNITED ITEM
   {
     id: 'item_malak_reunited_notebook',
-    title: 'دفتر مذكرات الرياضيات المتقدمة',
+    title: 'دفتر ملاحظات الرياضيات المتقدمة',
     type: 'lost',
     category: 'books',
     locationId: 'classrooms_g1',
-    locationDetails: 'الفصل 11-أ علمي',
-    date: '2026-08-27T08:00:00.000Z',
+    locationDetails: 'الفصل 11 - علمي أ',
+    date: '2026-08-28T10:00:00.000Z',
     color: 'بني',
-    description: 'دفتر بغلاف بني مقوى يحتوي على مسائل وحلول تفاضل وتكامل.',
+    description: 'دفتر جلد بني مسطّر يحتوي على ملخصات وتمارين التكامل مع كتابات بخط اليد.',
     status: 'reunited',
-    reunitedAt: '2026-08-28T10:00:00.000Z',
     reportedBy: DEMO_USERS[0], // Malak
-    createdAt: '2026-08-27T08:00:00.000Z',
+    createdAt: '2026-08-28T10:00:00.000Z',
+  },
+
+  // 4b. ASEEL'S FOUND CUSTODY ITEM
+  {
+    id: 'item_aseel_found_drawing_set',
+    title: 'حقيبة أدوات رسم هندسي متكاملة Rotring',
+    type: 'found',
+    category: 'stationery',
+    locationId: 'computer_lab',
+    locationDetails: 'عثرت عليها بجوار جهاز العرض في معمل الحاسب الآلي',
+    date: '2026-08-30T10:15:00.000Z',
+    color: 'أسود',
+    brand: 'Rotring',
+    description: 'حقيبة جلدية سوداء بها فرجار ومساطر ومثلثات هندسية دقيقة.',
+    secretQuestion: 'ما هو الاسم أو الحرف المنقوش على الفرجار المعدني؟',
+    secretAnswer: 'حرف A محفور بالليزر',
+    custody: 'at_office',
+    status: 'open',
+    reportedBy: DEMO_USERS[2], // Aseel
+    createdAt: '2026-08-30T10:15:00.000Z',
   },
 
   // 5. FOUND WIRELESS EARBUDS

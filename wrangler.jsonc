@@ -1,11 +1,16 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "app",
+  "name": "findit",
   "main": "src/worker.js",
   "compatibility_date": "2026-08-29",
   "compatibility_flags": [
     "nodejs_compat"
   ],
+  "vars": {
+    "NEXT_PUBLIC_DEMO_MODE": "true",
+    "NEXT_PUBLIC_APP_URL": "https://findit.findit-us.workers.dev",
+    "NODE_ENV": "production"
+  },
   "assets": {
     "directory": "dist/client",
     "binding": "ASSETS"

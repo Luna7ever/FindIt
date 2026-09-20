@@ -600,7 +600,7 @@ export default function AppShell({ children }: AppShellProps) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.15, ease: "easeOut" }}
-            className="w-full max-w-5xl mx-auto flex-1 flex flex-col pb-[90px] md:pb-0"
+            className="w-full max-w-5xl mx-auto flex-1 flex flex-col min-w-0 overflow-x-hidden pb-[90px] md:pb-0"
           >
             {children}
           </motion.div>

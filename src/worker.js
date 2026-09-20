@@ -4,6 +4,14 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
 
+    // Forward env variables and D1 binding to global scope and process.env
+    if (env) {
+      globalThis.env = env;
+      if (typeof process !== 'undefined' && process.env) {
+        Object.assign(process.env, env);
+      }
+    }
+
     // 1. Try static assets for known static asset paths or file extensions
     if (env?.ASSETS && (url.pathname.startsWith('/_next/') || (url.pathname.includes('.') && !url.pathname.endsWith('.rsc')))) {
       try {
@@ -12,7 +20,7 @@ export default {
           return assetRes;
         }
       } catch (e) {
-        // Fall through to SSR
+        console.warn('Asset fetch warning:', e);
       }
     }
 
@@ -32,7 +40,7 @@ export default {
       }
     } catch (err) {
       console.error('FindIt SSR Worker Error:', err);
-      return new Response('FindIt Server Error', {
+      return new Response(`FindIt Server Error: ${err instanceof Error ? err.stack || err.message : String(err)}`, {
         status: 500,
         headers: { 'content-type': 'text/plain; charset=utf-8' },
       });

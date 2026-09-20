@@ -44,7 +44,7 @@ export default function ItemCard({ item: rawItem, matchScore, showMatchButton = 
   return (
     <Link
       href={`/items/${item.id}`}
-      className="app-card app-card-interactive overflow-hidden flex flex-col justify-between group block text-start bg-white dark:bg-[#15201D] border-[#E4E7E4] dark:border-[#263834] transition-all"
+      className="app-card app-card-interactive w-full max-w-full min-w-0 overflow-hidden flex flex-col justify-between group block text-start bg-white dark:bg-[#15201D] border-[#E4E7E4] dark:border-[#263834] transition-all"
     >
       {/* Visual Area */}
       <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#F1F3F0] dark:bg-[#1C2B27]">

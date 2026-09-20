@@ -539,7 +539,7 @@ export default function AppShell({ children }: AppShellProps) {
               const nextTheme = resolvedTheme === 'dark' ? 'light' : 'dark';
               setTheme(nextTheme);
             }}
-            className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#F1F3F0] dark:bg-[#1C2724] hover:bg-[#E6F1ED] dark:hover:bg-[#23332F] text-[#66706B] dark:text-[#2DD4BF] border border-[#E4E7E4] dark:border-[#2D3E3A] flex items-center justify-center transition-colors cursor-pointer shadow-2xs shrink-0"
+            className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-[#F1F3F0] dark:bg-[#1C2724] hover:bg-[#E6F1ED] dark:hover:bg-[#23332F] text-[#66706B] dark:text-[#2DD4BF] border border-[#E4E7E4] dark:border-[#2D3E3A] flex items-center justify-center transition-colors cursor-pointer shadow-2xs shrink-0"
             title={resolvedTheme === 'dark' ? t('settings.themeLight') : t('settings.themeDark')}
             aria-label={resolvedTheme === 'dark' ? t('settings.themeLight') : t('settings.themeDark')}
           >

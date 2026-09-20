@@ -52,13 +52,13 @@ export default function MyItemsPage() {
   const myReunitedItems = items.filter((i) => i.reportedBy?.id === currentUser.id && i.status === 'reunited');
 
   return (
-    <div className="px-4 sm:px-6 py-6 sm:py-8 max-w-4xl mx-auto space-y-6" dir={dir}>
+    <div className="w-full max-w-full overflow-x-hidden min-w-0 px-3.5 sm:px-6 py-5 sm:py-8 max-w-4xl mx-auto space-y-6" dir={dir}>
       
       {/* Student Profile Card */}
-      <div className="app-card p-5 sm:p-6 bg-white dark:bg-[#15201D] border border-[#E4E7E4] dark:border-[#263834] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-start transition-colors duration-300">
+      <div className="app-card p-4 sm:p-6 bg-white dark:bg-[#15201D] border border-[#E4E7E4] dark:border-[#263834] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-start transition-colors duration-300 w-full max-w-full overflow-hidden">
         
-        <div className="flex items-center gap-3.5 min-w-0">
-          <div className="relative">
+        <div className="flex items-center gap-3 min-w-0 w-full sm:w-auto">
+          <div className="relative shrink-0">
             <UserAvatar
               size="lg"
               name={currentUser.name}
@@ -73,10 +73,19 @@ export default function MyItemsPage() {
             )}
           </div>
 
-          <div className="min-w-0">
-            <div className="flex items-center gap-2">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2 flex-wrap">
               <h1 className="text-base sm:text-lg font-bold text-[#18201D] dark:text-white truncate">{localizedUser.name}</h1>
               <TrustBadge tier={currentUserTrustTier} size="sm" />
+              {env.NEXT_PUBLIC_DEMO_MODE && (
+                <button
+                  onClick={() => setShowRoleModal(true)}
+                  className="ms-auto sm:ms-0 px-2 py-0.5 rounded-lg border border-[#E4E7E4] dark:border-[#2D3E3A] hover:bg-[#F1F3F0] dark:hover:bg-[#1C2B27] text-[10px] font-bold text-[#176B5B] dark:text-emerald-400 transition-colors cursor-pointer shrink-0"
+                  title="تبديل حساب العرض"
+                >
+                  تبديل
+                </button>
+              )}
             </div>
             <p className="text-xs text-[#66706B] dark:text-[#94A39D] truncate">{localizedUser.grade}</p>
             <p className="text-[11px] text-[#66706B]/80 dark:text-[#94A39D]/80 mt-0.5 font-mono">
@@ -85,44 +94,35 @@ export default function MyItemsPage() {
           </div>
         </div>
 
-        {/* Goodwill points, Certificate & Demo Switcher */}
-        <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap">
-          <div className="flex-1 sm:flex-initial p-2.5 rounded-xl bg-[#F1F3F0] dark:bg-[#1C2B27] text-center min-w-16 border border-transparent dark:border-[#2D3E3A]">
-            <span className="block text-base font-black text-[#18201D] dark:text-white">{currentUser.returnedCount || 0}</span>
-            <span className="text-[10px] text-[#66706B] dark:text-[#94A39D]">
-              {currentUser.role === 'admin' ? (language === 'en' ? 'Verified Reunions' : 'تسليمات معتمدة') : t('myItems.returnedGoodwill')}
+        {/* Goodwill points, Certificate & Stats (Balanced 3-Column Grid) */}
+        <div className="grid grid-cols-3 gap-2 w-full sm:w-auto sm:flex sm:items-center">
+          <div className="p-2 sm:p-2.5 rounded-xl bg-[#F1F3F0] dark:bg-[#1C2B27] text-center border border-transparent dark:border-[#2D3E3A] flex flex-col items-center justify-center min-w-0">
+            <span className="block text-sm sm:text-base font-black text-[#18201D] dark:text-white leading-tight">{currentUser.returnedCount || 0}</span>
+            <span className="text-[10px] text-[#66706B] dark:text-[#94A39D] truncate mt-0.5">
+              {currentUser.role === 'admin' ? (language === 'en' ? 'Verified' : 'تسليمات') : t('myItems.returnedGoodwill')}
             </span>
           </div>
           {currentUser.role !== 'admin' && (
             <Link
               href="/integrity"
-              className="flex-1 sm:flex-initial p-2.5 rounded-xl bg-[#E6F1ED] dark:bg-[#176B5B]/20 hover:bg-[#d5eae2] dark:hover:bg-[#176B5B]/30 transition-colors text-center min-w-16 group border border-transparent dark:border-[#176B5B]/40"
+              className="p-2 sm:p-2.5 rounded-xl bg-[#E6F1ED] dark:bg-[#176B5B]/20 hover:bg-[#d5eae2] dark:hover:bg-[#176B5B]/30 transition-colors text-center group border border-transparent dark:border-[#176B5B]/40 flex flex-col items-center justify-center min-w-0"
               title="الانتقال إلى وحدة سفير النزاهة واختبارات الأمانة"
             >
-              <span className="block text-base font-black text-[#176B5B] dark:text-emerald-400">{currentUser.goodwillPoints || 0} ⭐</span>
-              <span className="text-[10px] text-[#176B5B] dark:text-emerald-400 font-semibold flex items-center justify-center gap-1">
+              <span className="block text-sm sm:text-base font-black text-[#176B5B] dark:text-emerald-400 leading-tight">{currentUser.goodwillPoints || 0} ⭐</span>
+              <span className="text-[10px] text-[#176B5B] dark:text-emerald-400 font-semibold flex items-center justify-center gap-0.5 truncate mt-0.5">
                 <span>{t('app.points')}</span>
-                <Award className="w-3 h-3 text-[#176B5B] dark:text-emerald-400" />
+                <Award className="w-3 h-3 text-[#176B5B] dark:text-emerald-400 shrink-0" />
               </span>
             </Link>
           )}
           {currentUser.role !== 'admin' && (
             <button
               onClick={() => openCertificateModal(currentUser)}
-              className="flex-1 sm:flex-initial py-2.5 px-3 rounded-xl bg-amber-100 dark:bg-amber-950/60 hover:bg-amber-200 dark:hover:bg-amber-900/80 text-amber-950 dark:text-amber-200 text-[11px] font-bold transition-colors whitespace-nowrap border border-amber-300 dark:border-amber-800 flex items-center justify-center gap-1 cursor-pointer"
+              className="p-2 sm:p-2.5 rounded-xl bg-amber-100 dark:bg-amber-950/60 hover:bg-amber-200 dark:hover:bg-amber-900/80 text-amber-950 dark:text-amber-200 transition-colors border border-amber-300 dark:border-amber-800 flex flex-col items-center justify-center gap-0.5 cursor-pointer min-w-0"
               title="عرض وطباعة شهادة النزاهة الرقمية المعتمدة"
             >
-              <span>📜</span>
-              <span>{t('myItems.certificate')}</span>
-            </button>
-          )}
-          {env.NEXT_PUBLIC_DEMO_MODE && (
-            <button
-              onClick={() => setShowRoleModal(true)}
-              className="py-2.5 px-3 rounded-xl border border-[#E4E7E4] dark:border-[#2D3E3A] hover:bg-[#F1F3F0] dark:hover:bg-[#1C2B27] text-[11px] font-bold text-[#176B5B] dark:text-emerald-400 transition-colors whitespace-nowrap cursor-pointer"
-              title="تبديل حساب العرض"
-            >
-              تبديل
+              <span className="text-sm sm:text-base leading-none">📜</span>
+              <span className="text-[10px] font-bold truncate">{t('myItems.certificate')}</span>
             </button>
           )}
         </div>
@@ -176,26 +176,26 @@ export default function MyItemsPage() {
       )}
 
       {/* Segmented Tab Chips */}
-      <div className="flex items-center p-1 bg-[#F1F3F0] dark:bg-[#141C1A] rounded-xl overflow-x-auto scrollbar-none border border-transparent dark:border-[#23332F]">
+      <div className="flex items-center p-1 bg-[#F1F3F0] dark:bg-[#141C1A] rounded-xl overflow-x-auto scrollbar-none border border-transparent dark:border-[#23332F] w-full max-w-full">
         
         <button
           onClick={() => setActiveTab('claims')}
-          className={`flex-1 min-h-[40px] py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer ${
+          className={`shrink-0 sm:flex-1 min-h-[40px] py-1.5 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer ${
             activeTab === 'claims'
               ? 'bg-white dark:bg-[#1C2B27] text-[#18201D] dark:text-white shadow-2xs'
               : 'text-[#66706B] dark:text-[#94A39D] hover:text-[#18201D] dark:hover:text-white'
           }`}
         >
-          <KeyRound className="w-3.5 h-3.5" />
+          <KeyRound className="w-3.5 h-3.5 shrink-0" />
           <span>{t('myItems.tabClaims')} ({incomingClaims.length})</span>
           {incomingClaims.filter((c) => c.claim.status === 'pending').length > 0 && (
-            <span className="w-2 h-2 rounded-full bg-[#E11D48] animate-pulse" />
+            <span className="w-2 h-2 rounded-full bg-[#E11D48] animate-pulse shrink-0" />
           )}
         </button>
 
         <button
           onClick={() => setActiveTab('lost')}
-          className={`flex-1 min-h-[40px] py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center whitespace-nowrap cursor-pointer ${
+          className={`shrink-0 sm:flex-1 min-h-[40px] py-1.5 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center whitespace-nowrap cursor-pointer ${
             activeTab === 'lost'
               ? 'bg-white dark:bg-[#1C2B27] text-[#D97706] dark:text-amber-400 shadow-2xs'
               : 'text-[#66706B] dark:text-[#94A39D] hover:text-[#18201D] dark:hover:text-white'
@@ -206,7 +206,7 @@ export default function MyItemsPage() {
 
         <button
           onClick={() => setActiveTab('found')}
-          className={`flex-1 min-h-[40px] py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center whitespace-nowrap cursor-pointer ${
+          className={`shrink-0 sm:flex-1 min-h-[40px] py-1.5 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center whitespace-nowrap cursor-pointer ${
             activeTab === 'found'
               ? 'bg-white dark:bg-[#1C2B27] text-[#059669] dark:text-emerald-400 shadow-2xs'
               : 'text-[#66706B] dark:text-[#94A39D] hover:text-[#18201D] dark:hover:text-white'
@@ -217,7 +217,7 @@ export default function MyItemsPage() {
 
         <button
           onClick={() => setActiveTab('reunited')}
-          className={`flex-1 min-h-[40px] py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center whitespace-nowrap cursor-pointer ${
+          className={`shrink-0 sm:flex-1 min-h-[40px] py-1.5 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center whitespace-nowrap cursor-pointer ${
             activeTab === 'reunited'
               ? 'bg-white dark:bg-[#1C2B27] text-[#4F46E5] dark:text-indigo-400 shadow-2xs'
               : 'text-[#66706B] dark:text-[#94A39D] hover:text-[#18201D] dark:hover:text-white'

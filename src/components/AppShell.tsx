@@ -34,6 +34,7 @@ import {
 import QRModal from '@/components/QRModal';
 import CameraQRScannerModal from '@/components/CameraQRScannerModal';
 import IntegrityCertificateModal from '@/components/IntegrityCertificateModal';
+import StudentOnboardingModal from '@/components/StudentOnboardingModal';
 import NavigationDrawer from '@/components/NavigationDrawer';
 import NotificationCenter from '@/components/NotificationCenter';
 import ToastNotification from '@/components/ToastNotification';
@@ -69,6 +70,8 @@ export default function AppShell({ children }: AppShellProps) {
     certificateUser,
     openCertificateModal,
     closeCertificateModal,
+    isOnboardingModalOpen,
+    closeOnboardingModal,
     currentUserTrustTier,
     language,
     setLanguage,
@@ -708,6 +711,10 @@ export default function AppShell({ children }: AppShellProps) {
         isOpen={isCertificateModalOpen} 
         onClose={closeCertificateModal} 
         user={certificateUser} 
+      />
+      <StudentOnboardingModal
+        isOpen={isOnboardingModalOpen}
+        onClose={closeOnboardingModal}
       />
       <ToastNotification />
 

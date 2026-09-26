@@ -157,7 +157,7 @@ export default function ClaimModal({ itemId, isOpen, onClose }: ClaimModalProps)
                 {language === 'en' ? 'Your Secret Handover PIN:' : 'رمز التسليم السري (PIN):'}
               </span>
               <span className="font-mono text-3xl font-black tracking-widest text-[#176B5B] dark:text-[#2DD4BF]">
-                {generatedClaimPin || existingClaim?.handoverPin || '1234'}
+                {generatedClaimPin || existingClaim?.handoverPin || '----'}
               </span>
             </div>
 

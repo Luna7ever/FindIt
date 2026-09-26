@@ -190,7 +190,8 @@ export default function NavigationDrawer({
                       )}
                     </div>
                     <p className="text-[11px] text-[#66706B] dark:text-[#94A39D] truncate">
-                      {currentUser.grade}
+                      {currentUser.grade}{currentUser.track ? ` • ${currentUser.track}` : ''}
+                      {currentUser.classroom ? ` • ${language === 'en' ? 'Class' : 'فصل'} ${currentUser.classroom}` : ''}
                     </p>
                     {isAdminUser ? (
                       <div className="flex items-center gap-1.5 mt-1.5 text-[10px] font-bold text-[#176B5B] dark:text-[#2DD4BF] bg-emerald-100/70 dark:bg-emerald-950/80 px-2.5 py-0.5 rounded-full border border-emerald-300 dark:border-emerald-800">

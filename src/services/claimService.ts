@@ -41,14 +41,15 @@ export class ClaimService {
       throw new ConflictError('لديك طلب استرداد قيد المراجعة بالفعل لهذا الغرض');
     }
 
-    // 4. Create Claim Record
+    // 4. Create Claim Record with Secure Dynamic 4-digit PIN
+    const generatedPin = Math.floor(1000 + Math.random() * 9000).toString();
     const newClaim: Claim = {
       id: `claim_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
       itemId,
       claimant: user,
       answerText,
       status: 'pending',
-      handoverPin: '4826', // Deterministic demo PIN
+      handoverPin: generatedPin,
       createdAt: new Date().toISOString(),
     };
 

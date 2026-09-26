@@ -6,7 +6,7 @@ import { logger } from '@/lib/logging/logger';
 
 // In-memory attempt tracking per claimId to prevent brute forcing
 const failedAttemptsMap = new Map<string, number>();
-const MAX_PIN_ATTEMPTS = 5;
+export const MAX_PIN_ATTEMPTS = 3;
 
 export class HandoverService {
   /**
@@ -27,7 +27,7 @@ export class HandoverService {
     const attempts = failedAttemptsMap.get(claimId) || 0;
     if (attempts >= MAX_PIN_ATTEMPTS) {
       logger.warn('PIN attempt limit exceeded for claim', { claimId });
-      throw new RateLimitError('تم تجاوز عدد المحاولات الخاطئة للرمز. يرجى مراجعة إدارة المدرسة.');
+      throw new RateLimitError('تم استنفاد عدد المحاولات المسموحة. لحماية الأمانة، يرجى التوجه لمكتب الإدارة المدرسية للتحقق اليدوي.');
     }
 
     // 2. Validate input schema
@@ -53,9 +53,20 @@ export class HandoverService {
       const remaining = MAX_PIN_ATTEMPTS - newAttempts;
       logger.warn('Incorrect PIN entered', { claimId, remainingAttempts: remaining });
       
+      if (remaining <= 0) {
+        return {
+          success: false,
+          message: 'تم استنفاد عدد المحاولات المسموحة. لحماية الأمانة، يرجى التوجه لمكتب الإدارة المدرسية للتحقق اليدوي.',
+          updatedClaim: claim,
+          updatedItem: item,
+        };
+      }
+
+      const remainingLabel = remaining === 1 ? 'محاولة واحدة' : `${remaining} محاولات`;
+
       return {
         success: false,
-        message: `رمز التسليم غير صحيح. المتبقي: ${remaining} محاولات (الرمز هو 4826)`,
+        message: `رمز التسليم غير صحيح. المتبقي: ${remainingLabel}`,
         updatedClaim: claim,
         updatedItem: item,
       };
@@ -73,6 +84,7 @@ export class HandoverService {
     const updatedClaim: Claim = {
       ...claim,
       status: 'completed',
+      handoverPin: '', // Invalidate PIN upon completion for security
       completedAt,
     };
 

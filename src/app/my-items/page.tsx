@@ -9,6 +9,7 @@ import { getLocalizedItem, getLocalizedUser } from '@/lib/i18n/seedDataTranslati
 import { Claim, Item } from '@/types';
 import ItemCard from '@/components/ItemCard';
 import HandoverPinModal from '@/components/HandoverPinModal';
+import StudentOnboardingModal from '@/components/StudentOnboardingModal';
 import UserAvatar from '@/components/UserAvatar';
 import TrustBadge from '@/components/TrustBadge';
 import IntegrityCard from '@/components/IntegrityCard';
@@ -44,6 +45,7 @@ export default function MyItemsPage() {
   const [activeTab, setActiveTab] = useState<'claims' | 'lost' | 'found' | 'reunited'>('claims');
   const [selectedHandover, setSelectedHandover] = useState<{ claim: Claim; item: Item } | null>(null);
   const [showRoleModal, setShowRoleModal] = useState(false);
+  const [showOnboardingModal, setShowOnboardingModal] = useState(false);
 
   const localizedUser = getLocalizedUser(currentUser, language);
   const incomingClaims = getClaimsForMyItems();
@@ -87,10 +89,30 @@ export default function MyItemsPage() {
                 </button>
               )}
             </div>
-            <p className="text-xs text-[#66706B] dark:text-[#94A39D] truncate">{localizedUser.grade}</p>
-            <p className="text-[11px] text-[#66706B]/80 dark:text-[#94A39D]/80 mt-0.5 font-mono">
-              {t('myItems.studentIdLabel')} <span className="font-bold text-[#18201D] dark:text-white">{maskStudentId(currentUser.id === 'user_malak' ? '4826' : '9102')}</span>
+
+            {/* Academic Grade and Track */}
+            <p className="text-xs text-[#66706B] dark:text-[#94A39D] truncate mt-0.5 font-medium">
+              {currentUser.grade || localizedUser.grade}
+              {currentUser.track ? ` • ${currentUser.track}` : ''}
             </p>
+
+            {/* Classroom and Edit Option */}
+            <div className="flex items-center gap-2.5 mt-1 flex-wrap text-[11px]">
+              {currentUser.classroom && (
+                <span className="inline-flex items-center gap-1 font-semibold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-800/60">
+                  <span className="text-emerald-600 dark:text-emerald-400 font-normal">{language === 'en' ? 'Classroom:' : 'الفصل:'}</span>
+                  <span>{currentUser.classroom}</span>
+                </span>
+              )}
+              {currentUser.role === 'student' && (
+                <button
+                  onClick={() => setShowOnboardingModal(true)}
+                  className="text-[10px] text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 hover:underline font-semibold cursor-pointer"
+                >
+                  {language === 'en' ? '✏️ Edit Profile' : '✏️ تعديل البيانات'}
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
@@ -414,6 +436,12 @@ export default function MyItemsPage() {
           onClose={() => setSelectedHandover(null)}
         />
       )}
+
+      {/* Student Profile Registration / Edit Modal */}
+      <StudentOnboardingModal
+        isOpen={showOnboardingModal}
+        onClose={() => setShowOnboardingModal(false)}
+      />
 
     </div>
   );

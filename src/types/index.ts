@@ -46,6 +46,9 @@ export interface UserProfile {
   email: string;
   role: UserRole;
   grade: string;
+  track?: string;
+  classroom?: string;
+  age?: number;
   avatar: string;
   returnedCount: number;
   isTrusted: boolean;

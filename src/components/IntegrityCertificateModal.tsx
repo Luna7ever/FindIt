@@ -352,7 +352,7 @@ export default function IntegrityCertificateModal({
                   </h2>
                   <div className="flex items-center justify-center gap-1.5 mt-1 flex-wrap">
                     <span className="px-2 py-0.5 rounded bg-white dark:bg-[#121A18] text-slate-800 dark:text-slate-200 font-bold text-[10px] border border-slate-200 dark:border-[#2D3E3A]">
-                      {targetUser.grade}
+                      {targetUser.grade}{targetUser.track ? ` • ${targetUser.track}` : ''}
                     </span>
                     <span className="px-2 py-0.5 rounded bg-amber-100 dark:bg-amber-950/80 text-amber-900 dark:text-amber-300 font-black text-[10px] border border-amber-300 dark:border-amber-700">
                       {tierLabel}

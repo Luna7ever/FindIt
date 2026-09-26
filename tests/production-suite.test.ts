@@ -126,17 +126,21 @@ test('7. HANDOVER: Enforces correct PIN and rate limits incorrect attempts', () 
     status: 'claimed' as const,
   };
 
-  // Wrong PIN attempts
-  for (let i = 1; i <= 4; i++) {
-    const res = HandoverService.completeHandover(testClaim.id, '0000', testClaim, testItem);
-    assert.equal(res.success, false);
-  }
+  // Wrong PIN attempts (MAX_PIN_ATTEMPTS = 3)
+  const first = HandoverService.completeHandover(testClaim.id, '0000', testClaim, testItem);
+  assert.equal(first.success, false);
+  assert.ok(first.message.includes('2 محاولات'));
 
-  // 5th wrong attempt triggers RateLimit
-  const fifth = HandoverService.completeHandover(testClaim.id, '0000', testClaim, testItem);
-  assert.equal(fifth.success, false);
+  const second = HandoverService.completeHandover(testClaim.id, '0000', testClaim, testItem);
+  assert.equal(second.success, false);
+  assert.ok(second.message.includes('محاولة واحدة'));
 
-  // 6th attempt is blocked by RateLimitError
+  // 3rd wrong attempt reaches limit
+  const third = HandoverService.completeHandover(testClaim.id, '0000', testClaim, testItem);
+  assert.equal(third.success, false);
+  assert.ok(third.message.includes('تم استنفاد عدد المحاولات المسموحة'));
+
+  // 4th attempt is blocked by RateLimitError
   assert.throws(
     () => HandoverService.completeHandover(testClaim.id, '4826', testClaim, testItem),
     RateLimitError

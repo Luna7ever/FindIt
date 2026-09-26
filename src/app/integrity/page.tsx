@@ -137,6 +137,22 @@ function StudentIntegrityFlow() {
   const activeScenario = useMemo(() => getLocalizedScenario(rawActiveScenario, language), [rawActiveScenario, language]);
   const primaryQuestion = activeScenario.questions[0];
 
+  // Dynamic randomization of options so Option 1 is not always the ideal answer
+  const [shuffledOptions, setShuffledOptions] = useState<typeof primaryQuestion.options>([]);
+
+  useEffect(() => {
+    if (primaryQuestion?.options) {
+      const opts = [...primaryQuestion.options];
+      for (let i = opts.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [opts[i], opts[j]] = [opts[j], opts[i]];
+      }
+      setShuffledOptions(opts);
+    }
+  }, [activeScenarioIndex, primaryQuestion]);
+
+  const displayOptions = shuffledOptions.length > 0 ? shuffledOptions : (primaryQuestion?.options || []);
+
   // Stop audio and reset state when switching scenarios
   useEffect(() => {
     if (audioRef.current) {
@@ -1184,9 +1200,9 @@ function StudentIntegrityFlow() {
               </p>
             </div>
 
-            {/* 4 Conversational Pill Options */}
+            {/* 4 Conversational Pill Options (Randomized order) */}
             <div className="grid grid-cols-1 gap-2.5 my-auto">
-              {primaryQuestion?.options.map((option, optIdx) => {
+              {displayOptions.map((option, optIdx) => {
                 const isSelected = selectedOptionId === option.id;
                 const isIdeal = option.score === 100;
                 const hasAnswered = !!selectedOptionId;

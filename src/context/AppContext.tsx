@@ -37,6 +37,7 @@ import { canAccessAdmin, canDirectReunite, canDeleteItem } from '@/lib/auth/perm
 import { AuthorizationError, NotFoundError } from '@/lib/errors/AppError';
 import { logger } from '@/lib/logging/logger';
 import { cloudflareSyncService, SyncStatus } from '@/services/cloudflareSyncService';
+import { firestoreService } from '@/services/firestoreService';
 
 interface AppContextType {
   items: Item[];
@@ -60,6 +61,11 @@ interface AppContextType {
   certificateUser: UserProfile | null;
   openCertificateModal: (user?: UserProfile) => void;
   closeCertificateModal: () => void;
+  isOnboardingModalOpen: boolean;
+  openOnboardingModal: () => void;
+  closeOnboardingModal: () => void;
+  updateUserProfile: (profile: Partial<UserProfile>) => Promise<void>;
+  setCurrentUser: React.Dispatch<React.SetStateAction<UserProfile>>;
   setCurrentUserById: (userId: string) => void;
   switchUserRole: (role: UserRole) => void;
   addItem: (itemData: unknown) => Item;
@@ -127,6 +133,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [isQRScannerOpen, setIsQRScannerOpen] = useState(false);
   const [isCertificateModalOpen, setIsCertificateModalOpen] = useState(false);
   const [certificateUser, setCertificateUser] = useState<UserProfile | null>(null);
+  const [isOnboardingModalOpen, setIsOnboardingModalOpen] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const [syncStatus, setSyncStatus] = useState<SyncStatus>(cloudflareSyncService.getStatus());
 
@@ -214,6 +221,36 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setIsLoaded(true);
     }
+  }, []);
+
+  // Auto-trigger onboarding for student if incomplete
+  useEffect(() => {
+    if (isLoaded && currentUser.role === 'student') {
+      const completed = typeof window !== 'undefined' ? localStorage.getItem('findit_onboarding_completed') : null;
+      if (!completed && !currentUser.classroom) {
+        setIsOnboardingModalOpen(true);
+      }
+    }
+  }, [isLoaded, currentUser.role, currentUser.classroom]);
+
+  // Real-time synchronization with Firebase Firestore
+  useEffect(() => {
+    const unsubItems = firestoreService.subscribeToItems((firestoreItems) => {
+      if (firestoreItems && firestoreItems.length > 0) {
+        setItems(firestoreItems);
+      }
+    });
+
+    const unsubClaims = firestoreService.subscribeToClaims((firestoreClaims) => {
+      if (firestoreClaims && firestoreClaims.length > 0) {
+        setClaims(firestoreClaims);
+      }
+    });
+
+    return () => {
+      unsubItems();
+      unsubClaims();
+    };
   }, []);
 
   // Compute resolved theme
@@ -478,6 +515,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const addItem = useCallback((itemData: unknown): Item => {
     const newItem = ItemService.createItem(itemData, currentUser);
     setItems((prev) => [newItem, ...prev]);
+    firestoreService.saveItem(newItem).catch((err) => {
+      logger.warn('Failed to sync item to Firestore', { error: String(err) });
+    });
     return newItem;
   }, [currentUser]);
 
@@ -489,6 +529,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setItems((prev) =>
       prev.map((item) => (item.id === id ? { ...item, status } : item))
     );
+    firestoreService.updateItem(id, { status }).catch(() => {});
   }, []);
 
   const updateItemCustody = useCallback((id: string, custody: CustodyStatus) => {
@@ -498,6 +539,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setItems((prev) =>
       prev.map((item) => (item.id === id ? { ...item, custody } : item))
     );
+    firestoreService.updateItem(id, { custody }).catch(() => {});
     logger.info('Item custody updated', { itemId: id, custody });
   }, [currentUser]);
 
@@ -525,6 +567,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         item.id === id ? { ...item, status: 'reunited', reunitedAt: completedAt } : item
       )
     );
+    firestoreService.updateItem(id, { status: 'reunited', reunitedAt: completedAt }).catch(() => {});
     logger.info('Item reunited via admin direct confirmation', { itemId: id });
   }, [currentUser]);
 
@@ -541,6 +584,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     setClaims((prev) => [newClaim, ...prev]);
     updateItemStatus(itemId, 'claimed');
+    firestoreService.saveClaim(newClaim).catch((err) => {
+      logger.warn('Failed to sync claim to Firestore', { error: String(err) });
+    });
     return newClaim;
   }, [items, claims, currentUser, updateItemStatus]);
 
@@ -553,6 +599,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     const approvedClaim = ClaimService.approveClaim(claim, item, currentUser);
     setClaims((prev) => prev.map((c) => (c.id === claimId ? approvedClaim : c)));
+    firestoreService.updateClaim(claimId, { status: 'approved', approvedAt: approvedClaim.approvedAt }).catch(() => {});
   }, [claims, items, currentUser]);
 
   const rejectClaim = useCallback((claimId: string) => {
@@ -565,6 +612,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const rejectedClaim = ClaimService.rejectClaim(claim, item, currentUser);
     setClaims((prev) => prev.map((c) => (c.id === claimId ? rejectedClaim : c)));
     updateItemStatus(claim.itemId, 'open');
+    firestoreService.updateClaim(claimId, { status: 'rejected' }).catch(() => {});
   }, [claims, items, currentUser, updateItemStatus]);
 
   const completeHandover = useCallback((
@@ -577,32 +625,52 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const item = items.find((i) => i.id === claim.itemId);
     if (!item) throw new NotFoundError('الغرض', claim.itemId);
 
-    const result = HandoverService.completeHandover(claimId, inputPin, claim, item);
+    try {
+      const result = HandoverService.completeHandover(claimId, inputPin, claim, item);
 
-    if (result.success) {
-      setClaims((prev) => prev.map((c) => (c.id === claimId ? result.updatedClaim : c)));
-      setItems((prev) => prev.map((i) => (i.id === item.id ? result.updatedItem : i)));
+      if (result.success) {
+        setClaims((prev) => prev.map((c) => (c.id === claimId ? result.updatedClaim : c)));
+        setItems((prev) => prev.map((i) => (i.id === item.id ? result.updatedItem : i)));
 
-      // Award points to finder
-      if (item.reportedBy) {
-        const finderId = item.reportedBy.id;
-        setUsers((prev) =>
-          prev.map((u) => {
-            if (u.id === finderId) {
-              return {
-                ...u,
-                returnedCount: (u.returnedCount || 0) + 1,
-                goodwillPoints: (u.goodwillPoints || 0) + 50,
-                isTrusted: true,
-              };
-            }
-            return u;
-          })
-        );
+        firestoreService.updateClaim(claimId, { 
+          status: 'completed', 
+          handoverPin: '', 
+          completedAt: result.updatedClaim.completedAt 
+        }).catch(() => {});
+
+        firestoreService.updateItem(item.id, { 
+          status: 'reunited', 
+          reunitedAt: result.updatedItem.reunitedAt 
+        }).catch(() => {});
+
+        // Award points to finder
+        if (item.reportedBy) {
+          const finderId = item.reportedBy.id;
+          setUsers((prev) =>
+            prev.map((u) => {
+              if (u.id === finderId) {
+                const updatedUser = {
+                  ...u,
+                  returnedCount: (u.returnedCount || 0) + 1,
+                  goodwillPoints: (u.goodwillPoints || 0) + 50,
+                  isTrusted: true,
+                };
+                firestoreService.saveUserProfile(updatedUser).catch(() => {});
+                return updatedUser;
+              }
+              return u;
+            })
+          );
+        }
       }
-    }
 
-    return { success: result.success, message: result.message };
+      return { success: result.success, message: result.message };
+    } catch (err: any) {
+      return { 
+        success: false, 
+        message: err?.message || 'تم استنفاد عدد المحاولات المسموحة. لحماية الأمانة، يرجى التوجه لمكتب الإدارة المدرسية للتحقق اليدوي.' 
+      };
+    }
   }, [claims, items]);
 
   const getClaimForCurrentUserAndItem = useCallback((itemId: string): Claim | undefined => {
@@ -760,6 +828,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const closeCertificateModal = useCallback(() => {
     setIsCertificateModalOpen(false);
+  }, []);
+
+  const openOnboardingModal = useCallback(() => setIsOnboardingModalOpen(true), []);
+  const closeOnboardingModal = useCallback(() => setIsOnboardingModalOpen(false), []);
+
+  const updateUserProfile = useCallback(async (updates: Partial<UserProfile>) => {
+    setCurrentUser((prev) => {
+      const updated = { ...prev, ...updates };
+      setUsers((prevUsers) => prevUsers.map((u) => (u.id === updated.id ? updated : u)));
+      firestoreService.saveUserProfile(updated).catch(() => {});
+      return updated;
+    });
   }, []);
 
   // ========================================================
@@ -983,6 +1063,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         certificateUser,
         openCertificateModal,
         closeCertificateModal,
+        isOnboardingModalOpen,
+        openOnboardingModal,
+        closeOnboardingModal,
+        updateUserProfile,
+        setCurrentUser,
         setCurrentUserById,
         switchUserRole,
         addItem,

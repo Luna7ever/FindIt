@@ -981,3 +981,16 @@ export const INITIAL_ACTIVITY_SUBMISSIONS: ActivitySubmission[] = [
   },
 ];
 
+/**
+ * Returns canonical academic weekly challenge ID (e.g., week_2026_w39)
+ */
+export function getCurrentWeekId(date = new Date()): string {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  const weekNo = Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+  return `week_${d.getUTCFullYear()}_w${String(weekNo).padStart(2, '0')}`;
+}
+
+

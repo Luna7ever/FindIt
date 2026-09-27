@@ -1,8 +1,7 @@
 'use client';
-
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useApp } from '@/context/AppContext';
-import { INTEGRITY_SCENARIOS, SCHOOL_LOCATIONS } from '@/lib/constants';
+import { INTEGRITY_SCENARIOS, SCHOOL_LOCATIONS, getCurrentWeekId } from '@/lib/constants';
 import { getLocalizedScenario } from '@/lib/i18n/scenarios';
 import { IntegrityOption, TrustTier } from '@/types';
 import TrustBadge from '@/components/TrustBadge';
@@ -103,7 +102,8 @@ function StudentIntegrityFlow() {
     currentUser, 
     currentUserTrustTier, 
     submitIntegrityAttempt, 
-    resetScenarioCooldown,
+    completeWeeklyChallenge,
+    isWeekChallengeCompleted,
     openCertificateModal,
     t,
     dir,
@@ -374,15 +374,18 @@ function StudentIntegrityFlow() {
     // Play gentle auditory feedback sound
     playFeedbackSound(isIdeal);
 
-    // Save answer state for continuous flow
-    setAnswersMap((prev) => ({
-      ...prev,
+    const updatedAnswers = {
+      ...answersMap,
       [activeScenario.id]: {
         optionId: option.id,
         isIdeal,
         score: option.score,
+        answeredAt: new Date().toISOString(),
       },
-    }));
+    };
+
+    // Save answer state for continuous flow
+    setAnswersMap(updatedAnswers);
 
     // Submit attempt to AppContext for score & points
     try {
@@ -398,6 +401,24 @@ function StudentIntegrityFlow() {
         spread: 60,
         origin: { y: 0.6 },
         colors: ['#176B5B', '#10B981', '#F59E0B', '#3B82F6'],
+      });
+    }
+
+    // Save immediately on answering the 5th (last) scenario
+    if (activeScenarioIndex === INTEGRITY_SCENARIOS.length - 1) {
+      const idealCount = Object.values(updatedAnswers).filter((a) => a.isIdeal).length;
+      const totalScore = Object.values(updatedAnswers).reduce((acc, a) => acc + a.score, 0);
+      const accuracy = Math.round(totalScore / INTEGRITY_SCENARIOS.length);
+      const pointsEarned = idealCount * 10;
+
+      completeWeeklyChallenge(
+        currentWeekId,
+        pointsEarned,
+        updatedAnswers,
+        accuracy,
+        idealCount
+      ).catch((err) => {
+        console.error('Error saving weekly challenge to Firestore:', err);
       });
     }
   };
@@ -417,17 +438,6 @@ function StudentIntegrityFlow() {
     }
   };
 
-  // Reset entire challenge for Demo Mode
-  const handleDemoReset = () => {
-    setAnswersMap({});
-    setSelectedOptionId(null);
-    setActiveScenarioIndex(0);
-    setIsTestCompleted(false);
-    INTEGRITY_SCENARIOS.forEach((s) => {
-      resetScenarioCooldown(s.id);
-    });
-  };
-
   // Weekly Countdown
   const weeklyCountdown = useMemo(() => {
     const now = new Date(currentTime);
@@ -442,6 +452,15 @@ function StudentIntegrityFlow() {
       seconds: String(secondsLeft).padStart(2, '0'),
     };
   }, [currentTime]);
+
+  const currentWeekId = useMemo(() => getCurrentWeekId(new Date(currentTime)), [currentTime]);
+
+  const isLockedForWeek = useMemo(() => {
+    if (currentUser.role === 'admin') return false;
+    return isWeekChallengeCompleted(currentWeekId);
+  }, [currentUser.role, isWeekChallengeCompleted, currentWeekId]);
+
+  const isScreenCompleted = isTestCompleted || isLockedForWeek;
 
   const idealAnswersCount = useMemo(() => {
     return Object.values(answersMap).filter((a) => a.isIdeal).length;
@@ -501,7 +520,7 @@ function StudentIntegrityFlow() {
               {currentUser.role !== 'admin' && <TrustBadge tier={currentUserTrustTier} size="xs" />}
             </div>
             <h1 className="text-sm sm:text-base font-black text-[#18201D] dark:text-white truncate">
-              {isTestCompleted ? (language === 'en' ? 'Evaluation Record & Comprehensive Results' : 'سجل التقييم والنتائج الشاملة') : activeScenario.topicTitle}
+              {isScreenCompleted ? (language === 'en' ? 'Evaluation Record & Comprehensive Results' : 'سجل التقييم والنتائج الشاملة') : activeScenario.topicTitle}
             </h1>
           </div>
         </div>
@@ -514,18 +533,18 @@ function StudentIntegrityFlow() {
               <span>{language === 'en' ? `Scenario ${activeScenarioIndex + 1} of ${INTEGRITY_SCENARIOS.length}` : `الموقف ${activeScenarioIndex + 1} من ${INTEGRITY_SCENARIOS.length}`}</span>
             </span>
             <span className="text-[#66706B] dark:text-[#94A39D] text-[10px] font-mono">
-              {Math.round(((activeScenarioIndex + (selectedOptionId ? 1 : 0)) / INTEGRITY_SCENARIOS.length) * 100)}%
+              {isScreenCompleted ? 100 : Math.round(((activeScenarioIndex + (selectedOptionId ? 1 : 0)) / INTEGRITY_SCENARIOS.length) * 100)}%
             </span>
           </div>
 
           <div className="grid grid-cols-5 gap-1.5 h-2 items-center">
             {INTEGRITY_SCENARIOS.map((s, idx) => {
-              const isAnswered = !!answersMap[s.id];
-              const isCurrent = idx === activeScenarioIndex && !isTestCompleted;
+              const isAnswered = !!answersMap[s.id] || isScreenCompleted;
+              const isCurrent = idx === activeScenarioIndex && !isScreenCompleted;
 
               let segmentClass = 'bg-slate-100 dark:bg-[#1C2B27] border border-slate-200 dark:border-[#2D3E3A]';
               if (isAnswered) {
-                segmentClass = answersMap[s.id].isIdeal
+                segmentClass = answersMap[s.id]?.isIdeal || isScreenCompleted
                   ? 'bg-emerald-500 shadow-2xs'
                   : 'bg-amber-500 shadow-2xs';
               } else if (isCurrent) {
@@ -536,7 +555,7 @@ function StudentIntegrityFlow() {
                 <button 
                   key={s.id}
                   onClick={() => {
-                    if (!isTestCompleted) {
+                    if (!isScreenCompleted) {
                       setActiveScenarioIndex(idx);
                     }
                   }}
@@ -550,7 +569,7 @@ function StudentIntegrityFlow() {
           </div>
         </div>
 
-        {/* Weekly Countdown & Demo Reset */}
+        {/* Weekly Countdown */}
         <div className="flex items-center gap-2 shrink-0 self-end md:self-auto">
           <div className="px-2.5 py-1.5 rounded-xl bg-amber-50/90 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-amber-950 dark:text-amber-200 text-[11px] font-bold flex items-center gap-1.5 shadow-2xs">
             <Clock className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 animate-pulse" />
@@ -559,15 +578,6 @@ function StudentIntegrityFlow() {
               {mounted ? `${weeklyCountdown.days}ي ${weeklyCountdown.hours}:${weeklyCountdown.minutes}:${weeklyCountdown.seconds}` : '6ي 14:32:00'}
             </span>
           </div>
-
-          <button
-            onClick={handleDemoReset}
-            className="p-1.5 sm:px-2.5 sm:py-1.5 rounded-xl bg-slate-100 dark:bg-[#1C2B27] hover:bg-slate-200 dark:hover:bg-[#23332F] text-slate-700 dark:text-slate-300 text-[11px] font-bold transition-colors flex items-center gap-1 border border-slate-200 dark:border-[#2D3E3A] cursor-pointer"
-            title="تصفير التحدي الأسبوعي لوضع التجربة"
-          >
-            <RefreshCw className="w-3.5 h-3.5 text-[#176B5B] dark:text-emerald-400" />
-            <span className="hidden sm:inline">{language === 'en' ? 'Reset Demo' : 'تصفير تجريبي'}</span>
-          </button>
         </div>
 
       </div>
@@ -575,7 +585,7 @@ function StudentIntegrityFlow() {
       {/* ========================================================
           2. COMPREHENSIVE END-OF-TEST RESULTS & SCORE REPORT SCREEN
       ======================================================== */}
-      {isTestCompleted ? (
+      {isScreenCompleted ? (
         <div className="space-y-4 animate-in fade-in zoom-in-95 duration-500">
           
           {/* Main Hero Summary Card */}
@@ -595,14 +605,16 @@ function StudentIntegrityFlow() {
               </div>
 
               {/* Center: Title & Qualitative Evaluation */}
-              <div className="space-y-2 flex-1 text-center md:text-start">
-                <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs font-black">
+              <div className="space-y-2.5 flex-1 text-center md:text-start">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs font-black shadow-2xs">
                   <CheckCircle2 className="w-3.5 h-3.5" />
-                  <span>{language === 'en' ? 'Weekly Challenge Completed Successfully!' : 'اكتمل التحدي الأسبوعي للأمانة والمواطنة بنجاح!'}</span>
+                  <span>{language === 'en' ? 'Weekly Challenge Completed Successfully!' : 'تم توثيق استجاباتك بنجاح!'}</span>
                 </div>
 
-                <h2 className="text-xl sm:text-2xl font-black text-[#18201D] dark:text-white">
-                  {language === 'en' ? 'Ethical Evaluation & Performance Report' : 'سجل التقييم الأخلاقي والأداء الميداني'}
+                <h2 className="text-xl sm:text-2xl font-black text-[#18201D] dark:text-white leading-snug">
+                  {language === 'en' 
+                    ? `Responses Documented Successfully! You earned (+${totalPointsEarned} Integrity Points) 🌟` 
+                    : `تم توثيق استجاباتك بنجاح! حصلت على (+${totalPointsEarned} نقطة نزاهة) 🌟`}
                 </h2>
 
                 <p className="text-xs sm:text-sm text-[#66706B] dark:text-[#94A39D] leading-relaxed max-w-2xl">
@@ -614,12 +626,31 @@ function StudentIntegrityFlow() {
                     )
                   ) : (
                     language === 'en' ? (
-                      <>Well done! Your ethical decisions were recorded successfully, completing <span className="font-bold text-[#18201D] dark:text-white">({idealAnswersCount} of {INTEGRITY_SCENARIOS.length} scenarios)</span> with ideal scores, adding <span className="font-bold text-[#176B5B] dark:text-emerald-400">+{totalPointsEarned} integrity points</span> directly to student ({currentUser.name}) profile.</>
+                      <>Your ethical decisions were recorded in student profile ({currentUser.name}) with <span className="font-bold text-[#176B5B] dark:text-emerald-400">+{totalPointsEarned} points</span> added to cumulative total points.</>
                     ) : (
-                      <>أحسنتِ صنعاً! تم توثيق قراراتك الأخلاقية بنجاح واجتياز <span className="font-bold text-[#18201D] dark:text-white">({idealAnswersCount} من {INTEGRITY_SCENARIOS.length} مواقف)</span> بنتيجة نموذجية، وإضافة <span className="font-bold text-[#176B5B] dark:text-emerald-400">+{totalPointsEarned} نقطة أمانة</span> مباشرة إلى ملف الطالبة ({currentUser.name}).</>
+                      <>تم تسجيل قراراتك بدقة في ملف الطالبة ({currentUser.name})، وحفظ إجابات المواقف الخمسة لأغراض التحليل السلوكي للبحث وإضافة <span className="font-bold text-[#176B5B] dark:text-emerald-400">+{totalPointsEarned} نقطة</span> إلى رصيد النزاهة الكلي.</>
                     )
                   )}
                 </p>
+
+                {/* Locked / Next Challenge Countdown Box */}
+                <div className="p-3 sm:p-3.5 rounded-2xl bg-amber-50/90 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-amber-950 dark:text-amber-200 text-xs font-bold flex flex-wrap items-center gap-2 shadow-2xs">
+                  <Clock className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 animate-pulse" />
+                  <span>
+                    {language === 'en' ? 'The next challenge opens in: ' : 'التحدي القادم يفتح بعد: '}
+                  </span>
+                  <span className="font-mono text-amber-900 dark:text-amber-200 font-black px-2 py-0.5 rounded-md bg-amber-200/60 dark:bg-amber-900/60">
+                    {weeklyCountdown.days} {language === 'en' ? 'days' : 'أيام'} و {weeklyCountdown.hours}:{weeklyCountdown.minutes}:{weeklyCountdown.seconds}
+                  </span>
+                </div>
+
+                {isLockedForWeek && (
+                  <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-300">
+                    {language === 'en' 
+                      ? '🔒 You have already completed this week\'s challenge! Stay tuned for next week\'s challenge.' 
+                      : '🔒 لقد أكملت تحدي هذا الأسبوع بالفعل! ترقب تحدي الأسبوع القادم.'}
+                  </p>
+                )}
 
                 {/* Qualitative Badge Tag */}
                 <div className="pt-1 flex items-center justify-center md:justify-start gap-2 flex-wrap">
@@ -647,7 +678,7 @@ function StudentIntegrityFlow() {
             </div>
 
             {/* Quick Certificate & Leaderboard Action Bar */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-6 border-t border-slate-100 dark:border-[#23332F] mt-6 relative z-10">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-6 border-t border-slate-100 dark:border-[#23332F] mt-6 relative z-10">
               
               <button
                 onClick={() => openCertificateModal(currentUser)}
@@ -668,14 +699,6 @@ function StudentIntegrityFlow() {
                 <Trophy className="w-4 h-4 text-amber-300" />
                 <span>{language === 'en' ? 'Honor Board & School Leaders 🏆' : 'لوحة الشرف وأوائل المدرسة 🏆'}</span>
               </Link>
-
-              <button
-                onClick={handleDemoReset}
-                className="py-3 px-4 rounded-2xl bg-slate-100 dark:bg-[#1C2B27] hover:bg-slate-200 dark:hover:bg-[#23332F] text-slate-800 dark:text-slate-200 font-bold text-xs transition-colors flex items-center justify-center gap-2 border border-slate-200 dark:border-[#2D3E3A] cursor-pointer"
-              >
-                <RefreshCw className="w-3.5 h-3.5 text-[#176B5B] dark:text-emerald-400" />
-                <span>{language === 'en' ? 'Retake Challenge (Demo)' : 'إعادة خوض التحدي (Demo)'}</span>
-              </button>
 
               <Link
                 href="/"

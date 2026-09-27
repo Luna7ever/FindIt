@@ -53,6 +53,8 @@ export interface UserProfile {
   returnedCount: number;
   isTrusted: boolean;
   goodwillPoints: number;
+  total_points?: number;
+  completed_challenges?: string[];
   integrityScenariosCompleted?: string[];
 }
 

@@ -83,6 +83,14 @@ interface AppContextType {
   submitIntegrityAttempt: (scenarioId: string, answers: Record<string, string> | string) => EvaluationResult;
   getScenarioStatusForCurrentUser: (scenarioId: string) => ScenarioStatus;
   resetScenarioCooldown: (scenarioId: string) => void;
+  completeWeeklyChallenge: (
+    weekId: string, 
+    totalPoints: number, 
+    answersData: Record<string, { optionId: string; isIdeal: boolean; score: number }>,
+    accuracyPercentage: number,
+    idealAnswersCount: number
+  ) => Promise<void>;
+  isWeekChallengeCompleted: (weekId: string) => boolean;
   
   // School Activities System
   activitySubmissions: ActivitySubmission[];
@@ -895,6 +903,72 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     logger.info('Reset cooldown for scenario in demo mode', { scenarioId, userId: currentUser.id });
   }, [currentUser.id]);
 
+  const isWeekChallengeCompleted = useCallback((weekId: string): boolean => {
+    if (currentUser?.completed_challenges?.includes(weekId)) return true;
+    try {
+      if (typeof window !== 'undefined') {
+        const local = JSON.parse(localStorage.getItem('ethos_completed_challenges') || '[]');
+        if (Array.isArray(local) && local.includes(weekId)) return true;
+      }
+    } catch {}
+    return false;
+  }, [currentUser?.completed_challenges]);
+
+  const completeWeeklyChallenge = useCallback(async (
+    weekId: string,
+    totalPoints: number,
+    answersData: Record<string, { optionId: string; isIdeal: boolean; score: number }>,
+    accuracyPercentage: number,
+    idealAnswersCount: number
+  ) => {
+    const currentTotal = currentUser.total_points ?? currentUser.goodwillPoints ?? 0;
+    const newTotalPoints = currentTotal + totalPoints;
+    const existingChallenges = currentUser.completed_challenges || [];
+    const newChallenges = Array.from(new Set([...existingChallenges, weekId]));
+
+    const updatedUser: UserProfile = {
+      ...currentUser,
+      total_points: newTotalPoints,
+      goodwillPoints: newTotalPoints,
+      completed_challenges: newChallenges,
+      isTrusted: true,
+    };
+
+    setCurrentUser(updatedUser);
+    setUsers((prev) => prev.map((u) => u.id === currentUser.id ? updatedUser : u));
+
+    try {
+      localStorage.setItem(ETHOS_STUDENT_STORAGE_KEY, JSON.stringify(updatedUser));
+      const localChallenges = JSON.parse(localStorage.getItem('ethos_completed_challenges') || '[]');
+      if (!localChallenges.includes(weekId)) {
+        localStorage.setItem('ethos_completed_challenges', JSON.stringify([...localChallenges, weekId]));
+      }
+    } catch (e) {
+      console.warn('localStorage save challenge error:', e);
+    }
+
+    try {
+      await Promise.all([
+        firestoreService.recordChallengeCompletion(currentUser.id, weekId, totalPoints),
+        firestoreService.saveIntegrityResearchData({
+          studentId: currentUser.id,
+          studentName: currentUser.name,
+          studentGrade: currentUser.grade,
+          weekId,
+          completedAt: new Date().toISOString(),
+          totalPointsEarned: totalPoints,
+          accuracyPercentage,
+          idealAnswersCount,
+          totalScenarios: Object.keys(answersData).length || 5,
+          answers: answersData,
+        })
+      ]);
+      logger.info('Weekly challenge saved to Firestore', { userId: currentUser.id, weekId, totalPoints });
+    } catch (err) {
+      logger.error('Failed to sync weekly challenge to Firestore', { error: String(err) });
+    }
+  }, [currentUser]);
+
   const unreadNotificationsCount = useMemo(() => {
     return notifications.filter((n) => !n.isRead).length;
   }, [notifications]);
@@ -1241,6 +1315,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         submitIntegrityAttempt,
         getScenarioStatusForCurrentUser,
         resetScenarioCooldown,
+        completeWeeklyChallenge,
+        isWeekChallengeCompleted,
         
         // School Activities
         activitySubmissions,

@@ -221,5 +221,73 @@ export const firestoreService = {
       logger.warn('Firestore subscribeToClaims failed to initialize', { error: String(error) });
       return () => {};
     }
+  },
+
+  /**
+   * Save student's scenario responses and behavioral research data to Firestore
+   */
+  async saveIntegrityResearchData(record: {
+    studentId: string;
+    studentName: string;
+    studentGrade?: string;
+    weekId: string;
+    completedAt: string;
+    totalPointsEarned: number;
+    accuracyPercentage: number;
+    idealAnswersCount: number;
+    totalScenarios: number;
+    answers: Record<string, { optionId: string; isIdeal: boolean; score: number; answeredAt?: string }>;
+  }): Promise<boolean> {
+    try {
+      if (!record || !record.studentId || !record.weekId) return false;
+      const docId = `${record.studentId}_${record.weekId}`;
+      const docRef = doc(db, 'integrity_responses', docId);
+      const sanitized = cleanFirestoreData({
+        ...record,
+        updatedAt: new Date().toISOString()
+      });
+      await setDoc(docRef, sanitized, { merge: true });
+      logger.info('Firestore: Integrity research responses saved', { docId });
+      return true;
+    } catch (error) {
+      logger.error('Firestore: Failed to save integrity research data', { error: String(error) });
+      return false;
+    }
+  },
+
+  /**
+   * Record challenge completion and update user total points and completed challenges
+   */
+  async recordChallengeCompletion(
+    userId: string,
+    weekId: string,
+    pointsEarned: number
+  ): Promise<boolean> {
+    try {
+      if (!userId || !weekId) return false;
+      const userRef = doc(db, USERS_COLLECTION, userId);
+      const snapshot = await getDoc(userRef);
+      const existing = snapshot.exists() ? (snapshot.data() as UserProfile) : null;
+
+      const currentPoints = existing?.total_points ?? existing?.goodwillPoints ?? 0;
+      const newTotalPoints = currentPoints + pointsEarned;
+      const existingChallenges = existing?.completed_challenges || [];
+      const completedChallenges = Array.from(new Set([...existingChallenges, weekId]));
+
+      const sanitized = cleanFirestoreData({
+        total_points: newTotalPoints,
+        goodwillPoints: newTotalPoints,
+        completed_challenges: completedChallenges,
+        isTrusted: true,
+        updatedAt: new Date().toISOString()
+      });
+
+      await setDoc(userRef, sanitized, { merge: true });
+      logger.info('Firestore: Challenge completion recorded', { userId, weekId, newTotalPoints });
+      return true;
+    } catch (error) {
+      logger.error('Firestore: Failed to record challenge completion', { error: String(error), userId });
+      return false;
+    }
   }
 };

@@ -223,7 +223,7 @@ export default function StudentOnboardingModal({ isOpen, onClose }: StudentOnboa
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center p-3.5 sm:p-5 bg-black/85 backdrop-blur-md animate-in fade-in duration-300 select-none cursor-default"
+      className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-5 bg-black/85 backdrop-blur-md animate-in fade-in duration-300 select-none cursor-default"
       dir={dir}
       onClick={(e) => {
         e.preventDefault();
@@ -231,37 +231,28 @@ export default function StudentOnboardingModal({ isOpen, onClose }: StudentOnboa
       }}
     >
       <div 
-        className="w-full max-w-lg bg-white/95 dark:bg-[#111a17]/95 backdrop-blur-xl border border-slate-200/90 dark:border-emerald-500/20 rounded-3xl shadow-2xl shadow-emerald-950/25 overflow-hidden flex flex-col max-h-[92vh] animate-in zoom-in-95 duration-200 cursor-auto select-text"
+        className="w-full h-full sm:h-auto sm:max-w-lg bg-white/95 dark:bg-[#111a17]/95 backdrop-blur-xl border-0 sm:border border-slate-200/90 dark:border-emerald-500/20 rounded-none sm:rounded-3xl shadow-2xl shadow-emerald-950/25 overflow-hidden flex flex-col max-h-none sm:max-h-[92vh] animate-in zoom-in-95 duration-200 cursor-auto select-text"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Top Header Ribbon & Stepper Navigation */}
-        <div className="relative bg-gradient-to-r from-emerald-950 via-[#0d2e25] to-teal-950 p-5 sm:p-6 text-white border-b border-emerald-500/20">
-          <div className="flex items-center justify-between gap-3 mb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500/30 to-teal-500/10 border border-emerald-400/30 flex items-center justify-center text-emerald-300 shadow-inner">
-                <GraduationCap className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="text-base sm:text-lg font-black tracking-tight text-white leading-tight">
-                  منصة Ethos المدرسية
-                </h3>
-                <p className="text-[11px] text-emerald-300/80 font-medium">
-                  {step === 1 && 'الخطوة 1 من 3: الترحيب وبيانات الاسم'}
-                  {step === 2 && 'الخطوة 2 من 3: المعلومات الدراسية'}
-                  {step === 3 && 'الخطوة 3 من 3: مراجعة واعتماد هوية الطالب'}
-                </p>
-              </div>
+        {/* Top Header Ribbon & Stepper Navigation (Centered Balance) */}
+        <div className="relative bg-gradient-to-r from-emerald-950 via-[#0d2e25] to-teal-950 p-5 sm:p-6 text-white border-b border-emerald-500/20 text-center">
+          {/* Centered Crest & Title */}
+          <div className="flex flex-col items-center justify-center mb-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500/30 to-teal-500/10 border border-emerald-400/30 flex items-center justify-center text-emerald-300 shadow-inner mb-2">
+              <GraduationCap className="w-6 h-6" />
             </div>
-
-            {/* Mandatory Student Registration Badge */}
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-200 text-[11px] font-bold shadow-xs">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-              <span>تسجيل إلزامي</span>
-            </div>
+            <h3 className="text-lg sm:text-xl font-black tracking-tight text-white leading-tight">
+              منصة Ethos المدرسية
+            </h3>
+            <p className="text-[11px] text-emerald-300/80 font-medium mt-1">
+              {step === 1 && 'الخطوة 1 من 3: الترحيب وبيانات الاسم'}
+              {step === 2 && 'الخطوة 2 من 3: المعلومات الدراسية'}
+              {step === 3 && 'الخطوة 3 من 3: مراجعة واعتماد هوية الطالب'}
+            </p>
           </div>
 
           {/* Stepper Progress Bar & Dots */}
-          <div className="space-y-2 pt-1">
+          <div className="space-y-2 pt-1 max-w-sm mx-auto">
             <div className="flex items-center justify-between text-[11px] font-semibold text-emerald-200/80">
               <div className={`flex items-center gap-1.5 ${step >= 1 ? 'text-emerald-300 font-bold' : 'text-slate-400'}`}>
                 <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] ${step >= 1 ? 'bg-emerald-500 text-white shadow-xs' : 'bg-white/10 text-white/60'}`}>

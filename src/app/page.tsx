@@ -155,7 +155,7 @@ export default function HomePage() {
           </div>
           
           <div>
-            <h1 className="text-2xl sm:text-4xl font-extrabold text-[#18201D] dark:text-white ltr:tracking-tight">
+            <h1 className="text-xl sm:text-2xl lg:text-[28px] font-extrabold text-[#18201D] dark:text-white ltr:tracking-tight leading-snug">
               {language === 'en' ? 'Lost something? ' : 'ضاع منك شيء؟ '}
               <span className="text-[#176B5B] dark:text-[#2DD4BF]">
                 {language === 'en' ? 'We are here to help.' : 'خلّينا نساعدك تلاقيه.'}

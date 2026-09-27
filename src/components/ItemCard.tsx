@@ -39,7 +39,8 @@ export default function ItemCard({ item: rawItem, matchScore, showMatchButton = 
   const isRtl = dir === 'rtl';
   const ArrowIcon = isRtl ? ChevronLeft : ChevronRight;
 
-  const categoryLabel = language === 'en' ? (t('cat.' + item.category) || categoryInfo?.label) : categoryInfo?.label;
+  const rawCategoryLabel = language === 'en' ? (t('cat.' + item.category) || categoryInfo?.label) : categoryInfo?.label;
+  const categoryLabel = rawCategoryLabel === 'إلكترونيات وأجهزة' ? 'إلكترونيات' : rawCategoryLabel;
   const locationName = language === 'en' ? (t('loc.' + item.locationId) || locationInfo?.name) : locationInfo?.name;
 
   // Status Pill Badge Component (shared between card and row)

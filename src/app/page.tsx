@@ -120,19 +120,19 @@ export default function HomePage() {
       ======================================================== */}
       <section className="text-start pt-0 w-full max-w-full min-w-0 overflow-hidden">
         {/* Merged Single Compact Welcome & Student Badge */}
-        <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full bg-[#E6F1ED] dark:bg-[#122823] text-xs font-bold border border-[#176B5B]/30 dark:border-[#263834] shadow-2xs max-w-full">
+        <div className="w-full flex items-center justify-between px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-[#E6F1ED] dark:bg-[#122823] text-xs font-bold border border-[#176B5B]/30 dark:border-[#263834] shadow-2xs">
           <button
             onClick={openOnboardingModal}
-            className="inline-flex items-center gap-1.5 text-[#176B5B] dark:text-[#2DD4BF] hover:underline cursor-pointer truncate"
+            className="inline-flex items-center gap-1.5 text-[#176B5B] dark:text-[#2DD4BF] hover:underline cursor-pointer truncate min-w-0"
             title={language === 'en' ? 'Edit student profile' : 'تعديل بيانات الطالب'}
           >
             <span className="w-1.5 h-1.5 rounded-full bg-[#176B5B] dark:bg-[#2DD4BF] animate-pulse shrink-0" />
             <span className="truncate">{greetingText}</span>
-            <span className="text-[11px] opacity-75">{currentUser.name ? '✏️' : '🎓'}</span>
+            <span className="text-[11px] opacity-75 shrink-0">{currentUser.name ? '✏️' : '🎓'}</span>
           </button>
 
           {!isAdmin && (
-            <>
+            <div className="inline-flex items-center gap-1.5 shrink-0">
               <span className="text-slate-300 dark:text-slate-600 select-none">|</span>
               <Link
                 href="/integrity"
@@ -145,11 +145,11 @@ export default function HomePage() {
                   ({currentUser.goodwillPoints || 0}{language === 'en' ? 'pts' : 'ن'})
                 </span>
               </Link>
-            </>
+            </div>
           )}
 
           {isAdmin && (
-            <>
+            <div className="inline-flex items-center gap-1.5 shrink-0">
               <span className="text-slate-300 dark:text-slate-600 select-none">|</span>
               <Link
                 href="/admin"
@@ -158,7 +158,7 @@ export default function HomePage() {
                 <Building2 className="w-3 h-3" />
                 <span>{language === 'en' ? 'Admin 🏛️' : 'الإدارة 🏛️'}</span>
               </Link>
-            </>
+            </div>
           )}
         </div>
       </section>
@@ -176,7 +176,7 @@ export default function HomePage() {
             {!isChallengeCompleted ? (
               <>
                 <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
-                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-emerald-500/10 dark:bg-emerald-400/10 flex items-center justify-center text-sm shrink-0 select-none">
+                  <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-rose-50 dark:bg-rose-950/40 border border-rose-100 dark:border-rose-900/50 flex items-center justify-center text-base shrink-0 select-none">
                     🎯
                   </div>
                   <div className="min-w-0 text-start">
@@ -191,7 +191,7 @@ export default function HomePage() {
 
                 <Link
                   href="/integrity"
-                  className="inline-flex items-center justify-center gap-1.5 min-h-[40px] px-3.5 py-1.5 rounded-xl font-bold text-xs sm:text-sm bg-[#176B5B] hover:bg-[#125648] text-white shadow-2xs transition-all active:scale-95 group shrink-0"
+                  className="inline-flex items-center justify-center gap-1.5 min-h-[40px] px-3.5 sm:px-4 py-1.5 rounded-xl font-bold text-xs sm:text-sm bg-[#176B5B] hover:bg-[#125648] text-white shadow-2xs transition-all active:scale-95 group shrink-0"
                 >
                   <span>{language === 'en' ? 'Start Challenge' : 'ابدأ التحدي'}</span>
                   <ArrowIcon className="w-3.5 h-3.5 transition-transform group-hover:translate-x-[-2px] rtl:group-hover:translate-x-[-2px]" />
@@ -219,7 +219,7 @@ export default function HomePage() {
       {/* ========================================================
           3. LOST & FOUND HUB (Search Bar + Dual Action Cards)
       ======================================================== */}
-      <section className="space-y-3">
+      <section className="space-y-2.5 sm:space-y-3">
         {/* Integrated Live Interactive Instant Search Bar */}
         <InstantSearchBar />
 
@@ -228,13 +228,13 @@ export default function HomePage() {
           {/* Card 1: Lost Item (Right card in RTL) */}
           <Link
             href="/report?type=lost"
-            className="app-card app-card-interactive p-3 sm:p-4 border border-slate-100 dark:border-slate-800/80 border-r-4 rtl:border-r-4 ltr:border-l-4 border-r-amber-500 ltr:border-l-amber-500 bg-white dark:bg-[#15201D] flex flex-col justify-between space-y-2 group text-start shadow-sm rounded-2xl"
+            className="app-card app-card-interactive p-3 sm:p-4 border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-[#15201D] flex flex-col justify-between space-y-2.5 group text-start shadow-sm rounded-2xl"
           >
             <div className="flex items-center justify-between">
-              <div className="p-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200/50 dark:border-amber-800/40">
+              <div className="w-8 h-8 rounded-full bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200/50 dark:border-amber-800/40 flex items-center justify-center shrink-0">
                 <Search className="w-4 h-4" />
               </div>
-              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-200/50 dark:border-amber-800/40">
+              <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-200/50 dark:border-amber-800/40">
                 {language === 'en' ? 'Lost' : 'مفقود'}
               </span>
             </div>
@@ -254,13 +254,13 @@ export default function HomePage() {
           {/* Card 2: Found Item (Left card in RTL) */}
           <Link
             href="/report?type=found"
-            className="app-card app-card-interactive p-3 sm:p-4 border border-slate-100 dark:border-slate-800/80 border-r-4 rtl:border-r-4 ltr:border-l-4 border-r-emerald-500 ltr:border-l-emerald-500 bg-white dark:bg-[#15201D] flex flex-col justify-between space-y-2 group text-start shadow-sm rounded-2xl"
+            className="app-card app-card-interactive p-3 sm:p-4 border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-[#15201D] flex flex-col justify-between space-y-2.5 group text-start shadow-sm rounded-2xl"
           >
             <div className="flex items-center justify-between">
-              <div className="p-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-800/40">
+              <div className="w-8 h-8 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-800/40 flex items-center justify-center shrink-0">
                 <Handshake className="w-4 h-4" />
               </div>
-              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-800/40">
+              <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-800/40">
                 {language === 'en' ? 'Custody' : 'أمانة'}
               </span>
             </div>

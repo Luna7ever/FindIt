@@ -183,7 +183,7 @@ export default function HomePage() {
                     <h3 className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white leading-tight truncate">
                       {language === 'en' ? 'Weekly Integrity Challenge' : 'تحدي النزاهة الأسبوعي'}
                     </h3>
-                    <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium leading-none mt-0.5 truncate">
+                    <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium leading-tight mt-0.5 truncate">
                       {language === 'en' ? '5 quick dilemmas' : '5 مواقف سريعة'}
                     </p>
                   </div>
@@ -228,10 +228,10 @@ export default function HomePage() {
           {/* Card 1: Lost Item (Right card in RTL) */}
           <Link
             href="/report?type=lost"
-            className="app-card app-card-interactive p-4 sm:p-5 border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-[#15201D] flex flex-col justify-between space-y-3 group text-start shadow-xs rounded-2xl"
+            className="app-card app-card-interactive p-3.5 sm:p-4 border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-[#15201D] flex flex-col justify-between space-y-2.5 group text-start shadow-xs rounded-2xl"
           >
             <div className="flex items-center justify-between">
-              <div className="w-9 h-9 rounded-full bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200/50 dark:border-amber-800/40 flex items-center justify-center shrink-0">
+              <div className="w-8 h-8 rounded-full bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200/50 dark:border-amber-800/40 flex items-center justify-center shrink-0">
                 <Search className="w-4 h-4" />
               </div>
               <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-200/50 dark:border-amber-800/40">
@@ -245,7 +245,7 @@ export default function HomePage() {
               </h2>
             </div>
 
-            <div className="inline-flex items-center justify-center gap-1.5 w-full min-h-[44px] py-2 px-3 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-200 dark:border-amber-800/60 text-xs sm:text-sm font-bold transition-all shadow-2xs active:scale-98">
+            <div className="inline-flex items-center justify-center gap-1.5 w-full min-h-[42px] sm:min-h-[44px] py-2 px-3 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-200 dark:border-amber-800/60 text-xs sm:text-sm font-bold transition-all shadow-2xs active:scale-98">
               <span>{language === 'en' ? 'Report Lost' : 'تسجيل مفقود'}</span>
               <ArrowIcon className="w-3.5 h-3.5 transition-transform group-hover:translate-x-[-2px] rtl:group-hover:translate-x-[-2px]" />
             </div>
@@ -254,10 +254,10 @@ export default function HomePage() {
           {/* Card 2: Found Item (Left card in RTL) */}
           <Link
             href="/report?type=found"
-            className="app-card app-card-interactive p-4 sm:p-5 border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-[#15201D] flex flex-col justify-between space-y-3 group text-start shadow-xs rounded-2xl"
+            className="app-card app-card-interactive p-3.5 sm:p-4 border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-[#15201D] flex flex-col justify-between space-y-2.5 group text-start shadow-xs rounded-2xl"
           >
             <div className="flex items-center justify-between">
-              <div className="w-9 h-9 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-800/40 flex items-center justify-center shrink-0">
+              <div className="w-8 h-8 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-800/40 flex items-center justify-center shrink-0">
                 <Handshake className="w-4 h-4" />
               </div>
               <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-800/40">
@@ -271,7 +271,7 @@ export default function HomePage() {
               </h2>
             </div>
 
-            <div className="inline-flex items-center justify-center gap-1.5 w-full min-h-[44px] py-2 px-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-200 dark:border-emerald-800/60 text-xs sm:text-sm font-bold transition-all shadow-2xs active:scale-98">
+            <div className="inline-flex items-center justify-center gap-1.5 w-full min-h-[42px] sm:min-h-[44px] py-2 px-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-200 dark:border-emerald-800/60 text-xs sm:text-sm font-bold transition-all shadow-2xs active:scale-98">
               <span>{language === 'en' ? 'Handover' : 'تسليم أمانة'}</span>
               <ArrowIcon className="w-3.5 h-3.5 transition-transform group-hover:translate-x-[-2px] rtl:group-hover:translate-x-[-2px]" />
             </div>
@@ -283,7 +283,7 @@ export default function HomePage() {
           AI MATCH SPOTLIGHT (When Match Exists)
       ======================================================== */}
       {malakLostCalc && matchingFoundCalc && currentUser.id === 'user_malak' && (
-        <section className="bg-white dark:bg-[#15201D] p-4 sm:p-5 rounded-2xl border border-slate-100 dark:border-slate-800/80 shadow-xs space-y-3">
+        <section className="bg-white dark:bg-[#15201D] p-3.5 sm:p-4 rounded-2xl border border-slate-100 dark:border-slate-800/80 shadow-xs space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-[#176B5B] dark:bg-[#2DD4BF] animate-ping" />
@@ -332,7 +332,7 @@ export default function HomePage() {
       <section>
         <Link
           href="/activities"
-          className="w-full p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#15201D] border border-slate-100 dark:border-slate-800/80 hover:border-emerald-500/40 dark:hover:border-[#2DD4BF]/40 transition-all flex items-center justify-between gap-3 shadow-xs group cursor-pointer"
+          className="w-full px-3.5 py-3 sm:p-4 rounded-2xl bg-white dark:bg-[#15201D] border border-slate-100 dark:border-slate-800/80 hover:border-emerald-500/40 dark:hover:border-[#2DD4BF]/40 transition-all flex items-center justify-between gap-3 shadow-xs group cursor-pointer"
         >
           <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
             <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#176B5B] text-white flex items-center justify-center shrink-0 shadow-xs">
@@ -347,7 +347,7 @@ export default function HomePage() {
                   {language === 'en' ? '+50 pts' : '+50ن'}
                 </span>
               </div>
-              <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">
+              <p className="text-[9.5px] sm:text-xs text-slate-500 dark:text-slate-400 tracking-tight leading-tight mt-0.5">
                 {language === 'en'
                   ? 'Field volunteering tasks and campus initiatives to foster school community'
                   : 'مهام ومبادرات ميدانية لتعزيز ثقافة الأمانة وخدمة الحرم المدرسي'}

@@ -4,7 +4,7 @@ import React, { useState, useMemo, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
 import { CATEGORIES, SCHOOL_LOCATIONS } from '@/lib/constants';
-import { getLocalizedItem, getLocalizedLocation } from '@/lib/i18n/seedDataTranslations';
+import { getLocalizedItem, getLocalizedLocation, CATEGORY_DESCRIPTIONS_EN } from '@/lib/i18n/seedDataTranslations';
 import ItemCard from '@/components/ItemCard';
 import { 
   Search, 
@@ -12,9 +12,32 @@ import {
   MapPin, 
   Inbox, 
   PlusCircle,
-  Filter
+  Filter,
+  Laptop,
+  PenTool,
+  BookOpen,
+  Shirt,
+  CreditCard,
+  Trophy,
+  CupSoda,
+  KeyRound,
+  ShoppingBag,
+  FolderOpen
 } from 'lucide-react';
 import Link from 'next/link';
+
+const categoryIconMap: Record<string, React.ReactNode> = {
+  electronics: <Laptop className="w-4 h-4" />,
+  stationery: <PenTool className="w-4 h-4" />,
+  books: <BookOpen className="w-4 h-4" />,
+  clothing: <Shirt className="w-4 h-4" />,
+  wallets_cards: <CreditCard className="w-4 h-4" />,
+  sports: <Trophy className="w-4 h-4" />,
+  bottles: <CupSoda className="w-4 h-4" />,
+  keys: <KeyRound className="w-4 h-4" />,
+  bags: <ShoppingBag className="w-4 h-4" />,
+  personal: <FolderOpen className="w-4 h-4" />,
+};
 
 function ExploreContent() {
   const searchParams = useSearchParams();
@@ -60,6 +83,14 @@ function ExploreContent() {
       return true;
     });
   }, [items, selectedType, selectedCategory, selectedLocation, searchQuery]);
+
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const item of items) {
+      counts[item.category] = (counts[item.category] || 0) + 1;
+    }
+    return counts;
+  }, [items]);
 
   const hasActiveFilters = searchQuery !== '' || selectedType !== 'all' || selectedCategory !== 'all' || selectedLocation !== 'all';
 
@@ -113,6 +144,73 @@ function ExploreContent() {
           </button>
         )}
       </div>
+
+      {/* Categories Showcase (Primary Discovery Grid) */}
+      <section className="space-y-2.5">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xs sm:text-sm font-bold text-[#18201D] dark:text-white">
+            {language === 'en' ? 'Browse by Category' : 'تصفح حسب التصنيف'}
+          </h2>
+          {selectedCategory !== 'all' && (
+            <button
+              onClick={() => setSelectedCategory('all')}
+              className="text-[11px] sm:text-xs font-bold text-[#176B5B] dark:text-[#2DD4BF] hover:underline flex items-center gap-1 cursor-pointer"
+            >
+              <span>{language === 'en' ? 'Show All' : 'إظهار الكل'}</span>
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
+
+        <div className="p-2.5 sm:p-3.5 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#15201D] border border-[#E4E7E4] dark:border-[#263834] shadow-xs">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-2.5">
+            {CATEGORIES.map((cat) => {
+              const isSelected = selectedCategory === cat.id;
+              const count = categoryCounts[cat.id] || 0;
+              return (
+                <button
+                  type="button"
+                  key={cat.id}
+                  onClick={() => setSelectedCategory(isSelected ? 'all' : cat.id)}
+                  className={`p-2.5 rounded-xl sm:rounded-2xl transition-all flex flex-col items-start gap-1.5 text-start min-w-0 cursor-pointer border ${
+                    isSelected
+                      ? 'bg-emerald-50/90 dark:bg-[#132A24] border-[#176B5B] dark:border-[#2DD4BF] shadow-xs ring-2 ring-[#176B5B]/20 dark:ring-[#2DD4BF]/20'
+                      : 'bg-[#F7F7F4]/80 dark:bg-[#1C2B27]/50 border-transparent hover:bg-[#E6F1ED] dark:hover:bg-[#1C2B27] hover:border-emerald-300/40'
+                  }`}
+                >
+                  <div className="flex items-center justify-between w-full">
+                    <div className={`p-1.5 sm:p-2 rounded-xl shrink-0 transition-transform ${
+                      isSelected
+                        ? 'bg-[#176B5B] dark:bg-[#2DD4BF] text-white dark:text-slate-950 scale-105'
+                        : 'bg-white dark:bg-[#15201D] text-[#176B5B] dark:text-[#2DD4BF] shadow-2xs'
+                    }`}>
+                      {categoryIconMap[cat.id] || <FolderOpen className="w-4 h-4" />}
+                    </div>
+                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                      isSelected
+                        ? 'bg-[#176B5B]/15 text-[#176B5B] dark:bg-[#2DD4BF]/20 dark:text-[#2DD4BF]'
+                        : 'bg-slate-200/60 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                    }`}>
+                      {count}
+                    </span>
+                  </div>
+
+                  <div className="min-w-0 w-full">
+                    <p className={`font-bold text-[11px] sm:text-xs truncate leading-snug ${
+                      isSelected ? 'text-[#176B5B] dark:text-[#2DD4BF]' : 'text-[#18201D] dark:text-white'
+                    }`}>
+                      {t('cat.' + cat.id) || cat.label}
+                    </p>
+                    <p className="text-[9px] text-[#66706B] dark:text-[#94A39D] truncate block mt-0.5 leading-tight">
+                      {language === 'en' ? (CATEGORY_DESCRIPTIONS_EN[cat.id] || cat.description) : cat.description}
+                    </p>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </section>
 
       {/* Filters Bar */}
       <div className="space-y-3 bg-white dark:bg-[#15201D] p-3.5 sm:p-4 rounded-2xl border border-[#E4E7E4] dark:border-[#263834] shadow-2xs">

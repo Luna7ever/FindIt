@@ -5,11 +5,10 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
 import { canAccessAdmin } from '@/lib/auth/permissions';
-import { CATEGORIES } from '@/lib/constants';
 import ItemCard from '@/components/ItemCard';
 import ItemVisual from '@/components/ItemVisual';
 import InstantSearchBar from '@/components/InstantSearchBar';
-import { getLocalizedItem, getLocalizedUser, CATEGORY_DESCRIPTIONS_EN } from '@/lib/i18n/seedDataTranslations';
+import { getLocalizedItem, getLocalizedUser } from '@/lib/i18n/seedDataTranslations';
 import { getCampusPeriod, getCampusGreeting, CampusPeriod } from '@/lib/campusSchedule';
 import { 
   Search, 
@@ -18,37 +17,11 @@ import {
   ArrowRight, 
   Sparkles, 
   CheckCircle2, 
-  Laptop,
-  PenTool,
-  BookOpen,
-  Shirt,
-  CreditCard,
-  Trophy,
-  FolderOpen,
-  KeyRound,
-  ShieldCheck,
-  Building2,
-  FileCheck,
-  CupSoda,
-  Cpu,
-  ShoppingBag,
-  GraduationCap,
-  Lock,
-  Handshake
+  ShieldCheck, 
+  Building2, 
+  Lock, 
+  Handshake 
 } from 'lucide-react';
-
-const categoryIconMap: Record<string, React.ReactNode> = {
-  electronics: <Laptop className="w-4 h-4" />,
-  stationery: <PenTool className="w-4 h-4" />,
-  books: <BookOpen className="w-4 h-4" />,
-  clothing: <Shirt className="w-4 h-4" />,
-  wallets_cards: <CreditCard className="w-4 h-4" />,
-  sports: <Trophy className="w-4 h-4" />,
-  bottles: <CupSoda className="w-4 h-4" />,
-  keys: <KeyRound className="w-4 h-4" />,
-  bags: <ShoppingBag className="w-4 h-4" />,
-  personal: <FolderOpen className="w-4 h-4" />,
-};
 
 export default function HomePage() {
   const router = useRouter();
@@ -145,66 +118,55 @@ export default function HomePage() {
       {/* ========================================================
           1. PERSONALIZED HERO GREETING & SEARCH BAR
       ======================================================== */}
-      <section className="space-y-1.5 sm:space-y-2.5 text-start pt-0 w-full max-w-full min-w-0 overflow-hidden">
-        <div className="space-y-1 sm:space-y-1.5">
-          <div className="flex flex-wrap items-center justify-between gap-1.5 sm:gap-2">
-            {/* Merged Single Compact Welcome & Student Badge */}
-            <div className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-[#E6F1ED] dark:bg-[#122823] text-xs font-bold border border-[#176B5B]/30 dark:border-[#263834] shadow-2xs max-w-full">
-              <button
-                onClick={openOnboardingModal}
-                className="inline-flex items-center gap-1 text-[#176B5B] dark:text-[#2DD4BF] hover:underline cursor-pointer truncate"
-                title={language === 'en' ? 'Edit student profile' : 'تعديل بيانات الطالب'}
-              >
-                <span className="w-1.5 h-1.5 rounded-full bg-[#176B5B] dark:bg-[#2DD4BF] animate-pulse shrink-0" />
-                <span className="truncate">{greetingText}</span>
-                <span className="text-[11px] opacity-75">{currentUser.name ? '✏️' : '🎓'}</span>
-              </button>
+      <section className="space-y-2 text-start pt-0 w-full max-w-full min-w-0 overflow-hidden">
+        <div className="flex flex-wrap items-center justify-between gap-1.5 sm:gap-2">
+          {/* Merged Single Compact Welcome & Student Badge */}
+          <div className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-[#E6F1ED] dark:bg-[#122823] text-xs font-bold border border-[#176B5B]/30 dark:border-[#263834] shadow-2xs max-w-full">
+            <button
+              onClick={openOnboardingModal}
+              className="inline-flex items-center gap-1 text-[#176B5B] dark:text-[#2DD4BF] hover:underline cursor-pointer truncate"
+              title={language === 'en' ? 'Edit student profile' : 'تعديل بيانات الطالب'}
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-[#176B5B] dark:bg-[#2DD4BF] animate-pulse shrink-0" />
+              <span className="truncate">{greetingText}</span>
+              <span className="text-[11px] opacity-75">{currentUser.name ? '✏️' : '🎓'}</span>
+            </button>
 
-              {!isAdmin && (
-                <>
-                  <span className="text-slate-300 dark:text-slate-600 select-none">|</span>
-                  <Link
-                    href="/integrity"
-                    className="inline-flex items-center gap-1 text-slate-700 dark:text-slate-300 hover:text-[#176B5B] dark:hover:text-[#2DD4BF] transition-colors truncate"
-                    title={tierBadgeInfo.title}
-                  >
-                    <span>{tierBadgeInfo.emoji}</span>
-                    <span className="font-semibold">{tierBadgeInfo.shortTitle}</span>
-                    <span className="text-[#176B5B] dark:text-[#2DD4BF] font-extrabold text-[11px]">
-                      ({currentUser.goodwillPoints || 0}{language === 'en' ? 'pts' : 'ن'})
-                    </span>
-                  </Link>
-                </>
-              )}
+            {!isAdmin && (
+              <>
+                <span className="text-slate-300 dark:text-slate-600 select-none">|</span>
+                <Link
+                  href="/integrity"
+                  className="inline-flex items-center gap-1 text-slate-700 dark:text-slate-300 hover:text-[#176B5B] dark:hover:text-[#2DD4BF] transition-colors truncate"
+                  title={tierBadgeInfo.title}
+                >
+                  <span>{tierBadgeInfo.emoji}</span>
+                  <span className="font-semibold">{tierBadgeInfo.shortTitle}</span>
+                  <span className="text-[#176B5B] dark:text-[#2DD4BF] font-extrabold text-[11px]">
+                    ({currentUser.goodwillPoints || 0}{language === 'en' ? 'pts' : 'ن'})
+                  </span>
+                </Link>
+              </>
+            )}
 
-              {isAdmin && (
-                <>
-                  <span className="text-slate-300 dark:text-slate-600 select-none">|</span>
-                  <Link
-                    href="/admin"
-                    className="inline-flex items-center gap-1 text-[#176B5B] dark:text-[#2DD4BF] hover:underline"
-                  >
-                    <Building2 className="w-3 h-3" />
-                    <span>{language === 'en' ? 'Admin 🏛️' : 'الإدارة 🏛️'}</span>
-                  </Link>
-                </>
-              )}
-            </div>
-
-            {/* Quiet System Status Indicator */}
-            <div className="flex items-center gap-1.5 text-[11px] text-[#66706B] dark:text-[#94A39D] shrink-0">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span>{language === 'en' ? 'Custody System Active' : 'منظومة الأمانات متاحة'}</span>
-            </div>
+            {isAdmin && (
+              <>
+                <span className="text-slate-300 dark:text-slate-600 select-none">|</span>
+                <Link
+                  href="/admin"
+                  className="inline-flex items-center gap-1 text-[#176B5B] dark:text-[#2DD4BF] hover:underline"
+                >
+                  <Building2 className="w-3 h-3" />
+                  <span>{language === 'en' ? 'Admin 🏛️' : 'الإدارة 🏛️'}</span>
+                </Link>
+              </>
+            )}
           </div>
-          
-          <div>
-            <h1 className="text-sm sm:text-lg lg:text-xl font-bold sm:font-extrabold text-[#18201D] dark:text-white ltr:tracking-tight leading-tight">
-              {language === 'en' ? 'Lost something? ' : 'ضاع منك شيء؟ '}
-              <span className="text-[#176B5B] dark:text-[#2DD4BF]">
-                {language === 'en' ? 'We are here to help.' : 'خلّينا نساعدك تلاقيه.'}
-              </span>
-            </h1>
+
+          {/* Quiet System Status Indicator */}
+          <div className="flex items-center gap-1.5 text-[11px] text-[#66706B] dark:text-[#94A39D] shrink-0">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span>{language === 'en' ? 'Custody System Active' : 'منظومة الأمانات متاحة'}</span>
           </div>
         </div>
 
@@ -406,46 +368,7 @@ export default function HomePage() {
       </section>
 
       {/* ========================================================
-          5. CATEGORIES BROWSER (Decluttered Unified Surface)
-      ======================================================== */}
-      <section className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm sm:text-base font-black text-[#18201D] dark:text-white">
-            {language === 'en' ? 'Explore by Category' : 'تصفح حسب التصنيف'}
-          </h2>
-          <Link href="/explore" className="text-xs font-bold text-[#176B5B] dark:text-[#2DD4BF] hover:underline flex items-center gap-1 group">
-            <span>{language === 'en' ? 'View All' : 'عرض الكل'}</span>
-            <ArrowIcon className={`w-3.5 h-3.5 transition-transform ${isRtl ? 'group-hover:-translate-x-0.5' : 'group-hover:translate-x-0.5'}`} />
-          </Link>
-        </div>
-
-        <div className="p-2.5 sm:p-3.5 rounded-3xl bg-white dark:bg-[#15201D] border border-[#E4E7E4] dark:border-[#263834] shadow-xs">
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 gap-2.5 sm:gap-3">
-            {CATEGORIES.map((cat) => (
-              <Link
-                key={cat.id}
-                href={`/explore?category=${cat.id}`}
-                className="p-2 sm:p-2.5 rounded-2xl bg-[#F7F7F4]/80 dark:bg-[#1C2B27]/50 hover:bg-[#E6F1ED] dark:hover:bg-[#1C2B27] transition-all flex items-center gap-2 group text-start min-w-0"
-              >
-                <div className="p-1.5 sm:p-2 rounded-xl bg-white dark:bg-[#15201D] text-[#176B5B] dark:text-[#2DD4BF] group-hover:scale-105 transition-transform shrink-0 shadow-2xs">
-                  {categoryIconMap[cat.id] || <FolderOpen className="w-4 h-4" />}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="font-bold text-[11px] sm:text-xs text-[#18201D] dark:text-white group-hover:text-[#176B5B] dark:group-hover:text-[#2DD4BF] transition-colors truncate leading-snug">
-                    {t('cat.' + cat.id) || cat.label}
-                  </p>
-                  <p className="text-[9px] sm:text-[10px] text-[#66706B] dark:text-[#94A39D] truncate block mt-0.5 leading-tight">
-                    {language === 'en' ? (CATEGORY_DESCRIPTIONS_EN[cat.id] || cat.description) : cat.description}
-                  </p>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ========================================================
-          6. RECENT FOUND ITEMS FEED
+          5. RECENT FOUND ITEMS FEED
       ======================================================== */}
       <section className="space-y-4">
         <div className="flex items-center justify-between">

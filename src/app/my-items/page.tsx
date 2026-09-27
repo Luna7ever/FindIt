@@ -77,7 +77,7 @@ export default function MyItemsPage() {
 
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-base sm:text-lg font-bold text-[#18201D] dark:text-white truncate">{localizedUser.name}</h1>
+              <h1 className="text-base sm:text-lg font-bold text-[#18201D] dark:text-white truncate">{currentUser.name || localizedUser.name}</h1>
               <TrustBadge tier={currentUserTrustTier} size="sm" />
               {env.NEXT_PUBLIC_DEMO_MODE && (
                 <button

@@ -7,7 +7,6 @@ import {
   updateDoc, 
   onSnapshot, 
   query, 
-  where,
   orderBy
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -18,21 +17,44 @@ const USERS_COLLECTION = 'users';
 const ITEMS_COLLECTION = 'items';
 const CLAIMS_COLLECTION = 'claims';
 
+/**
+ * Sanitizes object by recursively omitting undefined values so Firestore setDoc/updateDoc never errors
+ */
+function cleanFirestoreData<T>(obj: T): Record<string, any> {
+  const clean: Record<string, any> = {};
+  if (!obj || typeof obj !== 'object') return clean;
+  for (const [key, val] of Object.entries(obj as Record<string, any>)) {
+    if (val !== undefined) {
+      if (val !== null && typeof val === 'object' && !Array.isArray(val)) {
+        clean[key] = cleanFirestoreData(val);
+      } else {
+        clean[key] = val;
+      }
+    }
+  }
+  return clean;
+}
+
 export const firestoreService = {
   /**
    * Save or update a student user profile in Firestore
    */
   async saveUserProfile(profile: UserProfile): Promise<boolean> {
     try {
-      const userRef = doc(db, USERS_COLLECTION, profile.id);
-      await setDoc(userRef, {
+      if (!profile || !profile.id) {
+        logger.error('Firestore: Cannot save profile without ID');
+        return false;
+      }
+      const sanitized = cleanFirestoreData({
         ...profile,
         updatedAt: new Date().toISOString()
-      }, { merge: true });
+      });
+      const userRef = doc(db, USERS_COLLECTION, profile.id);
+      await setDoc(userRef, sanitized, { merge: true });
       logger.info('Firestore: User profile saved successfully', { userId: profile.id });
       return true;
     } catch (error) {
-      logger.error('Firestore: Failed to save user profile', { error: String(error), userId: profile.id });
+      logger.error('Firestore: Failed to save user profile', { error: String(error), userId: profile?.id });
       return false;
     }
   },
@@ -42,6 +64,7 @@ export const firestoreService = {
    */
   async getUserProfile(userId: string): Promise<UserProfile | null> {
     try {
+      if (!userId) return null;
       const userRef = doc(db, USERS_COLLECTION, userId);
       const snapshot = await getDoc(userRef);
       if (snapshot.exists()) {
@@ -55,19 +78,41 @@ export const firestoreService = {
   },
 
   /**
+   * Fetch all registered users from Firestore
+   */
+  async getAllUsers(): Promise<UserProfile[]> {
+    try {
+      const snapshot = await getDocs(collection(db, USERS_COLLECTION));
+      const userList: UserProfile[] = [];
+      snapshot.forEach((d) => {
+        const data = d.data() as UserProfile;
+        if (data && data.id && data.name) {
+          userList.push(data);
+        }
+      });
+      return userList;
+    } catch (error) {
+      logger.error('Firestore: Failed to fetch all users', { error: String(error) });
+      return [];
+    }
+  },
+
+  /**
    * Save a new lost/found item to Firestore
    */
   async saveItem(item: Item): Promise<boolean> {
     try {
-      const itemRef = doc(db, ITEMS_COLLECTION, item.id);
-      await setDoc(itemRef, {
+      if (!item || !item.id) return false;
+      const sanitized = cleanFirestoreData({
         ...item,
         updatedAt: new Date().toISOString()
-      }, { merge: true });
+      });
+      const itemRef = doc(db, ITEMS_COLLECTION, item.id);
+      await setDoc(itemRef, sanitized, { merge: true });
       logger.info('Firestore: Item saved', { itemId: item.id });
       return true;
     } catch (error) {
-      logger.error('Firestore: Failed to save item', { error: String(error), itemId: item.id });
+      logger.error('Firestore: Failed to save item', { error: String(error), itemId: item?.id });
       return false;
     }
   },
@@ -77,11 +122,13 @@ export const firestoreService = {
    */
   async updateItem(itemId: string, updates: Partial<Item>): Promise<boolean> {
     try {
-      const itemRef = doc(db, ITEMS_COLLECTION, itemId);
-      await updateDoc(itemRef, {
+      if (!itemId) return false;
+      const sanitized = cleanFirestoreData({
         ...updates,
         updatedAt: new Date().toISOString()
       });
+      const itemRef = doc(db, ITEMS_COLLECTION, itemId);
+      await updateDoc(itemRef, sanitized);
       logger.info('Firestore: Item updated', { itemId });
       return true;
     } catch (error) {
@@ -95,15 +142,17 @@ export const firestoreService = {
    */
   async saveClaim(claim: Claim): Promise<boolean> {
     try {
-      const claimRef = doc(db, CLAIMS_COLLECTION, claim.id);
-      await setDoc(claimRef, {
+      if (!claim || !claim.id) return false;
+      const sanitized = cleanFirestoreData({
         ...claim,
         updatedAt: new Date().toISOString()
-      }, { merge: true });
+      });
+      const claimRef = doc(db, CLAIMS_COLLECTION, claim.id);
+      await setDoc(claimRef, sanitized, { merge: true });
       logger.info('Firestore: Claim saved', { claimId: claim.id });
       return true;
     } catch (error) {
-      logger.error('Firestore: Failed to save claim', { error: String(error), claimId: claim.id });
+      logger.error('Firestore: Failed to save claim', { error: String(error), claimId: claim?.id });
       return false;
     }
   },
@@ -113,11 +162,13 @@ export const firestoreService = {
    */
   async updateClaim(claimId: string, updates: Partial<Claim>): Promise<boolean> {
     try {
-      const claimRef = doc(db, CLAIMS_COLLECTION, claimId);
-      await updateDoc(claimRef, {
+      if (!claimId) return false;
+      const sanitized = cleanFirestoreData({
         ...updates,
         updatedAt: new Date().toISOString()
       });
+      const claimRef = doc(db, CLAIMS_COLLECTION, claimId);
+      await updateDoc(claimRef, sanitized);
       logger.info('Firestore: Claim updated', { claimId });
       return true;
     } catch (error) {

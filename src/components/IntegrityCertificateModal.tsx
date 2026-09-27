@@ -21,7 +21,6 @@ import {
 import confetti from 'canvas-confetti';
 import { UserProfile, TrustTier } from '@/types';
 import { useApp } from '@/context/AppContext';
-import { DEMO_USERS } from '@/lib/constants';
 
 interface IntegrityCertificateModalProps {
   isOpen: boolean;
@@ -34,7 +33,7 @@ export default function IntegrityCertificateModal({
   onClose,
   user,
 }: IntegrityCertificateModalProps) {
-  const { currentUser, addToast, dir, language, getUserEarnedBadges } = useApp();
+  const { currentUser, users, addToast, dir, language, getUserEarnedBadges } = useApp();
   const certRef = useRef<HTMLDivElement>(null);
   const [copiedCode, setCopiedCode] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -61,7 +60,7 @@ export default function IntegrityCertificateModal({
   const isPrincipalViewing = currentUser.role === 'admin' && (!user || user.role === 'admin');
   const targetUser = (user && user.role !== 'admin') 
     ? user 
-    : (isPrincipalViewing ? (DEMO_USERS.find((u) => u.role === 'student') || DEMO_USERS[0]) : currentUser);
+    : (isPrincipalViewing ? (users.find((u) => u.role === 'student' && u.name) || currentUser) : currentUser);
   const points = targetUser.goodwillPoints || 100;
   const tier: TrustTier = points >= 300 ? 'gold' : points >= 60 ? 'silver' : 'bronze';
   

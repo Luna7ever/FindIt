@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
 import { firestoreService } from '@/services/firestoreService';
+import { logger } from '@/lib/logging/logger';
+import { UserProfile } from '@/types';
 import { 
   GraduationCap, 
   User, 
@@ -36,7 +38,7 @@ interface StudentOnboardingModalProps {
 }
 
 export default function StudentOnboardingModal({ isOpen, onClose }: StudentOnboardingModalProps) {
-  const { currentUser, setCurrentUser, addToast, dir } = useApp();
+  const { currentUser, updateUserProfile, addToast, dir } = useApp();
 
   const [name, setName] = useState(currentUser.name || '');
   const [grade, setGrade] = useState(currentUser.grade || '');
@@ -94,35 +96,46 @@ export default function StudentOnboardingModal({ isOpen, onClose }: StudentOnboa
     setIsSubmitting(true);
 
     try {
-      const updatedProfile = {
+      const studentId = (currentUser.id && currentUser.id !== 'user_malak' && currentUser.id !== '')
+        ? currentUser.id
+        : `student_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+
+      const studentData: UserProfile = {
         ...currentUser,
+        id: studentId,
         name: name.trim(),
         grade: grade,
-        track: isSecondarySenior ? track : undefined,
+        track: isSecondarySenior ? track : '',
         classroom: classroom.trim(),
         age: parsedAge,
+        role: 'student',
+        isTrusted: currentUser.isTrusted ?? false,
+        goodwillPoints: currentUser.goodwillPoints ?? 0,
       };
 
-      // 1. Update Context state
-      setCurrentUser(updatedProfile);
+      // 1. Save student profile to Firestore collection 'users'
+      await firestoreService.saveUserProfile(studentData);
 
-      // 2. Persist to Firestore
-      await firestoreService.saveUserProfile(updatedProfile);
-
-      // 3. Persist to LocalStorage
+      // 2. Save complete object to localStorage under 'ethos_student'
       if (typeof window !== 'undefined') {
-        localStorage.setItem('findit_current_user_v4', updatedProfile.id);
+        localStorage.setItem('ethos_student', JSON.stringify(studentData));
+        localStorage.setItem('findit_current_user_profile_v5', JSON.stringify(studentData));
+        localStorage.setItem('findit_current_user_v4', studentData.id);
         localStorage.setItem('findit_onboarding_completed', 'true');
       }
 
+      // 3. Update state directly with the registered student data
+      await updateUserProfile(studentData);
+
       addToast(
         'تم حفظ البيانات بنجاح',
-        `أهلاً بك يا ${name.split(' ')[0]} في مجتمع الأمانة المدرسي!`,
+        `أهلاً بك يا ${name.trim().split(' ')[0]} في مجتمع الأمانة المدرسي!`,
         'success'
       );
 
       onClose();
-    } catch (err) {
+    } catch (err: any) {
+      logger.error('Error in onboarding submit', { error: String(err) });
       setValidationError('حدث خطأ أثناء حفظ البيانات، يرجى المحاولة مرة أخرى.');
     } finally {
       setIsSubmitting(false);

@@ -114,6 +114,8 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 const ITEMS_STORAGE_KEY = 'findit_items_v4';
 const CLAIMS_STORAGE_KEY = 'findit_claims_v4';
 const CURRENT_USER_KEY = 'findit_current_user_v4';
+const CURRENT_USER_PROFILE_KEY = 'findit_current_user_profile_v5';
+const ETHOS_STUDENT_STORAGE_KEY = 'ethos_student';
 const USERS_STORAGE_KEY = 'findit_users_v4';
 const INTEGRITY_ATTEMPTS_KEY = 'findit_integrity_attempts_v4';
 const NOTIFICATIONS_STORAGE_KEY = 'findit_notifications_v4';
@@ -121,11 +123,57 @@ const ACTIVITIES_STORAGE_KEY = 'findit_activities_v4';
 const LANGUAGE_STORAGE_KEY = 'findit_language_v4';
 const THEME_STORAGE_KEY = 'findit_theme_v4';
 
+export const EMPTY_STUDENT_PROFILE: UserProfile = {
+  id: '',
+  name: '',
+  email: '',
+  role: 'student',
+  grade: '',
+  classroom: '',
+  track: '',
+  avatar: '',
+  returnedCount: 0,
+  isTrusted: false,
+  goodwillPoints: 0,
+  integrityScenariosCompleted: [],
+};
+
+export function getStoredStudent(): UserProfile | null {
+  if (typeof window !== 'undefined') {
+    try {
+      const ethosStudent = localStorage.getItem(ETHOS_STUDENT_STORAGE_KEY);
+      if (ethosStudent) {
+        const parsed = JSON.parse(ethosStudent);
+        if (parsed && typeof parsed === 'object' && parsed.name) {
+          return parsed;
+        }
+      }
+      const v5Profile = localStorage.getItem(CURRENT_USER_PROFILE_KEY);
+      if (v5Profile) {
+        const parsed = JSON.parse(v5Profile);
+        if (parsed && typeof parsed === 'object' && parsed.name) {
+          return parsed;
+        }
+      }
+    } catch (e) {
+      // Safe fallback
+    }
+  }
+  return null;
+}
+
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<Item[]>(INITIAL_SEED_ITEMS);
   const [claims, setClaims] = useState<Claim[]>([]);
-  const [currentUser, setCurrentUser] = useState<UserProfile>(DEMO_USERS[0]); // Default: Malak (Student)
-  const [users, setUsers] = useState<UserProfile[]>(DEMO_USERS);
+  // Lazy initial state dynamically reads registered student from localStorage, eliminating any hardcoded demo profile
+  const [currentUser, setCurrentUser] = useState<UserProfile>(() => getStoredStudent() || EMPTY_STUDENT_PROFILE);
+  const [users, setUsers] = useState<UserProfile[]>(() => {
+    const student = getStoredStudent();
+    if (student && student.name) {
+      return [student, ...DEMO_USERS.filter((u) => u.role !== 'student' || u.id !== student.id)];
+    }
+    return DEMO_USERS;
+  });
   const [integrityAttempts, setIntegrityAttempts] = useState<IntegrityAttempt[]>([]);
   const [notifications, setNotifications] = useState<NotificationItem[]>(INITIAL_NOTIFICATIONS);
   const [activitySubmissions, setActivitySubmissions] = useState<ActivitySubmission[]>(INITIAL_ACTIVITY_SUBMISSIONS);
@@ -175,16 +223,38 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       if (savedActivities) {
         setActivitySubmissions(JSON.parse(savedActivities));
       }
+
+      // Check for saved registered student
+      const activeStudent = getStoredStudent();
+      if (activeStudent) {
+        setCurrentUser(activeStudent);
+      }
+
       if (savedUsers) {
         const parsedUsers: UserProfile[] = JSON.parse(savedUsers);
+        if (activeStudent) {
+          const index = parsedUsers.findIndex((u) => u.id === activeStudent.id);
+          if (index >= 0) {
+            parsedUsers[index] = activeStudent;
+          } else {
+            parsedUsers.unshift(activeStudent);
+          }
+        }
         setUsers(parsedUsers);
-        if (savedUserId) {
+        if (activeStudent) {
+          setCurrentUser(activeStudent);
+        } else if (savedUserId) {
           const found = parsedUsers.find((u) => u.id === savedUserId);
           if (found) setCurrentUser(found);
         }
-      } else if (savedUserId) {
-        const found = DEMO_USERS.find((u) => u.id === savedUserId);
-        if (found) setCurrentUser(found);
+      } else {
+        if (activeStudent) {
+          setCurrentUser(activeStudent);
+          setUsers([activeStudent, ...DEMO_USERS.filter((u) => u.role !== 'student' || u.id !== activeStudent.id)]);
+        } else if (savedUserId) {
+          const found = DEMO_USERS.find((u) => u.id === savedUserId);
+          if (found) setCurrentUser(found);
+        }
       }
 
       // Language Auto-Detection
@@ -223,15 +293,51 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  // Synchronize active user profile with Firebase Firestore on launch
+  useEffect(() => {
+    if (!isLoaded) return;
+    const targetUserId = currentUser.id || (typeof window !== 'undefined' ? localStorage.getItem(CURRENT_USER_KEY) : null);
+    if (!targetUserId) return;
+
+    let isMounted = true;
+    (async () => {
+      try {
+        const cloudProfile = await firestoreService.getUserProfile(targetUserId);
+        if (cloudProfile && cloudProfile.name && isMounted) {
+          setCurrentUser((prev) => ({ ...prev, ...cloudProfile }));
+          setUsers((prevUsers) => {
+            const exists = prevUsers.some((u) => u.id === cloudProfile.id);
+            return exists ? prevUsers.map((u) => (u.id === cloudProfile.id ? { ...u, ...cloudProfile } : u)) : [cloudProfile, ...prevUsers];
+          });
+          if (typeof window !== 'undefined') {
+            localStorage.setItem(ETHOS_STUDENT_STORAGE_KEY, JSON.stringify(cloudProfile));
+            localStorage.setItem(CURRENT_USER_PROFILE_KEY, JSON.stringify(cloudProfile));
+            localStorage.setItem(CURRENT_USER_KEY, cloudProfile.id);
+            if (cloudProfile.classroom) {
+              localStorage.setItem('findit_onboarding_completed', 'true');
+            }
+          }
+        }
+      } catch (err) {
+        logger.warn('Failed to rehydrate user profile from Firestore', { error: String(err) });
+      }
+    })();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [isLoaded, currentUser.id]);
+
   // Auto-trigger onboarding for student if incomplete
   useEffect(() => {
-    if (isLoaded && currentUser.role === 'student') {
+    if (isLoaded && (currentUser.role === 'student' || !currentUser.name)) {
+      const savedEthos = typeof window !== 'undefined' ? localStorage.getItem(ETHOS_STUDENT_STORAGE_KEY) : null;
       const completed = typeof window !== 'undefined' ? localStorage.getItem('findit_onboarding_completed') : null;
-      if (!completed && !currentUser.classroom) {
+      if (!savedEthos && (!completed || !currentUser.classroom || !currentUser.name)) {
         setIsOnboardingModalOpen(true);
       }
     }
-  }, [isLoaded, currentUser.role, currentUser.classroom]);
+  }, [isLoaded, currentUser.role, currentUser.name, currentUser.classroom]);
 
   // Real-time synchronization with Firebase Firestore
   useEffect(() => {
@@ -376,7 +482,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!isLoaded) return;
     try {
-      localStorage.setItem(CURRENT_USER_KEY, currentUser.id);
+      if (currentUser.name && currentUser.id) {
+        localStorage.setItem(CURRENT_USER_KEY, currentUser.id);
+        localStorage.setItem(CURRENT_USER_PROFILE_KEY, JSON.stringify(currentUser));
+        if (currentUser.role === 'student') {
+          localStorage.setItem(ETHOS_STUDENT_STORAGE_KEY, JSON.stringify(currentUser));
+        }
+        if (currentUser.classroom) {
+          localStorage.setItem('findit_onboarding_completed', 'true');
+        }
+      }
     } catch (e) {
       logger.error('Error saving current user to localStorage', { error: String(e) });
     }
@@ -834,11 +949,34 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const closeOnboardingModal = useCallback(() => setIsOnboardingModalOpen(false), []);
 
   const updateUserProfile = useCallback(async (updates: Partial<UserProfile>) => {
-    setCurrentUser((prev) => {
-      const updated = { ...prev, ...updates };
-      setUsers((prevUsers) => prevUsers.map((u) => (u.id === updated.id ? updated : u)));
-      firestoreService.saveUserProfile(updated).catch(() => {});
-      return updated;
+    return new Promise<void>((resolve) => {
+      setCurrentUser((prev) => {
+        const updated = { ...prev, ...updates };
+        setUsers((prevUsers) => {
+          const exists = prevUsers.some((u) => u.id === updated.id);
+          return exists ? prevUsers.map((u) => (u.id === updated.id ? updated : u)) : [updated, ...prevUsers];
+        });
+        if (typeof window !== 'undefined') {
+          try {
+            if (updated.role === 'student' || !updated.role) {
+              localStorage.setItem(ETHOS_STUDENT_STORAGE_KEY, JSON.stringify(updated));
+            }
+            localStorage.setItem(CURRENT_USER_KEY, updated.id);
+            localStorage.setItem(CURRENT_USER_PROFILE_KEY, JSON.stringify(updated));
+            if (updated.classroom) {
+              localStorage.setItem('findit_onboarding_completed', 'true');
+            }
+          } catch (e) {}
+        }
+        firestoreService.saveUserProfile(updated).then(() => {
+          logger.info('User profile saved to Firestore successfully', { userId: updated.id });
+          resolve();
+        }).catch((err) => {
+          logger.error('Failed to sync profile to Firestore', { error: String(err) });
+          resolve();
+        });
+        return updated;
+      });
     });
   }, []);
 
@@ -1026,13 +1164,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setItems(INITIAL_SEED_ITEMS);
     setClaims([]);
     setUsers(DEMO_USERS);
-    setCurrentUser(DEMO_USERS[0]);
+    setCurrentUser(EMPTY_STUDENT_PROFILE);
     setIntegrityAttempts([]);
     setNotifications(INITIAL_NOTIFICATIONS);
     setActivitySubmissions(INITIAL_ACTIVITY_SUBMISSIONS);
     localStorage.removeItem(ITEMS_STORAGE_KEY);
     localStorage.removeItem(CLAIMS_STORAGE_KEY);
     localStorage.removeItem(CURRENT_USER_KEY);
+    localStorage.removeItem(ETHOS_STUDENT_STORAGE_KEY);
+    localStorage.removeItem(CURRENT_USER_PROFILE_KEY);
+    localStorage.removeItem('findit_onboarding_completed');
     localStorage.removeItem(USERS_STORAGE_KEY);
     localStorage.removeItem(INTEGRITY_ATTEMPTS_KEY);
     localStorage.removeItem(NOTIFICATIONS_STORAGE_KEY);

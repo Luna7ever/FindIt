@@ -167,14 +167,16 @@ export default function InstantSearchBar({
           aria-expanded={isOpen}
           aria-autocomplete="list"
           aria-controls="instant-search-dropdown"
-          className="w-full h-12 min-h-[48px] py-2.5 px-3 sm:py-3 sm:px-4 ps-9 sm:ps-11 pe-28 sm:pe-32 bg-white dark:bg-[#15201D] border border-slate-100 dark:border-slate-800/80 rounded-2xl shadow-xs text-xs sm:text-sm focus:border-[#176B5B] dark:focus:border-[#2DD4BF] focus:ring-2 focus:ring-[#176B5B]/10 dark:focus:ring-[#2DD4BF]/10 focus:outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500 text-[#18201D] dark:text-white"
+          className="w-full h-12 min-h-[48px] py-2.5 px-3 sm:py-3 sm:px-4 ps-10 sm:ps-12 pe-14 sm:pe-16 bg-white dark:bg-[#15201D] border-0 rounded-2xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] text-xs sm:text-sm focus:ring-2 focus:ring-[#176B5B]/15 dark:focus:ring-[#2DD4BF]/15 focus:outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500 text-[#18201D] dark:text-white"
         />
 
-        {/* Magnifying Glass Icon */}
-        <Search className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute top-1/2 -translate-y-1/2 start-3 sm:start-4 pointer-events-none" />
+        {/* Magnifying Glass Icon (Start side) */}
+        <div className="absolute top-1/2 -translate-y-1/2 start-3.5 sm:start-4 flex items-center justify-center text-slate-400 dark:text-slate-500 pointer-events-none">
+          <Search className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
+        </div>
 
-        {/* Action Controls: Clear Button + QR Scanner Button + Submit Button */}
-        <div className="absolute top-1/2 -translate-y-1/2 end-1.5 sm:end-2 flex items-center gap-1 sm:gap-1.5 shrink-0 z-10">
+        {/* Action Controls: Clear Button + QR Scanner Button (End side) */}
+        <div className="absolute top-1/2 -translate-y-1/2 end-1.5 sm:end-2 flex items-center gap-1 shrink-0 z-10">
           {searchQuery.length > 0 && (
             <button
               type="button"
@@ -191,17 +193,15 @@ export default function InstantSearchBar({
           <button
             type="button"
             onClick={openQRScanner}
-            className="p-2 sm:px-2.5 sm:py-2 min-h-[40px] rounded-xl text-slate-500 hover:text-[#176B5B] dark:text-slate-400 dark:hover:text-[#2DD4BF] hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer flex items-center justify-center shrink-0"
+            className="w-10 h-10 min-w-[40px] min-h-[40px] rounded-xl text-slate-500 hover:text-[#176B5B] dark:text-slate-400 dark:hover:text-[#2DD4BF] hover:bg-slate-50 dark:hover:bg-[#1C2724] transition-colors cursor-pointer flex items-center justify-center shrink-0"
             title={language === 'en' ? 'Scan Item QR Code' : 'مسح باركود الغرض'}
             aria-label={language === 'en' ? 'Scan Item QR Code' : 'مسح باركود الغرض'}
           >
-            <QrCode className="w-4 h-4 text-[#176B5B] dark:text-[#2DD4BF]" />
+            <QrCode className="w-4 h-4 sm:w-5 sm:h-5 text-[#176B5B] dark:text-[#2DD4BF]" />
           </button>
 
-          <button
-            type="submit"
-            className="min-w-[48px] sm:min-w-[64px] px-2.5 sm:px-4 py-2 min-h-[40px] rounded-xl bg-[#176B5B] dark:bg-[#2DD4BF] text-white dark:text-slate-950 text-xs font-bold hover:bg-[#125648] dark:hover:bg-[#14B8A6] transition-colors cursor-pointer flex items-center justify-center shrink-0 shadow-2xs"
-          >
+          {/* Accessible Form Submit */}
+          <button type="submit" className="sr-only">
             {language === 'en' ? 'Search' : 'بحث'}
           </button>
         </div>

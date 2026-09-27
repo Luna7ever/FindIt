@@ -112,7 +112,11 @@ export default function HomePage() {
   }, [items]);
 
   return (
-    <div className="w-full max-w-full overflow-x-hidden px-4 sm:px-6 pt-3 pb-32 sm:pb-16 space-y-4 sm:space-y-6 max-w-5xl mx-auto text-[#18201D] dark:text-[#F1F5F3]" dir={dir}>
+    <div
+      className="w-full max-w-full overflow-hidden px-4 sm:px-6 pt-2 pb-[120px] sm:pb-16 space-y-3.5 sm:space-y-5 max-w-5xl mx-auto text-[#18201D] dark:text-[#F1F5F3]"
+      dir={dir}
+      style={{ paddingBottom: '120px' }}
+    >
       
 
       {/* ========================================================
@@ -362,7 +366,7 @@ export default function HomePage() {
       {/* ========================================================
           5. RECENT FOUND ITEMS FEED (Spacious & Comfortable)
       ======================================================== */}
-      <section className="space-y-4 pt-2">
+      <section className="space-y-4 pt-3 sm:pt-4 overflow-hidden">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-sm sm:text-base font-extrabold text-[#18201D] dark:text-white">

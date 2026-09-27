@@ -88,22 +88,39 @@ export default function ItemCard({ item: rawItem, matchScore, showMatchButton = 
         className="app-card app-card-interactive w-full max-w-full min-w-0 overflow-hidden flex items-center justify-between gap-3.5 sm:gap-4 group block text-start bg-white dark:bg-[#15201D] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] hover:shadow-md transition-all rounded-3xl p-3 sm:p-3.5 active:scale-[0.99]"
       >
         <div className="flex items-center gap-3 sm:gap-3.5 min-w-0 flex-1">
-          {/* Visual Container */}
-          <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-slate-50 dark:bg-[#182421] flex items-center justify-center p-1.5 shrink-0 overflow-hidden">
+          {/* Visual Container - Clean & unblocked image */}
+          <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-slate-50 dark:bg-[#182421] flex items-center justify-center p-2 shrink-0 overflow-hidden">
             <ItemVisual
               category={item.category}
               title={item.title}
               imageUrl={item.imageUrl}
               className="w-full h-full object-contain max-h-14"
             />
-            {statusBadge}
-            {matchBadge}
           </div>
 
           {/* Details */}
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2 text-[11px] text-[#66706B] dark:text-[#94A39D] mb-0.5">
+            <div className="flex items-center gap-1.5 sm:gap-2 text-[11px] text-[#66706B] dark:text-[#94A39D] mb-1 flex-wrap">
               <span className="font-semibold text-[#176B5B] dark:text-[#2DD4BF] truncate">{categoryLabel}</span>
+
+              {/* Status Badge in the data line */}
+              {isReunited ? (
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#E0E7FF] dark:bg-indigo-950/80 text-[#3730A3] dark:text-indigo-300 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#4F46E5] dark:bg-indigo-400" />
+                  {t('status.reunited')}
+                </span>
+              ) : isLost ? (
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#FEF3C7] dark:bg-amber-950/80 text-[#92400E] dark:text-amber-300 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#D97706] dark:bg-amber-400" />
+                  {t('status.lost')}
+                </span>
+              ) : (
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#D1FAE5] dark:bg-emerald-950/80 text-[#065F46] dark:text-emerald-300 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#059669] dark:bg-emerald-400" />
+                  {t('status.found')}
+                </span>
+              )}
+
               <span>·</span>
               <span className="truncate">{formatAppDate(item.date || item.createdAt, language)}</span>
             </div>
@@ -112,20 +129,10 @@ export default function ItemCard({ item: rawItem, matchScore, showMatchButton = 
               {item.title}
             </h3>
 
-            <div className="flex items-center gap-3 text-xs text-[#66706B] dark:text-[#94A39D] mt-1">
-              <div className="flex items-center gap-1 truncate min-w-0">
-                <MapPin className="w-3.5 h-3.5 text-[#176B5B] dark:text-[#2DD4BF] shrink-0" />
-                <span className="truncate">{locationName}</span>
-              </div>
-              {item.reportedBy?.isTrusted && item.reportedBy?.role !== 'admin' && (
-                <span className="shrink-0 flex items-center gap-1">
-                  <TrustBadge
-                    tier={IntegrityService.calculateTrustTier(item.reportedBy.goodwillPoints || 0)}
-                    size="xs"
-                    showLabel={false}
-                  />
-                </span>
-              )}
+            {/* Bottom line: location pin only */}
+            <div className="flex items-center gap-1 text-xs text-[#66706B] dark:text-[#94A39D] mt-1 truncate">
+              <MapPin className="w-3.5 h-3.5 text-[#176B5B] dark:text-[#2DD4BF] shrink-0" />
+              <span className="truncate">{locationName}</span>
             </div>
           </div>
         </div>

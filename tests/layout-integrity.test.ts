@@ -142,10 +142,10 @@ describe('Layout Integrity, Button Presence & Ergonomics Suite', () => {
       );
     });
 
-    it('2.3 HomePage search submit button meets >= 40px touch target standard', () => {
+    it('2.3 HomePage search QR scanner button meets >= 40px touch target standard', () => {
       assert.ok(
-        instantSearchSource.includes('min-h-[40px] rounded-xl bg-[#176B5B]'),
-        'Search submit button must have min-h-[40px]'
+        instantSearchSource.includes('min-h-[40px] rounded-xl'),
+        'Search QR scanner button must have min-h-[40px]'
       );
     });
 

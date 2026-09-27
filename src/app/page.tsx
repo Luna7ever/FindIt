@@ -410,16 +410,16 @@ export default function HomePage() {
               <Link
                 key={cat.id}
                 href={`/explore?category=${cat.id}`}
-                className="p-2.5 rounded-2xl bg-[#F7F7F4]/80 dark:bg-[#1C2B27]/50 hover:bg-[#E6F1ED] dark:hover:bg-[#1C2B27] transition-all flex items-center gap-2.5 group text-start"
+                className="p-2 sm:p-2.5 rounded-2xl bg-[#F7F7F4]/80 dark:bg-[#1C2B27]/50 hover:bg-[#E6F1ED] dark:hover:bg-[#1C2B27] transition-all flex items-center gap-2 group text-start min-w-0"
               >
-                <div className="p-2 rounded-xl bg-white dark:bg-[#15201D] text-[#176B5B] dark:text-[#2DD4BF] group-hover:scale-105 transition-transform shrink-0 shadow-2xs">
+                <div className="p-1.5 sm:p-2 rounded-xl bg-white dark:bg-[#15201D] text-[#176B5B] dark:text-[#2DD4BF] group-hover:scale-105 transition-transform shrink-0 shadow-2xs">
                   {categoryIconMap[cat.id] || <FolderOpen className="w-4 h-4" />}
                 </div>
-                <div className="min-w-0">
-                  <p className="font-bold text-xs text-[#18201D] dark:text-white group-hover:text-[#176B5B] dark:group-hover:text-[#2DD4BF] transition-colors truncate">
+                <div className="min-w-0 flex-1">
+                  <p className="font-bold text-[11px] sm:text-xs text-[#18201D] dark:text-white group-hover:text-[#176B5B] dark:group-hover:text-[#2DD4BF] transition-colors truncate leading-snug">
                     {t('cat.' + cat.id) || cat.label}
                   </p>
-                  <p className="text-[10px] text-[#66706B] dark:text-[#94A39D] truncate block">
+                  <p className="text-[9px] sm:text-[10px] text-[#66706B] dark:text-[#94A39D] truncate block mt-0.5 leading-tight">
                     {language === 'en' ? (CATEGORY_DESCRIPTIONS_EN[cat.id] || cat.description) : cat.description}
                   </p>
                 </div>

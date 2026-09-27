@@ -4,7 +4,6 @@ import React from 'react';
 import Link from 'next/link';
 import { useApp } from '@/context/AppContext';
 import { INTEGRITY_SCENARIOS } from '@/lib/constants';
-import TrustBadge from '@/components/TrustBadge';
 import { Award, ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
 
 export default function IntegrityCard({ className = '' }: { className?: string }) {
@@ -33,7 +32,6 @@ export default function IntegrityCard({ className = '' }: { className?: string }
               <Award className="w-3 h-3" />
               {t('nav.integrity')}
             </span>
-            <TrustBadge tier={currentUserTrustTier} size="sm" />
             <span className="text-xs font-semibold text-[#176B5B] dark:text-emerald-400">
               +{currentUser.goodwillPoints || 0} {t('app.goodwillPoints')}
             </span>

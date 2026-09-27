@@ -10,16 +10,16 @@ import {
 } from '@/types';
 
 export const CATEGORIES: { id: ItemCategory; label: string; icon: string; description: string }[] = [
-  { id: 'electronics', label: 'إلكترونيات وأجهزة', icon: 'Laptop', description: 'حاسبات، سماعات، ساعات، شواحن' },
-  { id: 'books', label: 'كتب ودفاتر ومذكرات', icon: 'BookOpen', description: 'كتب دراسية، دفاتر ملاحظات، ملفات' },
-  { id: 'stationery', label: 'أدوات مدرسية', icon: 'PenTool', description: 'مقالم، أقلام، علب هندسة، مساطر' },
-  { id: 'bottles', label: 'قوارير وحافظات ماء', icon: 'CupSoda', description: 'مطارات ماء، حافظات سوائل' },
-  { id: 'keys', label: 'مفاتيح وميداليات', icon: 'KeyRound', description: 'مفاتيح منازل، خزائن، سيارات' },
-  { id: 'bags', label: 'حقائب وأكياس', icon: 'ShoppingBag', description: 'حقائب ظهر، حقائب رياضية' },
-  { id: 'clothing', label: 'ملابس وأزياء', icon: 'Shirt', description: 'سترات، جاكيتات، قبعات' },
-  { id: 'wallets_cards', label: 'بطاقات ومحافظ', icon: 'CreditCard', description: 'بطاقة مدرسية، بطاقة صراف، محافظ' },
-  { id: 'sports', label: 'أدوات رياضية', icon: 'Trophy', description: 'كرات، ألبسة رياضية، أحذية' },
-  { id: 'personal', label: 'أغراض شخصية أخرى', icon: 'FolderOpen', description: 'نظارات، ساعات، إكسسوارات' },
+  { id: 'electronics', label: 'إلكترونيات وأجهزة', icon: 'Laptop', description: 'حاسبات، سماعات، شواحن' },
+  { id: 'books', label: 'كتب ومذكرات', icon: 'BookOpen', description: 'كتب دراسية، دفاتر، مذكرات' },
+  { id: 'stationery', label: 'أدوات مدرسية', icon: 'PenTool', description: 'مقالم، أقلام، مساطر' },
+  { id: 'bottles', label: 'حافظات وقوارير', icon: 'CupSoda', description: 'مطارات ماء، حافظات سوائل' },
+  { id: 'keys', label: 'مفاتيح وميداليات', icon: 'KeyRound', description: 'مفاتيح منازل وخزائن' },
+  { id: 'bags', label: 'حقائب وأكياس', icon: 'ShoppingBag', description: 'حقائب ظهر ورياضة' },
+  { id: 'clothing', label: 'ملابس وأزياء', icon: 'Shirt', description: 'سترات، جاكيتات، أزياء' },
+  { id: 'wallets_cards', label: 'بطاقات ومحافظ', icon: 'CreditCard', description: 'بطاقات مدرسية ومحافظ' },
+  { id: 'sports', label: 'أدوات رياضية', icon: 'Trophy', description: 'كرات، ألبسة رياضية' },
+  { id: 'personal', label: 'أغراض شخصية', icon: 'FolderOpen', description: 'نظارات، ساعات يد' },
 ];
 
 export const SCHOOL_LOCATIONS: SchoolLocation[] = [

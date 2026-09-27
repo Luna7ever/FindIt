@@ -10,7 +10,7 @@ import ItemCard from '@/components/ItemCard';
 import ItemVisual from '@/components/ItemVisual';
 import InstantSearchBar from '@/components/InstantSearchBar';
 import { getLocalizedItem, getLocalizedUser, CATEGORY_DESCRIPTIONS_EN } from '@/lib/i18n/seedDataTranslations';
-import { getCampusPeriod, getCampusGreeting, getCampusAtmosphere, CampusPeriod } from '@/lib/campusSchedule';
+import { getCampusPeriod, getCampusGreeting, CampusPeriod } from '@/lib/campusSchedule';
 import { 
   Search, 
   PlusCircle, 
@@ -30,8 +30,6 @@ import {
   Building2,
   FileCheck,
   CupSoda,
-  Camera,
-  Award,
   Cpu,
   ShoppingBag,
   GraduationCap,
@@ -61,8 +59,6 @@ export default function HomePage() {
     currentUserTrustTier,
     activeWeeklyChallenge,
     isWeekChallengeCompleted,
-    openQRScanner, 
-    openCertificateModal,
     openOnboardingModal,
     dir, 
     language, 
@@ -90,10 +86,6 @@ export default function HomePage() {
     return getLocalizedUser(currentUser, language);
   }, [currentUser, language]);
 
-  const campusAtmosphere = useMemo(() => {
-    return getCampusAtmosphere(campusPeriod, language, isAdmin);
-  }, [campusPeriod, language, isAdmin]);
-
   const greetingText = useMemo(() => {
     return getCampusGreeting(
       { name: localizedUser.name, role: currentUser.role },
@@ -109,17 +101,20 @@ export default function HomePage() {
         return {
           emoji: '🥇',
           title: language === 'en' ? 'Gold Integrity Ambassador' : 'سفير نزاهة ذهبي',
+          shortTitle: language === 'en' ? 'Gold Ambassador' : 'سفير ذهبي',
         };
       case 'silver':
         return {
           emoji: '🥈',
           title: language === 'en' ? 'Silver Integrity Ambassador' : 'سفير نزاهة فضي',
+          shortTitle: language === 'en' ? 'Silver Ambassador' : 'سفير فضي',
         };
       case 'bronze':
       default:
         return {
           emoji: '🥉',
           title: language === 'en' ? 'Bronze Integrity Ambassador' : 'سفير نزاهة برونزي',
+          shortTitle: language === 'en' ? 'Bronze Ambassador' : 'سفير برونزي',
         };
     }
   }, [currentUserTrustTier, language]);
@@ -152,45 +147,55 @@ export default function HomePage() {
       ======================================================== */}
       <section className="space-y-1.5 sm:space-y-2.5 text-start pt-0 w-full max-w-full min-w-0 overflow-hidden">
         <div className="space-y-1 sm:space-y-1.5">
-          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+          <div className="flex flex-wrap items-center justify-between gap-1.5 sm:gap-2">
             {/* Merged Single Compact Welcome & Student Badge */}
-            <button
-              onClick={openOnboardingModal}
-              className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-[#E6F1ED] hover:bg-[#d9ece6] dark:bg-[#122823] dark:hover:bg-[#183630] text-[#176B5B] dark:text-[#2DD4BF] text-[11px] sm:text-xs font-bold border border-[#176B5B]/30 dark:border-[#263834] transition-all cursor-pointer shadow-2xs group active:scale-98 max-w-full"
-              title="تعديل بيانات الطالب"
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-[#176B5B] dark:bg-[#2DD4BF] animate-pulse shrink-0" />
-              <span className="truncate">{greetingText}</span>
-              <span className="inline-flex items-center gap-0.5 text-[10px] sm:text-[11px] px-1 sm:px-1.5 py-0.5 rounded-md bg-emerald-600/10 dark:bg-emerald-400/10 text-emerald-800 dark:text-emerald-300 font-semibold group-hover:bg-emerald-600/20 transition-colors shrink-0">
-                <span>{currentUser.name ? '✏️' : '🎓'}</span>
-              </span>
-            </button>
-
-            {/* Behavioral Identity Priming Badge (ISEF BEHA) */}
-            {!isAdmin && (
-              <Link
-                href="/integrity"
-                className="inline-flex items-center gap-1 sm:gap-1.5 px-2 py-0.5 sm:px-2.5 sm:py-0.5 rounded-full bg-white/90 dark:bg-[#152320] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-[#243531] text-[10px] sm:text-[11px] font-semibold hover:border-emerald-500/50 shadow-2xs transition-all group shrink-0"
-                title={language === 'en' ? 'Integrity Ambassador Standing' : 'مكانة سفير النزاهة'}
+            <div className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-[#E6F1ED] dark:bg-[#122823] text-xs font-bold border border-[#176B5B]/30 dark:border-[#263834] shadow-2xs max-w-full">
+              <button
+                onClick={openOnboardingModal}
+                className="inline-flex items-center gap-1 text-[#176B5B] dark:text-[#2DD4BF] hover:underline cursor-pointer truncate"
+                title={language === 'en' ? 'Edit student profile' : 'تعديل بيانات الطالب'}
               >
-                <span className="text-[11px] sm:text-xs">{tierBadgeInfo.emoji}</span>
-                <span className="font-bold text-slate-800 dark:text-slate-200">{tierBadgeInfo.title}</span>
-                <span className="text-slate-300 dark:text-slate-600">·</span>
-                <span className="text-[#176B5B] dark:text-[#2DD4BF] font-extrabold">
-                  {currentUser.goodwillPoints || 0} {language === 'en' ? 'pts' : 'نقطة أمانة'}
-                </span>
-              </Link>
-            )}
+                <span className="w-1.5 h-1.5 rounded-full bg-[#176B5B] dark:bg-[#2DD4BF] animate-pulse shrink-0" />
+                <span className="truncate">{greetingText}</span>
+                <span className="text-[11px] opacity-75">{currentUser.name ? '✏️' : '🎓'}</span>
+              </button>
 
-            {isAdmin && (
-              <Link
-                href="/admin"
-                className="inline-flex items-center gap-1 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-[#176B5B] hover:bg-[#125648] text-white text-[11px] sm:text-xs font-bold transition-all shadow-2xs shrink-0"
-              >
-                <Building2 className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                <span>{language === 'en' ? 'Admin Portal 🏛️' : 'لوحة الإدارة 🏛️'}</span>
-              </Link>
-            )}
+              {!isAdmin && (
+                <>
+                  <span className="text-slate-300 dark:text-slate-600 select-none">|</span>
+                  <Link
+                    href="/integrity"
+                    className="inline-flex items-center gap-1 text-slate-700 dark:text-slate-300 hover:text-[#176B5B] dark:hover:text-[#2DD4BF] transition-colors truncate"
+                    title={tierBadgeInfo.title}
+                  >
+                    <span>{tierBadgeInfo.emoji}</span>
+                    <span className="font-semibold">{tierBadgeInfo.shortTitle}</span>
+                    <span className="text-[#176B5B] dark:text-[#2DD4BF] font-extrabold text-[11px]">
+                      ({currentUser.goodwillPoints || 0}{language === 'en' ? 'pts' : 'ن'})
+                    </span>
+                  </Link>
+                </>
+              )}
+
+              {isAdmin && (
+                <>
+                  <span className="text-slate-300 dark:text-slate-600 select-none">|</span>
+                  <Link
+                    href="/admin"
+                    className="inline-flex items-center gap-1 text-[#176B5B] dark:text-[#2DD4BF] hover:underline"
+                  >
+                    <Building2 className="w-3 h-3" />
+                    <span>{language === 'en' ? 'Admin 🏛️' : 'الإدارة 🏛️'}</span>
+                  </Link>
+                </>
+              )}
+            </div>
+
+            {/* Quiet System Status Indicator */}
+            <div className="flex items-center gap-1.5 text-[11px] text-[#66706B] dark:text-[#94A39D] shrink-0">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span>{language === 'en' ? 'Custody System Active' : 'منظومة الأمانات متاحة'}</span>
+            </div>
           </div>
           
           <div>
@@ -211,32 +216,6 @@ export default function HomePage() {
           2. DUAL ACTION HERO CARDS (فقدت شيئاً؟ / عثرت على أمانة؟)
       ======================================================== */}
       <section className="space-y-2 sm:space-y-2.5">
-        {/* Subtle Campus Atmosphere Context Ribbon with Working Hours & Office */}
-        <div className="flex flex-wrap items-center justify-between gap-1 px-0.5 text-[10px] sm:text-[11px] text-[#66706B] dark:text-[#94A39D]">
-          <div className="flex items-center gap-1 min-w-0">
-            <span className="text-xs select-none shrink-0" aria-hidden="true">
-              {campusAtmosphere.icon}
-            </span>
-            <span className="font-semibold text-[#18201D] dark:text-[#E2E8F0] text-[10px] sm:text-[11px] truncate">
-              {language === 'en' ? 'Campus Custody Office' : 'مكتب حفظ واستلام الأمانات'}
-            </span>
-            <span className="sr-only">{t(campusAtmosphere.awarenessKey)}</span>
-          </div>
-
-          <div className="flex items-center gap-1 shrink-0 flex-wrap">
-            {/* Badge 1: Online Reporting & Tracking 24/7 */}
-            <span className="inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-bold text-[#059669] dark:text-[#34D399] bg-[#ECFDF5] dark:bg-[#064E3B]/40 px-1.5 sm:px-2 py-0.5 rounded border border-[#059669]/20 dark:border-[#064E3B]">
-              <span className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-[#059669] dark:bg-[#34D399] animate-pulse shrink-0" />
-              <span>{language === 'en' ? 'Online: 24/7' : 'البلاغات أونلاين: 24/7'}</span>
-            </span>
-
-            {/* Badge 2: Physical Office Retrieval Hours */}
-            <span className="inline-flex items-center gap-1 text-[9px] sm:text-[10px] font-semibold text-[#176B5B] dark:text-[#2DD4BF] bg-[#E6F1ED]/80 dark:bg-[#122823]/80 px-1.5 sm:px-2 py-0.5 rounded border border-[#176B5B]/20 dark:border-[#263834] shrink-0">
-              <span className="sr-only">{campusAtmosphere.timeBracket} · {t(campusAtmosphere.periodNameKey || 'campus_morning_period')}</span>
-              <span>{language === 'en' ? 'Office: 08:00 – 16:00' : 'مكتب الأمانات: 08:00 – 16:00'}</span>
-            </span>
-          </div>
-        </div>
 
         {/* Weekly Integrity Behavioral Challenge - Compact Mobile Banner (ISEF BEHA) */}
         {!isAdmin && (
@@ -391,85 +370,39 @@ export default function HomePage() {
       )}
 
       {/* ========================================================
-          4. QUICK SHORTCUTS STRIP (Activities, QR Scanner, Leaderboard, Certificate)
+          4. SCHOOL CITIZENSHIP & VOLUNTEERING (Full-width sleek card)
       ======================================================== */}
-      <section className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
+      <section>
         <Link
           href="/activities"
-          className="p-2.5 sm:p-3.5 rounded-2xl bg-white dark:bg-[#15201D] border border-[#E4E7E4] dark:border-[#263834] hover:border-[#176B5B] dark:hover:border-[#2DD4BF] hover:bg-[#E6F1ED]/40 dark:hover:bg-[#1C2B27] text-start transition-all flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-start gap-2 sm:gap-2.5 shadow-2xs group"
+          className="w-full p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl bg-gradient-to-r from-emerald-50/80 via-white to-teal-50/60 dark:from-[#112420] dark:via-[#142320] dark:to-[#0F1E1B] border border-emerald-200/80 dark:border-emerald-800/60 hover:border-emerald-500/60 dark:hover:border-[#2DD4BF]/60 transition-all flex items-center justify-between gap-3 shadow-2xs group cursor-pointer"
         >
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#176B5B] to-emerald-600 dark:from-[#2DD4BF] dark:to-emerald-600 text-white dark:text-slate-950 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-xs">
-            <Sparkles className="w-4 h-4" />
-          </div>
-          <div className="min-w-0 w-full sm:w-auto">
-            <div className="flex items-center justify-center sm:justify-start gap-1">
-              <p className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-[#176B5B] dark:group-hover:text-[#2DD4BF] truncate">
-                {language === 'en' ? 'Activities' : 'الأنشطة المدرسية'}
-              </p>
-              <span className="px-1 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-[#2DD4BF] text-[8px] font-black">
-                {language === 'en' ? '+50 pts' : '+50ن'}
-              </span>
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-tr from-[#176B5B] to-emerald-600 dark:from-[#2DD4BF] dark:to-emerald-500 text-white dark:text-slate-950 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-xs">
+              <Sparkles className="w-4 h-4 sm:w-4.5 sm:h-4.5" />
             </div>
-            <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate block">
-              {language === 'en' ? 'Quests & Badges' : 'مهام وتحديات وأوسمة'}
-            </p>
+            <div className="min-w-0 text-start">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white group-hover:text-[#176B5B] dark:group-hover:text-[#2DD4BF] transition-colors truncate">
+                  {language === 'en' ? 'School Citizenship & Volunteering' : 'الأنشطة المدرسية والتطوع'}
+                </h3>
+                <span className="px-1.5 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-[#2DD4BF] text-[9px] font-black shrink-0">
+                  {language === 'en' ? '+50 pts' : '+50ن'}
+                </span>
+              </div>
+              <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">
+                {language === 'en'
+                  ? 'Field volunteering tasks and campus initiatives to foster school community'
+                  : 'مهام ومبادرات ميدانية لتعزيز ثقافة الأمانة وخدمة الحرم المدرسي'}
+              </p>
+            </div>
+          </div>
+
+          <div className="inline-flex items-center gap-1 text-[11px] font-bold text-[#176B5B] dark:text-[#2DD4BF] group-hover:translate-x-[-2px] rtl:group-hover:translate-x-[-2px] transition-transform shrink-0">
+            <span className="hidden sm:inline">{language === 'en' ? 'Explore Tasks' : 'استعراض المهام'}</span>
+            <ArrowIcon className="w-3.5 h-3.5" />
           </div>
         </Link>
-
-        <button
-          onClick={openQRScanner}
-          className="p-2.5 sm:p-3.5 rounded-2xl bg-white dark:bg-[#15201D] border border-[#E4E7E4] dark:border-[#263834] hover:border-[#176B5B] dark:hover:border-[#2DD4BF] hover:bg-[#E6F1ED]/40 dark:hover:bg-[#1C2B27] text-start transition-all flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-start gap-2 sm:gap-2.5 shadow-2xs group cursor-pointer"
-        >
-          <div className="w-8 h-8 rounded-xl bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-[#2DD4BF] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-            <Camera className="w-4 h-4" />
-          </div>
-          <div className="min-w-0 w-full sm:w-auto">
-            <p className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-[#176B5B] dark:group-hover:text-[#2DD4BF] truncate">
-              {language === 'en' ? 'QR Scanner' : 'مسح الباركود'}
-            </p>
-            <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate block">
-              {language === 'en' ? 'Instant room matching' : 'تحديد موقع المعمل فورياً'}
-            </p>
-          </div>
-        </button>
-
-        <Link
-          href="/leaderboard"
-          className="p-2.5 sm:p-3.5 rounded-2xl bg-white dark:bg-[#15201D] border border-[#E4E7E4] dark:border-[#263834] hover:border-amber-400 hover:bg-amber-50/40 dark:hover:bg-[#1C2B27] text-start transition-all flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-start gap-2 sm:gap-2.5 shadow-2xs group"
-        >
-          <div className="w-8 h-8 rounded-xl bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-            <Trophy className="w-4 h-4" />
-          </div>
-          <div className="min-w-0 w-full sm:w-auto">
-            <p className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-amber-950 dark:group-hover:text-amber-300 truncate">
-              {language === 'en' ? 'Leaderboard' : 'لوحة الشرف'}
-            </p>
-            <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate block">
-              {language === 'en' ? 'Integrity Honor Roll' : 'تصنيف أبطال الأمانة'}
-            </p>
-          </div>
-        </Link>
-
-        <button
-          onClick={() => openCertificateModal(currentUser)}
-          className="p-2.5 sm:p-3.5 rounded-2xl bg-white dark:bg-[#15201D] border border-[#E4E7E4] dark:border-[#263834] hover:border-teal-500 hover:bg-teal-50/40 dark:hover:bg-[#1C2B27] text-start transition-all flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-start gap-2 sm:gap-2.5 shadow-2xs group cursor-pointer"
-        >
-          <div className="w-8 h-8 rounded-xl bg-teal-100 dark:bg-teal-950/80 text-teal-800 dark:text-teal-300 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-            <Award className="w-4 h-4" />
-          </div>
-          <div className="min-w-0 w-full sm:w-auto">
-            <p className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-teal-950 dark:group-hover:text-teal-300 truncate">
-              {isAdmin 
-                ? (language === 'en' ? 'Certificate' : 'معاينة الشهادة') 
-                : (language === 'en' ? 'My Certificate' : 'شهادتي الرسمية')}
-            </p>
-            <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate block">
-              {isAdmin 
-                ? (language === 'en' ? 'Official student template' : 'نموذج التكريم المعتمد') 
-                : (language === 'en' ? 'Verified honor doc' : 'توثيق سفير النزاهة')}
-            </p>
-          </div>
-        </button>
       </section>
 
       {/* ========================================================

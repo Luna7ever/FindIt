@@ -351,8 +351,8 @@ describe('Milestone 1 Adversarial & Stress Testing Suite', () => {
       // 4-column feed
       assert.ok(html.includes('grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4'), 'Recent feed must be 4 columns on lg');
 
-      // Quick Features strip
-      assert.ok(html.includes('grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3'), 'Quick features must be 4 columns');
+      // School Citizenship Activities card
+      assert.ok(html.includes('href="/activities"'), 'School citizenship card must link to activities');
 
       // Activities banner
       assert.ok(html.includes('border-[#176B5B]/30 dark:border-[#263834]'), 'Activities banner must use Obsidian Emerald border token');

@@ -103,13 +103,11 @@ describe('Layout Integrity, Button Presence & Ergonomics Suite', () => {
       );
     });
 
-    it('1.5 Quick action strip on Home page renders all 4 shortcut buttons', () => {
+    it('1.5 School citizenship card and instant search QR trigger render properly', () => {
       const html = renderWithContext(React.createElement(HomePage), '/');
 
-      assert.ok(html.includes('href="/activities"'), 'Quick action strip must contain Activities shortcut');
-      assert.ok(html.includes('href="/leaderboard"'), 'Quick action strip must contain Leaderboard shortcut');
-      assert.ok(homePageSource.includes('openQRScanner'), 'Home page must feature QR Scanner shortcut button');
-      assert.ok(homePageSource.includes('openCertificateModal'), 'Home page must feature Certificate shortcut button');
+      assert.ok(html.includes('href="/activities"'), 'School citizenship card must contain Activities link');
+      assert.ok(instantSearchSource.includes('openQRScanner'), 'Instant search bar must integrate QR Scanner button');
     });
 
     it('1.6 Dual action hero cards on Home page provide immediate access to Report Lost and Record Found', () => {
@@ -272,18 +270,10 @@ describe('Layout Integrity, Button Presence & Ergonomics Suite', () => {
       );
     });
 
-    it('4.4 Atmosphere context ribbon on HomePage displays live period icon, awareness text, and time bracket badge', () => {
+    it('4.4 Quiet system status on HomePage displays active custody system status indicator', () => {
       assert.ok(
-        homePageSource.includes('{campusAtmosphere.icon}'),
-        'Atmosphere ribbon must render campus period icon'
-      );
-      assert.ok(
-        homePageSource.includes('{t(campusAtmosphere.awarenessKey)}'),
-        'Atmosphere ribbon must render custodial awareness subtitle'
-      );
-      assert.ok(
-        homePageSource.includes('{campusAtmosphere.timeBracket}'),
-        'Atmosphere ribbon must render time bracket badge'
+        homePageSource.includes('منظومة الأمانات متاحة') || homePageSource.includes('Custody System Active'),
+        'HomePage must render quiet custody status indicator'
       );
     });
 
@@ -307,10 +297,10 @@ describe('Layout Integrity, Button Presence & Ergonomics Suite', () => {
         'Dual action hero cards must be 2 columns grid'
       );
 
-      // Quick Shortcuts Strip: 2 columns on mobile, 4 columns on sm+
+      // School Citizenship: full-width card with activities link
       assert.ok(
-        homePageSource.includes('grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3'),
-        'Quick shortcuts strip must be 2 col on mobile and 4 col on sm+'
+        homePageSource.includes('href="/activities"'),
+        'School citizenship section must feature activities link'
       );
 
       // Recent Found Items Feed: 1 col on mobile, 2 on sm, 4 on lg

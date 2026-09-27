@@ -146,8 +146,8 @@ export default function InstantSearchBar({
   };
 
   const defaultPlaceholder = language === 'en'
-    ? 'Search items by keyword (e.g. calculator, watch, keys)...'
-    : 'ابحث عن أي غرض (مثل: حاسبة، نظارة، مفاتيح، حقيبة)...';
+    ? 'Search lost items...'
+    : 'ابحث عن غرض مفقود...';
 
   return (
     <div ref={containerRef} className={`relative pt-1 overflow-visible ${className}`} dir={dir}>
@@ -167,7 +167,7 @@ export default function InstantSearchBar({
           aria-expanded={isOpen}
           aria-autocomplete="list"
           aria-controls="instant-search-dropdown"
-          className="w-full py-2.5 px-3 sm:py-3.5 sm:px-4 ps-9 sm:ps-11 pe-28 sm:pe-32 bg-white dark:bg-[#15201D] border border-[#E4E7E4] dark:border-[#263834] rounded-2xl shadow-xs text-xs sm:text-sm focus:border-[#176B5B] dark:focus:border-[#2DD4BF] focus:ring-2 focus:ring-[#176B5B]/10 dark:focus:ring-[#2DD4BF]/10 focus:outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500 text-[#18201D] dark:text-white"
+          className="w-full py-2 px-3 sm:py-3 sm:px-4 ps-9 sm:ps-11 pe-28 sm:pe-32 bg-white dark:bg-[#15201D] border border-slate-100 dark:border-slate-800/80 rounded-xl sm:rounded-2xl shadow-xs text-xs sm:text-sm focus:border-[#176B5B] dark:focus:border-[#2DD4BF] focus:ring-2 focus:ring-[#176B5B]/10 dark:focus:ring-[#2DD4BF]/10 focus:outline-none transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500 text-[#18201D] dark:text-white"
         />
 
         {/* Magnifying Glass Icon */}

@@ -113,23 +113,13 @@ export default function HomePage() {
 
   return (
     <div
-      className="w-full max-w-full overflow-x-hidden px-4 sm:px-6 pt-2 pb-32 sm:pb-16 max-w-5xl mx-auto text-[#18201D] dark:text-[#F1F5F3]"
+      className="w-full max-w-full overflow-x-hidden px-4 sm:px-6 pt-2 pb-32 sm:pb-16 space-y-3.5 sm:space-y-4.5 max-w-5xl mx-auto text-[#18201D] dark:text-[#F1F5F3]"
       dir={dir}
     >
       {/* ========================================================
-          ABOVE-THE-FOLD DASHBOARD VIEWPORT (Mobile Viewport Fitting)
-          - Exactly the 5 Primary Elements Spaced Generously:
-            1. Welcome Capsule Header
-            2. Weekly Integrity Challenge Card
-            3. Instant Search Bar
-            4. Dual Action Tiles (Lost / Found)
-            5. School Citizenship & Volunteering Card
+          1. COMPACT WELCOME CAPSULE HEADER
       ======================================================== */}
-      <div className="min-h-[calc(100svh-140px)] flex flex-col justify-between py-1 space-y-4 sm:min-h-0 sm:space-y-6 sm:py-0">
-        {/* ========================================================
-            1. COMPACT WELCOME CAPSULE HEADER
-        ======================================================== */}
-        <section className="text-start pt-0 w-full max-w-full min-w-0 overflow-hidden">
+      <section className="text-start pt-0 w-full max-w-full min-w-0 overflow-hidden">
           {/* Merged Single Compact Welcome & Student Badge */}
           <div className="w-full flex items-center justify-between px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-full bg-[#E6F1ED]/80 dark:bg-[#122823]/80 backdrop-blur-md text-xs font-bold border border-[#176B5B]/30 dark:border-[#263834] shadow-[0_2px_10px_-2px_rgba(0,0,0,0.04)]">
             <button
@@ -369,14 +359,11 @@ export default function HomePage() {
             </div>
           </Link>
         </section>
-      </div>
 
       {/* ========================================================
-          5. RECENT FOUND ITEMS FEED (Below-The-Fold Feed)
-          - Positioned strictly below the first viewport fold
-          - Revealed smoothly on manual scroll down
+          5. RECENT FOUND ITEMS FEED (Spacious & Comfortable)
       ======================================================== */}
-      <section className="space-y-4 pt-10 sm:pt-12 border-t border-slate-100/80 dark:border-slate-800/40">
+      <section className="space-y-4 pt-4 sm:pt-6 border-t border-slate-100 dark:border-slate-800/40">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-sm sm:text-base font-extrabold text-[#18201D] dark:text-white">

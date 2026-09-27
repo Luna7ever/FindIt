@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { useApp } from '@/context/AppContext';
 import { INTEGRITY_SCENARIOS, getCurrentWeekId } from '@/lib/constants';
-import { Award, ChevronLeft, ChevronRight, Sparkles, CheckCircle2 } from 'lucide-react';
+import { Award, ChevronLeft, ChevronRight, Sparkles, CheckCircle2, Lock } from 'lucide-react';
 
 export default function IntegrityCard({ className = '' }: { className?: string }) {
   const { 
@@ -95,32 +95,35 @@ export default function IntegrityCard({ className = '' }: { className?: string }
 
         {/* Action Button */}
         <div className="w-full sm:w-auto shrink-0 pt-2 sm:pt-0">
-          <Link
-            href="/integrity"
-            onClick={handleChallengeClick}
-            className={`w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs shadow-sm transition-transform active:scale-95 group cursor-pointer ${
-              isCompletedThisWeek
-                ? 'bg-slate-100 dark:bg-[#1C2B27] hover:bg-slate-200 dark:hover:bg-[#23332F] text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-[#2D3E3A]'
-                : 'bg-[#176B5B] dark:bg-[#2DD4BF] hover:bg-[#125648] dark:hover:bg-[#14B8A6] text-white dark:text-slate-950'
-            }`}
-          >
-            {isCompletedThisWeek ? (
-              <>
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                <span>{language === 'en' ? 'Weekly Challenge Completed ✓' : 'تم إكمال تحدي الأسبوع ✓'}</span>
-              </>
-            ) : (
-              <>
-                <Sparkles className="w-3.5 h-3.5 text-amber-300 dark:text-slate-950 group-hover:rotate-12 transition-transform" />
-                <span>{language === 'en' ? 'Take Integrity Challenge' : 'خوض اختبارات النزاهة'}</span>
-              </>
-            )}
-            {isRtl ? (
-              <ChevronLeft className="w-4 h-4 group-hover:translate-x-[-2px] transition-transform" />
-            ) : (
-              <ChevronRight className="w-4 h-4 group-hover:translate-x-[2px] transition-transform" />
-            )}
-          </Link>
+          {isCompletedThisWeek ? (
+            <button
+              type="button"
+              disabled
+              aria-disabled="true"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-300 dark:border-slate-700 pointer-events-none cursor-not-allowed select-none opacity-90 shadow-none"
+            >
+              <Lock className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
+              <span>
+                {language === 'en'
+                  ? '🔒 Weekly Challenge Completed (Next opens Sunday)'
+                  : '🔒 أتممت تحدي هذا الأسبوع (يفتح التحدي الجديد الأحد القادم)'}
+              </span>
+            </button>
+          ) : (
+            <Link
+              href="/integrity"
+              onClick={handleChallengeClick}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs shadow-sm transition-transform active:scale-95 group cursor-pointer bg-[#176B5B] dark:bg-[#2DD4BF] hover:bg-[#125648] dark:hover:bg-[#14B8A6] text-white dark:text-slate-950"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-amber-300 dark:text-slate-950 group-hover:rotate-12 transition-transform" />
+              <span>{language === 'en' ? 'Take Integrity Challenge' : 'خوض اختبارات النزاهة'}</span>
+              {isRtl ? (
+                <ChevronLeft className="w-4 h-4 group-hover:translate-x-[-2px] transition-transform" />
+              ) : (
+                <ChevronRight className="w-4 h-4 group-hover:translate-x-[2px] transition-transform" />
+              )}
+            </Link>
+          )}
         </div>
 
       </div>

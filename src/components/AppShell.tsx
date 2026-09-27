@@ -139,7 +139,7 @@ export default function AppShell({ children }: AppShellProps) {
       id: 'my-items', 
       label: t('nav.myItems'), 
       href: '/my-items', 
-      icon: Package, 
+      icon: User, 
       isActive: isMyItems,
       badgeCount: pendingClaimsCount
     },
@@ -338,7 +338,7 @@ export default function AppShell({ children }: AppShellProps) {
               }`}
             >
               <div className="flex items-center gap-3">
-                <Package className={`w-4 h-4 ${isMyItems ? 'text-[#176B5B] dark:text-[#2DD4BF]' : 'text-[#66706B] dark:text-[#94A39D]'}`} />
+                <User className={`w-4 h-4 ${isMyItems ? 'text-[#176B5B] dark:text-[#2DD4BF]' : 'text-[#66706B] dark:text-[#94A39D]'}`} />
                 <span>{t('nav.myItems')}</span>
               </div>
               {pendingClaimsCount > 0 && (

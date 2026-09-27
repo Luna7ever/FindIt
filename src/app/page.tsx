@@ -34,7 +34,8 @@ import {
   Award,
   Cpu,
   ShoppingBag,
-  GraduationCap
+  GraduationCap,
+  Lock
 } from 'lucide-react';
 
 const categoryIconMap: Record<string, React.ReactNode> = {
@@ -56,6 +57,9 @@ export default function HomePage() {
     items, 
     claims, 
     currentUser, 
+    currentUserTrustTier,
+    activeWeeklyChallenge,
+    isWeekChallengeCompleted,
     openQRScanner, 
     openCertificateModal,
     openOnboardingModal,
@@ -97,6 +101,30 @@ export default function HomePage() {
       isAdmin
     );
   }, [localizedUser.name, currentUser.role, campusPeriod, language, isAdmin]);
+
+  const tierBadgeInfo = useMemo(() => {
+    switch (currentUserTrustTier) {
+      case 'gold':
+        return {
+          emoji: '🥇',
+          title: language === 'en' ? 'Gold Integrity Ambassador' : 'سفير نزاهة ذهبي',
+        };
+      case 'silver':
+        return {
+          emoji: '🥈',
+          title: language === 'en' ? 'Silver Integrity Ambassador' : 'سفير نزاهة فضي',
+        };
+      case 'bronze':
+      default:
+        return {
+          emoji: '🥉',
+          title: language === 'en' ? 'Bronze Integrity Ambassador' : 'سفير نزاهة برونزي',
+        };
+    }
+  }, [currentUserTrustTier, language]);
+
+  const activeChallengeId = activeWeeklyChallenge?.week_id || 'week_1';
+  const isChallengeCompleted = isWeekChallengeCompleted(activeChallengeId);
 
   // Recent Items
   const recentFoundItems = useMemo(() => {
@@ -147,6 +175,24 @@ export default function HomePage() {
               </Link>
             )}
           </div>
+
+          {/* Behavioral Identity Priming Badge (ISEF BEHA) */}
+          {!isAdmin && (
+            <div className="flex items-center gap-2 pt-0.5">
+              <Link
+                href="/integrity"
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/90 dark:bg-[#152320] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-[#243531] text-[11px] font-semibold hover:border-emerald-500/50 shadow-2xs transition-all group"
+                title={language === 'en' ? 'Integrity Ambassador Standing' : 'مكانة سفير النزاهة'}
+              >
+                <span className="text-xs">{tierBadgeInfo.emoji}</span>
+                <span className="font-bold text-slate-800 dark:text-slate-200">{tierBadgeInfo.title}</span>
+                <span className="text-slate-300 dark:text-slate-600">·</span>
+                <span className="text-[#176B5B] dark:text-[#2DD4BF] font-extrabold">
+                  {currentUser.goodwillPoints || 0} {language === 'en' ? 'pts' : 'نقطة أمانة'}
+                </span>
+              </Link>
+            </div>
+          )}
           
           <div>
             <h1 className="text-lg sm:text-xl lg:text-[23px] font-bold sm:font-extrabold text-[#18201D] dark:text-white ltr:tracking-tight leading-snug">
@@ -197,6 +243,70 @@ export default function HomePage() {
             </span>
           </div>
         </div>
+
+        {/* Weekly Integrity Behavioral Challenge Card (ISEF BEHA) */}
+        {!isAdmin && (
+          <div className={`relative overflow-hidden rounded-2xl border p-4 sm:p-5 transition-all ${
+            isChallengeCompleted
+              ? 'bg-emerald-50/70 dark:bg-[#122822]/80 border-emerald-200/80 dark:border-emerald-800/60'
+              : 'bg-gradient-to-br from-[#E6F4F1] via-white to-[#EEFAF6] dark:from-[#122723] dark:via-[#162B26] dark:to-[#0F1E1B] border-emerald-500/30 dark:border-emerald-600/40 shadow-xs ring-1 ring-emerald-500/10'
+          }`}>
+            {!isChallengeCompleted ? (
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="space-y-1.5 text-start">
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-600/10 dark:bg-emerald-400/10 text-[#176B5B] dark:text-[#2DD4BF] text-xs font-bold border border-emerald-600/20 dark:border-emerald-400/20">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+                    <span>{language === 'en' ? '🎯 Weekly Integrity Challenge' : '🎯 تحدي النزاهة الأسبوعي'}</span>
+                  </div>
+                  <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white">
+                    {language === 'en' ? 'Weekly Round is Available Now' : 'الجولة الأسبوعية متاحة الآن'}
+                  </h3>
+                  <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed max-w-xl">
+                    {language === 'en'
+                      ? '5 realistic school dilemmas awaiting your ethical decision.'
+                      : 'الجولة الأسبوعية متاحة الآن — 5 معضلات مدرسية واقعية بانتظار قرارك الأخلاقي.'}
+                  </p>
+                </div>
+                <Link
+                  href="/integrity"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-[#176B5B] hover:bg-[#125648] text-white shadow-sm transition-all transform active:scale-95 group shrink-0"
+                >
+                  <span>{language === 'en' ? 'Take Weekly Challenge' : 'خوض تحدي الأسبوع'}</span>
+                  {isRtl ? (
+                    <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+                  ) : (
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  )}
+                </Link>
+              </div>
+            ) : (
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-start">
+                <div className="space-y-1">
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/70 text-emerald-800 dark:text-emerald-300 text-xs font-bold border border-emerald-300 dark:border-emerald-800">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                    <span>{language === 'en' ? 'Challenge Completed' : 'التحدي مكتمل'}</span>
+                  </div>
+                  <h3 className="text-sm sm:text-base font-extrabold text-emerald-950 dark:text-emerald-100 pt-0.5">
+                    {language === 'en'
+                      ? '✅ You have successfully completed this week\'s integrity challenge!'
+                      : '✅ أتممت مشاركتك في تحدي النزاهة لهذا الأسبوع بنجاح!'}
+                  </h3>
+                  <p className="text-xs text-emerald-800/80 dark:text-emerald-300/80">
+                    {language === 'en'
+                      ? 'The next round launches with the start of the next school week.'
+                      : 'الجولة القادمة تنطلق مع بداية الأسبوع المدرسي القادم.'}
+                  </p>
+                </div>
+                <div className="shrink-0 pt-1 sm:pt-0">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-100 dark:bg-emerald-900/50 text-emerald-800 dark:text-emerald-300 text-xs font-bold border border-emerald-200 dark:border-emerald-700/60">
+                    <Lock className="w-3 h-3 text-emerald-700 dark:text-emerald-400" />
+                    <span>{language === 'en' ? 'Locked until Sunday' : 'مغلق حتى الأحد القادم'}</span>
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4">
           <Link

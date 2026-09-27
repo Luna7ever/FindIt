@@ -315,9 +315,9 @@ export const firestoreService = {
         );
         challenges.push({
           id: d.id,
-          week_id: data.week_id || d.id,
-          theme_title: data.theme_title || 'تحدي النزاهة الأسبوعي',
-          order: typeof data.order === 'number' ? data.order : 1,
+          week_id: data.week_id !== undefined ? (typeof data.week_id === 'number' ? `week_${data.week_id}` : data.week_id) : d.id,
+          theme_title: data.theme_title || data.title || 'تحدي النزاهة الأسبوعي',
+          order: typeof data.order === 'number' ? data.order : (typeof data.week_id === 'number' ? data.week_id : 1),
           is_active: Boolean(data.is_active),
           start_date: data.start_date,
           end_date: data.end_date,

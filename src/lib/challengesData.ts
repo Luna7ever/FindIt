@@ -14,22 +14,23 @@ export function normalizeToIntegrityScenario(raw: any, index: number): Integrity
     return raw as IntegrityScenario;
   }
 
-  const scenarioId = raw.scenario_id || raw.id || `scenario_${index + 1}`;
+  const scenarioId = raw.scenario_id || (raw.id !== undefined ? String(raw.id) : `scenario_${index + 1}`);
   const charName = raw.character_name || raw.characterSpeaker?.name || 'زميل الصف';
   const charEmotion = raw.character_emotion || raw.characterSpeaker?.emotion || 'قلق ومتردد';
   const dialogText = raw.dialog_text || raw.detailedDilemma || raw.shortDescription || '';
-  const moralDim = raw.moral_dimension || raw.topicTitle || 'النزاهة المدرسية';
-  const mediaUrl = raw.media_url || raw.visualDetails?.sceneImageUrl || '/images/scenarios/scenario_hallway_item.jpg';
+  const moralDim = raw.moral_dimension || raw.category || raw.topicTitle || 'النزاهة المدرسية';
+  const categoryTitle = raw.category || raw.topicTitle || moralDim;
+  const mediaUrl = raw.image_url || raw.media_url || raw.visualDetails?.sceneImageUrl || '/images/scenarios/scenario_hallway_item.jpg';
   const audioUrl = raw.audio_url || raw.audioUrl || '';
-  const roomLabel = raw.room_label || raw.visualDetails?.roomLabel || 'الحرم المدرسي';
-  const locationBadge = raw.room_label || raw.visualDetails?.locationBadge || 'البيئة المدرسية';
+  const roomLabel = raw.location || raw.room_label || raw.visualDetails?.roomLabel || 'الحرم المدرسي';
+  const locationBadge = raw.category || raw.location || raw.room_label || raw.visualDetails?.locationBadge || 'البيئة المدرسية';
 
   const options = Array.isArray(raw.options) ? raw.options : [];
 
   return {
     id: scenarioId,
-    title: raw.title || `موقف ${index + 1}: ${moralDim}`,
-    topicTitle: moralDim,
+    title: raw.title || `موقف ${index + 1}: ${categoryTitle}`,
+    topicTitle: categoryTitle,
     shortDescription: dialogText.substring(0, 80) + '...',
     detailedDilemma: dialogText,
     dilemmaQuote: dialogText ? `"${dialogText}"` : '',
@@ -58,14 +59,25 @@ export function normalizeToIntegrityScenario(raw: any, index: number): Integrity
         order: 1,
         question: raw.question || 'كيف تتصرف بحكمة وأمانة في هذا الموقف التربوي؟',
         explanation: moralDim,
-        options: options.map((opt: any, optIdx: number) => ({
-          id: opt.id || `opt_${scenarioId}_${optIdx + 1}`,
-          text: opt.text || '',
-          score: typeof opt.score === 'number' ? opt.score : (optIdx === 0 ? 100 : 0),
-          feedback: opt.feedback || (opt.score === 100 ? 'تصرف نموذجي يعكس النزاهة والأمانة!' : 'يحتاج التصرف لمراجعة التوجيهات الأخلاقية.'),
-          whyWrong: opt.whyWrong || '',
-          correctActionText: opt.correctActionText || opt.feedback || '',
-        })),
+        options: options.map((opt: any, optIdx: number) => {
+          let calculatedScore = 0;
+          if (typeof opt.score === 'number') {
+            calculatedScore = opt.score;
+          } else if (typeof opt.points === 'number') {
+            calculatedScore = opt.points <= 25 ? Math.round((opt.points / 25) * 100) : opt.points;
+          } else {
+            calculatedScore = optIdx === 0 ? 100 : 0;
+          }
+
+          return {
+            id: opt.id || `opt_${scenarioId}_${optIdx + 1}`,
+            text: opt.text || '',
+            score: calculatedScore,
+            feedback: opt.feedback || (calculatedScore >= 80 ? 'تصرف نموذجي يعكس النزاهة والأمانة!' : 'يحتاج التصرف لمراجعة التوجيهات الأخلاقية.'),
+            whyWrong: opt.whyWrong || (calculatedScore < 80 ? opt.feedback : ''),
+            correctActionText: opt.correctActionText || (calculatedScore >= 80 ? opt.feedback : ''),
+          };
+        }),
       },
     ],
   };

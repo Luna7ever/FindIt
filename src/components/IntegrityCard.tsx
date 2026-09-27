@@ -7,10 +7,19 @@ import { INTEGRITY_SCENARIOS, getCurrentWeekId } from '@/lib/constants';
 import { Award, ChevronLeft, ChevronRight, Sparkles, CheckCircle2 } from 'lucide-react';
 
 export default function IntegrityCard({ className = '' }: { className?: string }) {
-  const { currentUser, isWeekChallengeCompleted, addToast, integrityAttempts, isRtl, language, t } = useApp();
+  const { 
+    currentUser, 
+    isWeekChallengeCompleted, 
+    activeWeeklyChallenge,
+    addToast, 
+    integrityAttempts, 
+    isRtl, 
+    language, 
+    t 
+  } = useApp();
 
-  const currentWeekId = getCurrentWeekId();
-  const isCompletedThisWeek = isWeekChallengeCompleted(currentWeekId);
+  const activeChallengeId = activeWeeklyChallenge?.week_id || 'week_1';
+  const isCompletedThisWeek = isWeekChallengeCompleted(activeChallengeId);
 
   const handleChallengeClick = (e: React.MouseEvent) => {
     if (isCompletedThisWeek) {
@@ -35,7 +44,7 @@ export default function IntegrityCard({ className = '' }: { className?: string }
   );
 
   const passedCount = passedScenarioIds.size;
-  const totalCount = INTEGRITY_SCENARIOS.length;
+  const totalCount = activeWeeklyChallenge?.scenarios?.length || INTEGRITY_SCENARIOS.length;
   const progressPercent = Math.round((passedCount / totalCount) * 100);
 
   return (

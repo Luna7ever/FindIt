@@ -315,3 +315,44 @@ export interface ActivityBadge {
   category: ActivityCategory;
 }
 
+// ==========================================
+// DYNAMIC FIRESTORE WEEKLY CHALLENGES
+// ==========================================
+
+export interface WeeklyChallengeScenario {
+  scenario_id: string;
+  title: string;
+  character_name: string;
+  character_emotion: string;
+  dialog_text: string;
+  moral_dimension: string;
+  media_url?: string;
+  audio_url?: string;
+  location_id?: SchoolLocationId;
+  room_label?: string;
+  options: {
+    id: string;
+    text: string;
+    score: number;
+    feedback: string;
+    whyWrong?: string;
+    correctActionText?: string;
+  }[];
+}
+
+export interface WeeklyChallenge {
+  id: string; // e.g. 'week_1', 'week_2'
+  week_id: string;
+  theme_title: string;
+  order: number;
+  is_active: boolean;
+  start_date?: string;
+  end_date?: string;
+  description?: string;
+  badge_name?: string;
+  scenarios: IntegrityScenario[];
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+

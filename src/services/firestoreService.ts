@@ -7,15 +7,18 @@ import {
   updateDoc, 
   onSnapshot, 
   query, 
-  orderBy
+  orderBy,
+  where
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { UserProfile, Item, Claim } from '@/types';
+import { UserProfile, Item, Claim, WeeklyChallenge } from '@/types';
 import { logger } from '@/lib/logging/logger';
+import { normalizeToIntegrityScenario, DEFAULT_WEEKLY_CHALLENGES } from '@/lib/challengesData';
 
 const USERS_COLLECTION = 'users';
 const ITEMS_COLLECTION = 'items';
 const CLAIMS_COLLECTION = 'claims';
+const CHALLENGES_COLLECTION = 'weekly_challenges';
 
 /**
  * Sanitizes object by recursively omitting undefined values so Firestore setDoc/updateDoc never errors
@@ -289,5 +292,101 @@ export const firestoreService = {
       logger.error('Firestore: Failed to record challenge completion', { error: String(error), userId });
       return false;
     }
+  },
+
+  /**
+   * Get all weekly challenges from Firestore
+   */
+  async getWeeklyChallenges(): Promise<WeeklyChallenge[]> {
+    try {
+      const q = query(collection(db, CHALLENGES_COLLECTION), orderBy('order', 'asc'));
+      const snapshot = await getDocs(q);
+      if (snapshot.empty) {
+        // If empty in Firestore, automatically seed default challenges and return them
+        await this.seedDefaultWeeklyChallenges();
+        return DEFAULT_WEEKLY_CHALLENGES;
+      }
+      const challenges: WeeklyChallenge[] = [];
+      snapshot.forEach((d) => {
+        const data = d.data();
+        const rawScenarios = data.scenarios || [];
+        const normalizedScenarios = rawScenarios.map((s: any, idx: number) => 
+          normalizeToIntegrityScenario(s, idx)
+        );
+        challenges.push({
+          id: d.id,
+          week_id: data.week_id || d.id,
+          theme_title: data.theme_title || 'تحدي النزاهة الأسبوعي',
+          order: typeof data.order === 'number' ? data.order : 1,
+          is_active: Boolean(data.is_active),
+          start_date: data.start_date,
+          end_date: data.end_date,
+          description: data.description,
+          badge_name: data.badge_name,
+          scenarios: normalizedScenarios,
+        });
+      });
+      return challenges;
+    } catch (error) {
+      logger.warn('Firestore: Failed to fetch weekly challenges, using fallback', { error: String(error) });
+      return DEFAULT_WEEKLY_CHALLENGES;
+    }
+  },
+
+  /**
+   * Get the currently active weekly challenge
+   */
+  async getActiveWeeklyChallenge(): Promise<WeeklyChallenge | null> {
+    try {
+      const challenges = await this.getWeeklyChallenges();
+      if (!challenges || challenges.length === 0) return null;
+      const active = challenges.find((c) => c.is_active) || challenges[0];
+      return active || null;
+    } catch (error) {
+      logger.warn('Firestore: Failed to get active challenge', { error: String(error) });
+      return DEFAULT_WEEKLY_CHALLENGES[0];
+    }
+  },
+
+  /**
+   * Save or update a weekly challenge in Firestore
+   */
+  async saveWeeklyChallenge(challenge: WeeklyChallenge): Promise<boolean> {
+    try {
+      if (!challenge || !challenge.week_id) return false;
+      const sanitized = cleanFirestoreData({
+        ...challenge,
+        updatedAt: new Date().toISOString()
+      });
+      const challengeRef = doc(db, CHALLENGES_COLLECTION, challenge.week_id);
+      await setDoc(challengeRef, sanitized, { merge: true });
+      logger.info('Firestore: Weekly challenge saved', { weekId: challenge.week_id });
+      return true;
+    } catch (error) {
+      logger.error('Firestore: Failed to save weekly challenge', { error: String(error), weekId: challenge?.week_id });
+      return false;
+    }
+  },
+
+  /**
+   * Seed default Week 1 and Week 2 challenges into Firestore if not present
+   */
+  async seedDefaultWeeklyChallenges(): Promise<boolean> {
+    try {
+      for (const challenge of DEFAULT_WEEKLY_CHALLENGES) {
+        const sanitized = cleanFirestoreData({
+          ...challenge,
+          updatedAt: new Date().toISOString()
+        });
+        const challengeRef = doc(db, CHALLENGES_COLLECTION, challenge.week_id);
+        await setDoc(challengeRef, sanitized, { merge: true });
+      }
+      logger.info('Firestore: Successfully seeded default weekly challenges');
+      return true;
+    } catch (error) {
+      logger.warn('Firestore: Could not seed weekly challenges', { error: String(error) });
+      return false;
+    }
   }
 };
+

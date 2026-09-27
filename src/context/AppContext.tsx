@@ -17,8 +17,11 @@ import {
   SchoolActivity,
   ActivitySubmission,
   ActivityBadge,
-  SchoolLocationId
+  SchoolLocationId,
+  WeeklyChallenge
 } from '@/types';
+import { DEFAULT_WEEKLY_CHALLENGES } from '@/lib/challengesData';
+
 import { 
   DEMO_USERS, 
   INITIAL_SEED_ITEMS, 
@@ -91,6 +94,13 @@ interface AppContextType {
     idealAnswersCount: number
   ) => Promise<void>;
   isWeekChallengeCompleted: (weekId: string) => boolean;
+  
+  // Weekly Challenges from Firestore
+  weeklyChallenges: WeeklyChallenge[];
+  activeWeeklyChallenge: WeeklyChallenge | null;
+  selectedChallengeWeekId: string | null;
+  setSelectedChallengeWeekId: (weekId: string) => void;
+  refreshWeeklyChallenges: () => Promise<void>;
   
   // School Activities System
   activitySubmissions: ActivitySubmission[];
@@ -192,6 +202,34 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [isOnboardingModalOpen, setIsOnboardingModalOpen] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const [syncStatus, setSyncStatus] = useState<SyncStatus>(cloudflareSyncService.getStatus());
+
+  // Dynamic Weekly Challenges State from Firestore
+  const [weeklyChallenges, setWeeklyChallenges] = useState<WeeklyChallenge[]>(DEFAULT_WEEKLY_CHALLENGES);
+  const [selectedChallengeWeekId, setSelectedChallengeWeekId] = useState<string | null>(null);
+
+  const refreshWeeklyChallenges = useCallback(async () => {
+    try {
+      const fetched = await firestoreService.getWeeklyChallenges();
+      if (fetched && fetched.length > 0) {
+        setWeeklyChallenges(fetched);
+      }
+    } catch (e) {
+      logger.warn('Failed to load weekly challenges from Firestore', { error: String(e) });
+    }
+  }, []);
+
+  useEffect(() => {
+    refreshWeeklyChallenges();
+  }, [refreshWeeklyChallenges]);
+
+  const activeWeeklyChallenge = useMemo(() => {
+    if (selectedChallengeWeekId) {
+      const found = weeklyChallenges.find((c) => c.week_id === selectedChallengeWeekId);
+      if (found) return found;
+    }
+    const active = weeklyChallenges.find((c) => c.is_active);
+    return active || weeklyChallenges[0] || null;
+  }, [weeklyChallenges, selectedChallengeWeekId]);
 
   // Subscribe to Cloudflare Sync Status
   useEffect(() => {
@@ -1317,6 +1355,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         resetScenarioCooldown,
         completeWeeklyChallenge,
         isWeekChallengeCompleted,
+        
+        // Weekly Challenges from Firestore
+        weeklyChallenges,
+        activeWeeklyChallenge,
+        selectedChallengeWeekId,
+        setSelectedChallengeWeekId,
+        refreshWeeklyChallenges,
         
         // School Activities
         activitySubmissions,

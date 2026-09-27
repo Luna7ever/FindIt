@@ -105,6 +105,10 @@ function StudentIntegrityFlow() {
     completeWeeklyChallenge,
     isWeekChallengeCompleted,
     openCertificateModal,
+    weeklyChallenges,
+    activeWeeklyChallenge,
+    selectedChallengeWeekId,
+    setSelectedChallengeWeekId,
     t,
     dir,
     isRtl,
@@ -116,6 +120,24 @@ function StudentIntegrityFlow() {
   const [answersMap, setAnswersMap] = useState<Record<string, ScenarioAnswerState>>({});
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
   const [isTestCompleted, setIsTestCompleted] = useState(false);
+
+  // Dynamic scenarios from Firestore active weekly challenge
+  const currentChallengeScenarios = useMemo(() => {
+    if (activeWeeklyChallenge?.scenarios && activeWeeklyChallenge.scenarios.length > 0) {
+      return activeWeeklyChallenge.scenarios;
+    }
+    return INTEGRITY_SCENARIOS;
+  }, [activeWeeklyChallenge]);
+
+  const activeChallengeId = activeWeeklyChallenge?.week_id || 'week_1';
+
+  // Reset scenario state on week challenge change
+  useEffect(() => {
+    setActiveScenarioIndex(0);
+    setSelectedOptionId(null);
+    setAnswersMap({});
+    setIsTestCompleted(false);
+  }, [activeChallengeId]);
 
   // Cinema Player animated playback state & audio engine
   const [isPlaying, setIsPlaying] = useState(false);
@@ -133,7 +155,7 @@ function StudentIntegrityFlow() {
     return () => clearInterval(timer);
   }, []);
 
-  const rawActiveScenario = INTEGRITY_SCENARIOS[activeScenarioIndex] || INTEGRITY_SCENARIOS[0];
+  const rawActiveScenario = currentChallengeScenarios[activeScenarioIndex] || currentChallengeScenarios[0] || INTEGRITY_SCENARIOS[0];
   const activeScenario = useMemo(() => getLocalizedScenario(rawActiveScenario, language), [rawActiveScenario, language]);
   const primaryQuestion = activeScenario.questions[0];
 
@@ -405,14 +427,14 @@ function StudentIntegrityFlow() {
     }
 
     // Save immediately on answering the 5th (last) scenario
-    if (activeScenarioIndex === INTEGRITY_SCENARIOS.length - 1) {
+    if (activeScenarioIndex === currentChallengeScenarios.length - 1) {
       const idealCount = Object.values(updatedAnswers).filter((a) => a.isIdeal).length;
       const totalScore = Object.values(updatedAnswers).reduce((acc, a) => acc + a.score, 0);
-      const accuracy = Math.round(totalScore / INTEGRITY_SCENARIOS.length);
+      const accuracy = Math.round(totalScore / currentChallengeScenarios.length);
       const pointsEarned = idealCount * 10;
 
       completeWeeklyChallenge(
-        currentWeekId,
+        activeChallengeId,
         pointsEarned,
         updatedAnswers,
         accuracy,
@@ -425,7 +447,7 @@ function StudentIntegrityFlow() {
 
   // Advance to next scenario or complete test
   const handleNextStep = () => {
-    if (activeScenarioIndex < INTEGRITY_SCENARIOS.length - 1) {
+    if (activeScenarioIndex < currentChallengeScenarios.length - 1) {
       setActiveScenarioIndex((prev) => prev + 1);
     } else {
       setIsTestCompleted(true);
@@ -457,8 +479,8 @@ function StudentIntegrityFlow() {
 
   const isLockedForWeek = useMemo(() => {
     if (currentUser.role === 'admin') return false;
-    return isWeekChallengeCompleted(currentWeekId);
-  }, [currentUser.role, isWeekChallengeCompleted, currentWeekId]);
+    return isWeekChallengeCompleted(activeChallengeId);
+  }, [currentUser.role, isWeekChallengeCompleted, activeChallengeId]);
 
   const isScreenCompleted = isTestCompleted || isLockedForWeek;
 
@@ -468,11 +490,11 @@ function StudentIntegrityFlow() {
 
   // Overall Score Calculation (out of 100%)
   const overallScorePercentage = useMemo(() => {
-    const totalScenarios = INTEGRITY_SCENARIOS.length;
+    const totalScenarios = currentChallengeScenarios.length;
     if (totalScenarios === 0) return 0;
     const totalScore = Object.values(answersMap).reduce((acc, a) => acc + a.score, 0);
     return Math.round(totalScore / totalScenarios);
-  }, [answersMap]);
+  }, [answersMap, currentChallengeScenarios.length]);
 
   const totalPointsEarned = useMemo(() => {
     return idealAnswersCount * 10;
@@ -509,8 +531,9 @@ function StudentIntegrityFlow() {
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-[10px] font-extrabold text-[#176B5B] dark:text-emerald-400 bg-[#176B5B]/10 dark:bg-[#176B5B]/20 px-2 py-0.5 rounded-md">
-                {language === 'en' ? 'Weekly Integrity Challenge' : 'التحدي الأسبوعي للأمانة'}
+              <span className="text-[10px] font-extrabold text-[#176B5B] dark:text-emerald-400 bg-[#176B5B]/10 dark:bg-[#176B5B]/20 px-2 py-0.5 rounded-md flex items-center gap-1">
+                <span>{language === 'en' ? 'Weekly Challenge:' : 'تحدي الأسبوع:'}</span>
+                <span className="underline decoration-emerald-400 font-black">{activeWeeklyChallenge?.theme_title || (language === 'en' ? 'Integrity Challenge' : 'تحدي الأمانة')}</span>
               </span>
               <span className="text-[10px] text-[#66706B] dark:text-[#94A39D] font-semibold hidden sm:inline">
                 {language === 'en' 
@@ -530,15 +553,15 @@ function StudentIntegrityFlow() {
           <div className="flex items-center justify-between text-[11px] font-bold">
             <span className="text-[#176B5B] dark:text-emerald-400 font-black flex items-center gap-1">
               <Target className="w-3 h-3" />
-              <span>{language === 'en' ? `Scenario ${activeScenarioIndex + 1} of ${INTEGRITY_SCENARIOS.length}` : `الموقف ${activeScenarioIndex + 1} من ${INTEGRITY_SCENARIOS.length}`}</span>
+              <span>{language === 'en' ? `Scenario ${activeScenarioIndex + 1} of ${currentChallengeScenarios.length}` : `الموقف ${activeScenarioIndex + 1} من ${currentChallengeScenarios.length}`}</span>
             </span>
             <span className="text-[#66706B] dark:text-[#94A39D] text-[10px] font-mono">
-              {isScreenCompleted ? 100 : Math.round(((activeScenarioIndex + (selectedOptionId ? 1 : 0)) / INTEGRITY_SCENARIOS.length) * 100)}%
+              {isScreenCompleted ? 100 : Math.round(((activeScenarioIndex + (selectedOptionId ? 1 : 0)) / currentChallengeScenarios.length) * 100)}%
             </span>
           </div>
 
           <div className="grid grid-cols-5 gap-1.5 h-2 items-center">
-            {INTEGRITY_SCENARIOS.map((s, idx) => {
+            {currentChallengeScenarios.map((s, idx) => {
               const isAnswered = !!answersMap[s.id] || isScreenCompleted;
               const isCurrent = idx === activeScenarioIndex && !isScreenCompleted;
 
@@ -582,6 +605,41 @@ function StudentIntegrityFlow() {
 
       </div>
 
+      {/* Dynamic Firestore Weekly Challenge Switcher Strip */}
+      {weeklyChallenges.length > 0 && (
+        <div className="p-2 sm:p-2.5 bg-slate-50 dark:bg-[#16221F] border border-slate-200/80 dark:border-[#263834] rounded-2xl flex items-center gap-2 overflow-x-auto scrollbar-none">
+          <span className="text-xs font-bold text-[#66706B] dark:text-[#94A39D] shrink-0 flex items-center gap-1.5 px-2">
+            <BookOpen className="w-3.5 h-3.5 text-[#176B5B] dark:text-emerald-400" />
+            <span>{language === 'en' ? 'Available Weeks:' : 'أسابيع التحديات:'}</span>
+          </span>
+          <div className="flex items-center gap-2">
+            {weeklyChallenges.map((challenge, idx) => {
+              const isSelected = challenge.week_id === activeChallengeId;
+              const isCompleted = isWeekChallengeCompleted(challenge.week_id);
+              return (
+                <button
+                  key={challenge.week_id}
+                  onClick={() => setSelectedChallengeWeekId(challenge.week_id)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-2 cursor-pointer border ${
+                    isSelected
+                      ? 'bg-[#176B5B] text-white border-[#176B5B] shadow-sm'
+                      : 'bg-white dark:bg-[#1C2B27] text-slate-700 dark:text-slate-300 border-slate-200 dark:border-[#2D3E3A] hover:border-emerald-400'
+                  }`}
+                >
+                  <span className="font-black">{language === 'en' ? `Week ${challenge.order || idx + 1}` : `الأسبوع ${challenge.order || idx + 1}`}</span>
+                  <span className="hidden sm:inline font-normal text-[11px] opacity-90">({challenge.theme_title})</span>
+                  {isCompleted ? (
+                    <span className="text-[10px] bg-emerald-800/40 text-emerald-200 px-1.5 py-0.5 rounded-md font-semibold">✓ {language === 'en' ? 'Completed' : 'مكتمل'}</span>
+                  ) : challenge.is_active ? (
+                    <span className="text-[10px] bg-amber-400/20 text-amber-300 px-1.5 py-0.5 rounded-md font-semibold">🌟 {language === 'en' ? 'Active' : 'نشط'}</span>
+                  ) : null}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* ========================================================
           2. COMPREHENSIVE END-OF-TEST RESULTS & SCORE REPORT SCREEN
       ======================================================== */}
@@ -620,9 +678,9 @@ function StudentIntegrityFlow() {
                 <p className="text-xs sm:text-sm text-[#66706B] dark:text-[#94A39D] leading-relaxed max-w-2xl">
                   {currentUser.role === 'admin' ? (
                     language === 'en' ? (
-                      <>Oversight review completed successfully! You have evaluated all <span className="font-bold text-[#18201D] dark:text-white">({INTEGRITY_SCENARIOS.length} scenarios)</span> and verified the official pedagogical decision matrix for school students.</>
+                      <>Oversight review completed successfully! You have evaluated all <span className="font-bold text-[#18201D] dark:text-white">({currentChallengeScenarios.length} scenarios)</span> and verified the official pedagogical decision matrix for school students.</>
                     ) : (
-                      <>تمت المراجعة والاعتماد الإداري بنجاح! تم فحص كافة <span className="font-bold text-[#18201D] dark:text-white">({INTEGRITY_SCENARIOS.length} مواقف تربوية)</span> واعتماد بنك القرارات النموذجية المعتمدة لطلاب المدرسة.</>
+                      <>تمت المراجعة والاعتماد الإداري بنجاح! تم فحص كافة <span className="font-bold text-[#18201D] dark:text-white">({currentChallengeScenarios.length} مواقف تربوية)</span> واعتماد بنك القرارات النموذجية المعتمدة لطلاب المدرسة.</>
                     )
                   ) : (
                     language === 'en' ? (
@@ -729,7 +787,7 @@ function StudentIntegrityFlow() {
                 <span className="text-[11px] font-bold text-[#66706B] dark:text-[#94A39D]">{language === 'en' ? 'Ideal Scenarios' : 'المواقف النموذجية'}</span>
                 <CheckCircle2 className="w-4 h-4 text-teal-600 dark:text-teal-400" />
               </div>
-              <p className="text-xl sm:text-2xl font-black text-[#18201D] dark:text-white">{idealAnswersCount} / {INTEGRITY_SCENARIOS.length}</p>
+              <p className="text-xl sm:text-2xl font-black text-[#18201D] dark:text-white">{idealAnswersCount} / {currentChallengeScenarios.length}</p>
               <p className="text-[10px] text-teal-700 dark:text-teal-400 font-semibold">{language === 'en' ? 'Approved ideal decisions' : 'قرارات مثالية معتمدة'}</p>
             </div>
 
@@ -801,12 +859,12 @@ function StudentIntegrityFlow() {
                 <span>{language === 'en' ? 'Review Decisions & Guidance for All 5 Scenarios:' : 'مراجعة القرارات والتوجيهات التربوية للمواقف الخمسة:'}</span>
               </h3>
               <span className="text-xs text-[#66706B] dark:text-[#94A39D] font-semibold">
-                {language === 'en' ? `${INTEGRITY_SCENARIOS.length} Evaluated Scenarios` : `${INTEGRITY_SCENARIOS.length} مواقف مدروسة`}
+                {language === 'en' ? `${currentChallengeScenarios.length} Evaluated Scenarios` : `${currentChallengeScenarios.length} مواقف مدروسة`}
               </span>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-              {INTEGRITY_SCENARIOS.map((rawS, index) => {
+              {currentChallengeScenarios.map((rawS, index) => {
                 const scenario = getLocalizedScenario(rawS, language);
                 const answer = answersMap[scenario.id];
                 const isAnswered = !!answer;
@@ -1282,7 +1340,7 @@ function StudentIntegrityFlow() {
                     className="px-4 py-2.5 min-h-[42px] rounded-xl bg-[#176B5B] dark:bg-[#2DD4BF] hover:bg-[#125648] dark:hover:bg-[#14B8A6] text-white dark:text-slate-950 text-xs font-black shadow-md shadow-emerald-900/20 transition-all hover:scale-105 active:scale-95 flex items-center gap-1.5 shrink-0 cursor-pointer"
                   >
                     <span>
-                      {activeScenarioIndex === INTEGRITY_SCENARIOS.length - 1
+                      {activeScenarioIndex === currentChallengeScenarios.length - 1
                         ? (language === 'en' ? 'Final Results & Certificate 🏆' : 'النتيجة النهائية والشهادة 🏆')
                         : (language === 'en' ? 'Next Scenario' : 'الموقف التالي')}
                     </span>

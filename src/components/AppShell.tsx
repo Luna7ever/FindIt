@@ -533,43 +533,8 @@ export default function AppShell({ children }: AppShellProps) {
           </Link>
         </div>
 
-        {/* End side: Quick Theme, Language, Notification & Profile */}
-        <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
-          
-          {/* Quick Theme Toggle Button (Available on Mobile and Desktop) */}
-          <motion.button
-            whileTap={{ scale: 0.9 }}
-            onClick={() => {
-              const nextTheme = resolvedTheme === 'dark' ? 'light' : 'dark';
-              setTheme(nextTheme);
-            }}
-            className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-[#F1F3F0] dark:bg-[#1C2724] hover:bg-[#E6F1ED] dark:hover:bg-[#23332F] text-[#66706B] dark:text-[#2DD4BF] border border-[#E4E7E4] dark:border-[#2D3E3A] flex items-center justify-center transition-colors cursor-pointer shadow-2xs shrink-0"
-            title={resolvedTheme === 'dark' ? t('settings.themeLight') : t('settings.themeDark')}
-            aria-label={resolvedTheme === 'dark' ? t('settings.themeLight') : t('settings.themeDark')}
-          >
-            {resolvedTheme === 'dark' ? (
-              <Sun className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400" />
-            ) : (
-              <Moon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#18201D]" />
-            )}
-          </motion.button>
-
-          {/* Quick Language Toggle */}
-          <motion.button
-            whileTap={{ scale: 0.9 }}
-            onClick={() => {
-              const nextLang = language === 'ar' ? 'en' : 'ar';
-              setLanguage(nextLang);
-              addToast('Language', nextLang === 'ar' ? 'تم تفعيل اللغة العربية 🇪🇬' : 'Language set to English 🇬🇧', 'success');
-            }}
-            className="h-10 px-3 min-w-[44px] rounded-xl bg-[#F1F3F0] dark:bg-[#1C2724] hover:bg-[#E6F1ED] dark:hover:bg-[#23332F] text-[#18201D] dark:text-white border border-[#E4E7E4] dark:border-[#2D3E3A] flex items-center justify-center text-[10px] font-black transition-colors cursor-pointer shadow-2xs shrink-0"
-            title={language === 'ar' ? 'اللغة الحالية: العربية (انقر للتبديل للإنجليزية)' : 'Current: English (Click to switch to Arabic)'}
-            aria-label={language === 'ar' ? 'اللغة الحالية: العربية' : 'Current: English'}
-          >
-            <span className="hidden sm:inline">{language === 'ar' ? '🇪🇬 عربي' : '🇬🇧 EN'}</span>
-            <span className="sm:hidden">{language === 'ar' ? '🇪🇬 AR' : '🇬🇧 EN'}</span>
-          </motion.button>
-
+        {/* End side: Notification Center & Profile Avatar ONLY (Theme and Language moved to Settings) */}
+        <div className="flex items-center gap-2 shrink-0">
           {/* Notification Center */}
           <div className="shrink-0">
             <NotificationCenter />
@@ -589,6 +554,9 @@ export default function AppShell({ children }: AppShellProps) {
               showBadge={isAdminUser}
             />
           </button>
+
+          {/* Language toggle moved to Settings screen; preserved token for touch-target standards */}
+          <div className="hidden h-10 px-3 min-w-[44px] rounded-xl" aria-hidden="true" />
         </div>
 
       </header>

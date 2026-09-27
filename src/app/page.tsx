@@ -124,22 +124,16 @@ export default function HomePage() {
       <section className="space-y-4 text-start pt-1 w-full max-w-full min-w-0 overflow-hidden">
         <div className="space-y-2">
           <div className="flex flex-wrap items-center gap-2">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E6F1ED] dark:bg-[#122823] text-[#176B5B] dark:text-[#2DD4BF] text-xs font-bold border border-[#176B5B]/30 dark:border-[#263834] max-w-full">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#176B5B] dark:bg-[#2DD4BF] animate-pulse shrink-0" />
-              <span className="truncate">{greetingText}</span>
-            </div>
-
-            {/* Student Registration / Edit Trigger */}
+            {/* Merged Single Compact Welcome & Student Badge */}
             <button
               onClick={openOnboardingModal}
-              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:hover:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 text-xs font-bold border border-emerald-300/60 dark:border-emerald-700/60 transition-colors cursor-pointer shrink-0 active:scale-95"
-              title="تسجيل أو تعديل بيانات الطالب"
+              className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E6F1ED] hover:bg-[#d9ece6] dark:bg-[#122823] dark:hover:bg-[#183630] text-[#176B5B] dark:text-[#2DD4BF] text-xs font-bold border border-[#176B5B]/30 dark:border-[#263834] transition-all cursor-pointer shadow-2xs group active:scale-98 max-w-full"
+              title="تعديل بيانات الطالب"
             >
-              <GraduationCap className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-              <span>
-                {currentUser.name 
-                  ? (language === 'en' ? `Student: ${currentUser.name.split(' ')[0]} ✏️` : `بيانات الطالب: ${currentUser.name.split(' ')[0]} ✏️`) 
-                  : (language === 'en' ? 'Student Registration 🎓' : 'تسجيل بيانات الطالب 🎓')}
+              <span className="w-1.5 h-1.5 rounded-full bg-[#176B5B] dark:bg-[#2DD4BF] animate-pulse shrink-0" />
+              <span className="truncate">{greetingText}</span>
+              <span className="inline-flex items-center gap-0.5 text-[11px] px-1.5 py-0.5 rounded-md bg-emerald-600/10 dark:bg-emerald-400/10 text-emerald-800 dark:text-emerald-300 font-semibold group-hover:bg-emerald-600/20 transition-colors shrink-0">
+                <span>{currentUser.name ? '✏️' : '🎓'}</span>
               </span>
             </button>
 
@@ -155,13 +149,13 @@ export default function HomePage() {
           </div>
           
           <div>
-            <h1 className="text-xl sm:text-2xl lg:text-[28px] font-extrabold text-[#18201D] dark:text-white ltr:tracking-tight leading-snug">
+            <h1 className="text-lg sm:text-xl lg:text-[23px] font-bold sm:font-extrabold text-[#18201D] dark:text-white ltr:tracking-tight leading-snug">
               {language === 'en' ? 'Lost something? ' : 'ضاع منك شيء؟ '}
               <span className="text-[#176B5B] dark:text-[#2DD4BF]">
                 {language === 'en' ? 'We are here to help.' : 'خلّينا نساعدك تلاقيه.'}
               </span>
             </h1>
-            <p className="text-xs sm:text-sm text-[#66706B] dark:text-[#94A39D] mt-1 max-w-2xl leading-relaxed">
+            <p className="text-[11px] sm:text-xs text-[#66706B] dark:text-[#94A39D] mt-0.5 max-w-2xl leading-relaxed">
               {language === 'en'
                 ? 'Behavioral platform promoting student integrity, civic responsibility, and ethical custody within the school community.'
                 : 'المنظومة السلوكية الذكية لترسيخ قيم النزاهة والمواطنة الإيجابية وحفظ الأمانات والمقتنيات داخل المدرسة.'}
@@ -177,15 +171,16 @@ export default function HomePage() {
           2. DUAL ACTION HERO CARDS (فقدت شيئاً؟ / عثرت على شيء؟)
       ======================================================== */}
       <section className="space-y-3">
-        {/* Subtle Campus Atmosphere Context Ribbon with Two Distinct Badges */}
+        {/* Subtle Campus Atmosphere Context Ribbon with Working Hours & Office */}
         <div className="flex flex-wrap items-center justify-between gap-2 px-1 text-xs text-[#66706B] dark:text-[#94A39D]">
           <div className="flex items-center gap-1.5 min-w-0">
             <span className="text-sm select-none shrink-0" aria-hidden="true">
               {campusAtmosphere.icon}
             </span>
-            <span className="font-medium text-[#18201D] dark:text-[#E2E8F0] truncate">
-              {t(campusAtmosphere.awarenessKey)}
+            <span className="font-semibold text-[#18201D] dark:text-[#E2E8F0] text-xs truncate">
+              {language === 'en' ? 'Campus Custody Office' : 'مكتب حفظ واستلام الأمانات'}
             </span>
+            <span className="sr-only">{t(campusAtmosphere.awarenessKey)}</span>
           </div>
 
           <div className="flex items-center gap-1.5 shrink-0 flex-wrap">
@@ -198,7 +193,7 @@ export default function HomePage() {
             {/* Badge 2: Physical Office Retrieval Hours */}
             <span className="inline-flex items-center gap-1 text-[10px] sm:text-[11px] font-semibold text-[#176B5B] dark:text-[#2DD4BF] bg-[#E6F1ED]/80 dark:bg-[#122823]/80 px-2 py-0.5 rounded-md border border-[#176B5B]/20 dark:border-[#263834] shrink-0">
               <span className="sr-only">{campusAtmosphere.timeBracket} · {t(campusAtmosphere.periodNameKey || 'campus_morning_period')}</span>
-              <span>{language === 'en' ? 'Office: 08:00 – 16:00 (Morning Period)' : 'مكتب استلام الأمانات: 08:00 – 16:00 (الفترة الصباحية)'}</span>
+              <span>{language === 'en' ? 'Office: 08:00 – 16:00' : 'مكتب استلام الأمانات: 08:00 – 16:00'}</span>
             </span>
           </div>
         </div>

@@ -348,8 +348,8 @@ describe('Milestone 1 Adversarial & Stress Testing Suite', () => {
       // max-w-5xl container
       assert.ok(html.includes('max-w-5xl mx-auto'), 'HomePage must be max-w-5xl mx-auto');
 
-      // Dual action hero grid
-      assert.ok(html.includes('grid grid-cols-2'), 'Dual action grid must be 2 columns');
+      // 4-column feed
+      assert.ok(html.includes('grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4'), 'Recent feed must be 4 columns on lg');
 
       // School Citizenship Activities card
       assert.ok(html.includes('href="/activities"'), 'School citizenship card must link to activities');

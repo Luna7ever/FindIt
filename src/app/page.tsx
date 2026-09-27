@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
 import { canAccessAdmin } from '@/lib/auth/permissions';
+import ItemCard from '@/components/ItemCard';
 import ItemVisual from '@/components/ItemVisual';
 import InstantSearchBar from '@/components/InstantSearchBar';
 import { getLocalizedItem, getLocalizedUser } from '@/lib/i18n/seedDataTranslations';
@@ -94,6 +95,13 @@ export default function HomePage() {
   const activeChallengeId = activeWeeklyChallenge?.week_id || 'week_1';
   const isChallengeCompleted = isWeekChallengeCompleted(activeChallengeId);
 
+  // Recent Found Items (Top 4 latest items)
+  const recentFoundItems = useMemo(() => {
+    return items
+      .filter((i) => i.type === 'found' && i.status !== 'reunited')
+      .slice(0, 4);
+  }, [items]);
+
   // Malak's Calculator for High-Match Spotlight
   const malakLostCalc = useMemo(() => {
     return items.find((i) => i.id === 'item_malak_lost_calc');
@@ -104,7 +112,7 @@ export default function HomePage() {
   }, [items]);
 
   return (
-    <div className="w-full max-w-full overflow-x-hidden px-3.5 sm:px-6 pt-2 pb-28 sm:pb-12 space-y-3 sm:space-y-4 max-w-5xl mx-auto text-[#18201D] dark:text-[#F1F5F3]" dir={dir}>
+    <div className="w-full max-w-full overflow-x-hidden px-4 sm:px-6 pt-3 pb-32 sm:pb-16 space-y-4 sm:space-y-6 max-w-5xl mx-auto text-[#18201D] dark:text-[#F1F5F3]" dir={dir}>
       
 
       {/* ========================================================
@@ -183,7 +191,7 @@ export default function HomePage() {
 
                 <Link
                   href="/integrity"
-                  className="inline-flex items-center justify-center gap-1.5 min-h-[40px] px-3.5 sm:px-4 py-1.5 rounded-xl font-bold text-xs sm:text-sm bg-[#176B5B] hover:bg-[#125648] text-white shadow-2xs transition-all active:scale-95 group shrink-0"
+                  className="inline-flex items-center justify-center gap-1.5 min-h-[42px] px-4 sm:px-5 py-2 rounded-xl font-bold text-xs sm:text-sm bg-[#176B5B] hover:bg-[#125648] text-white shadow-2xs transition-all active:scale-95 group shrink-0"
                 >
                   <span>{language === 'en' ? 'Start Challenge' : 'ابدأ التحدي'}</span>
                   <ArrowIcon className="w-3.5 h-3.5 transition-transform group-hover:translate-x-[-2px] rtl:group-hover:translate-x-[-2px]" />
@@ -211,7 +219,7 @@ export default function HomePage() {
       {/* ========================================================
           3. LOST & FOUND HUB (Search Bar + Dual Action Cards)
       ======================================================== */}
-      <section className="space-y-2.5 sm:space-y-3">
+      <section className="space-y-3 sm:space-y-4">
         {/* Integrated Live Interactive Instant Search Bar */}
         <InstantSearchBar />
 
@@ -220,13 +228,13 @@ export default function HomePage() {
           {/* Card 1: Lost Item (Right card in RTL) */}
           <Link
             href="/report?type=lost"
-            className="app-card app-card-interactive p-3 sm:p-4 border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-[#15201D] flex flex-col justify-between space-y-2.5 group text-start shadow-sm rounded-2xl"
+            className="app-card app-card-interactive p-4 sm:p-5 border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-[#15201D] flex flex-col justify-between space-y-3 group text-start shadow-xs rounded-2xl"
           >
             <div className="flex items-center justify-between">
-              <div className="w-8 h-8 rounded-full bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200/50 dark:border-amber-800/40 flex items-center justify-center shrink-0">
+              <div className="w-9 h-9 rounded-full bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200/50 dark:border-amber-800/40 flex items-center justify-center shrink-0">
                 <Search className="w-4 h-4" />
               </div>
-              <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-200/50 dark:border-amber-800/40">
+              <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-200/50 dark:border-amber-800/40">
                 {language === 'en' ? 'Lost' : 'مفقود'}
               </span>
             </div>
@@ -237,7 +245,7 @@ export default function HomePage() {
               </h2>
             </div>
 
-            <div className="inline-flex items-center justify-center gap-1.5 w-full min-h-[42px] sm:min-h-[44px] py-2 px-3 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-200 dark:border-amber-800/60 text-xs sm:text-sm font-bold transition-all shadow-2xs active:scale-98">
+            <div className="inline-flex items-center justify-center gap-1.5 w-full min-h-[44px] py-2 px-3 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-200 dark:border-amber-800/60 text-xs sm:text-sm font-bold transition-all shadow-2xs active:scale-98">
               <span>{language === 'en' ? 'Report Lost' : 'تسجيل مفقود'}</span>
               <ArrowIcon className="w-3.5 h-3.5 transition-transform group-hover:translate-x-[-2px] rtl:group-hover:translate-x-[-2px]" />
             </div>
@@ -246,13 +254,13 @@ export default function HomePage() {
           {/* Card 2: Found Item (Left card in RTL) */}
           <Link
             href="/report?type=found"
-            className="app-card app-card-interactive p-3 sm:p-4 border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-[#15201D] flex flex-col justify-between space-y-2.5 group text-start shadow-sm rounded-2xl"
+            className="app-card app-card-interactive p-4 sm:p-5 border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-[#15201D] flex flex-col justify-between space-y-3 group text-start shadow-xs rounded-2xl"
           >
             <div className="flex items-center justify-between">
-              <div className="w-8 h-8 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-800/40 flex items-center justify-center shrink-0">
+              <div className="w-9 h-9 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-800/40 flex items-center justify-center shrink-0">
                 <Handshake className="w-4 h-4" />
               </div>
-              <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-800/40">
+              <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-800/40">
                 {language === 'en' ? 'Custody' : 'أمانة'}
               </span>
             </div>
@@ -263,7 +271,7 @@ export default function HomePage() {
               </h2>
             </div>
 
-            <div className="inline-flex items-center justify-center gap-1.5 w-full min-h-[42px] sm:min-h-[44px] py-2 px-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-200 dark:border-emerald-800/60 text-xs sm:text-sm font-bold transition-all shadow-2xs active:scale-98">
+            <div className="inline-flex items-center justify-center gap-1.5 w-full min-h-[44px] py-2 px-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-200 dark:border-emerald-800/60 text-xs sm:text-sm font-bold transition-all shadow-2xs active:scale-98">
               <span>{language === 'en' ? 'Handover' : 'تسليم أمانة'}</span>
               <ArrowIcon className="w-3.5 h-3.5 transition-transform group-hover:translate-x-[-2px] rtl:group-hover:translate-x-[-2px]" />
             </div>
@@ -275,7 +283,7 @@ export default function HomePage() {
           AI MATCH SPOTLIGHT (When Match Exists)
       ======================================================== */}
       {malakLostCalc && matchingFoundCalc && currentUser.id === 'user_malak' && (
-        <section className="bg-white dark:bg-[#15201D] p-3.5 sm:p-4 rounded-2xl border border-slate-100 dark:border-slate-800/80 shadow-sm space-y-2.5">
+        <section className="bg-white dark:bg-[#15201D] p-4 sm:p-5 rounded-2xl border border-slate-100 dark:border-slate-800/80 shadow-xs space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-[#176B5B] dark:bg-[#2DD4BF] animate-ping" />
@@ -324,7 +332,7 @@ export default function HomePage() {
       <section>
         <Link
           href="/activities"
-          className="w-full p-3.5 sm:p-4 rounded-2xl bg-white dark:bg-[#15201D] border border-slate-100 dark:border-slate-800/80 hover:border-emerald-500/40 dark:hover:border-[#2DD4BF]/40 transition-all flex items-center justify-between gap-3 shadow-xs group cursor-pointer"
+          className="w-full p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#15201D] border border-slate-100 dark:border-slate-800/80 hover:border-emerald-500/40 dark:hover:border-[#2DD4BF]/40 transition-all flex items-center justify-between gap-3 shadow-xs group cursor-pointer"
         >
           <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
             <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#176B5B] text-white flex items-center justify-center shrink-0 shadow-xs">
@@ -352,6 +360,32 @@ export default function HomePage() {
             <ArrowIcon className="w-3.5 h-3.5" />
           </div>
         </Link>
+      </section>
+
+      {/* ========================================================
+          5. RECENT FOUND ITEMS FEED (Spacious & Comfortable)
+      ======================================================== */}
+      <section className="space-y-4 pt-2">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-sm sm:text-base font-extrabold text-[#18201D] dark:text-white">
+              {language === 'en' ? 'Recently Found Belongings' : 'أحدث المعثورات المدرسية'}
+            </h2>
+            <p className="text-[11px] sm:text-xs text-[#66706B] dark:text-[#94A39D] mt-0.5">
+              {language === 'en' ? 'Items found across school premises waiting for owners' : 'أغراض تم تسليمها وتوثيقها بانتظار أصحابها'}
+            </p>
+          </div>
+          <Link href="/explore" className="text-xs font-bold text-[#176B5B] dark:text-[#2DD4BF] hover:underline flex items-center gap-1 group">
+            <span>{language === 'en' ? 'View All' : 'استعراض الكل'}</span>
+            <ArrowIcon className={`w-3.5 h-3.5 transition-transform ${isRtl ? 'group-hover:-translate-x-0.5' : 'group-hover:translate-x-0.5'}`} />
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {recentFoundItems.map((item) => (
+            <ItemCard key={item.id} item={item} />
+          ))}
+        </div>
       </section>
 
     </div>

@@ -19,8 +19,8 @@ export default function ItemIllustration({
   // 1. CALCULATOR (حاسبة)
   if (t.includes('حاسبة') || t.includes('كاسيو') || t.includes('calculator') || t.includes('fx-')) {
     return (
-      <div className={`w-full h-full flex items-center justify-center bg-[#EBF4F1] p-4 ${className}`}>
-        <div className="w-20 h-28 bg-[#18201D] rounded-2xl p-2.5 shadow-md flex flex-col justify-between border border-[#2E3B36] relative">
+      <div className={`w-full h-full flex items-center justify-center bg-[#EBF4F1] p-2 ${className}`}>
+        <div className="w-16 h-22 sm:w-18 sm:h-24 max-h-[92%] bg-[#18201D] rounded-xl sm:rounded-2xl p-2 shadow-md flex flex-col justify-between border border-[#2E3B36] relative">
           {/* Solar Panel & Logo */}
           <div className="flex items-center justify-between px-1">
             <span className="text-[7px] font-bold tracking-widest text-[#66706B] font-mono">CASIO</span>

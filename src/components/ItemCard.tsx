@@ -47,12 +47,12 @@ export default function ItemCard({ item: rawItem, matchScore, showMatchButton = 
       className="app-card app-card-interactive w-full max-w-full min-w-0 overflow-hidden flex flex-col justify-between group block text-start bg-white dark:bg-[#15201D] border-[#E4E7E4] dark:border-[#263834] transition-all"
     >
       {/* Visual Area */}
-      <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#F1F3F0] dark:bg-[#1C2B27]">
+      <div className="relative h-28 sm:h-32 max-h-28 sm:max-h-32 w-full overflow-hidden bg-[#F1F3F0] dark:bg-[#1C2B27] flex items-center justify-center">
         <ItemVisual
           category={item.category}
           title={item.title}
           imageUrl={item.imageUrl}
-          className="w-full h-full"
+          className="w-full h-full max-h-28 sm:max-h-32 object-contain"
         />
 
         {/* Status Pill Badge */}
@@ -103,7 +103,7 @@ export default function ItemCard({ item: rawItem, matchScore, showMatchButton = 
       </div>
 
       {/* Content Section - Strict Uniform Geometry */}
-      <div className="p-3.5 sm:p-4 flex-1 flex flex-col justify-between space-y-2.5">
+      <div className="p-2.5 sm:p-3.5 flex-1 flex flex-col justify-between space-y-1.5 sm:space-y-2">
         
         <div>
           {/* Metadata: Category & Relative Date (h-4) */}
@@ -122,14 +122,14 @@ export default function ItemCard({ item: rawItem, matchScore, showMatchButton = 
             {item.title}
           </h3>
 
-          {/* Description (Strict h-9 line-clamp-2) */}
-          <p className="h-9 text-xs text-[#66706B] dark:text-[#94A39D] mt-1 line-clamp-2 leading-relaxed overflow-hidden">
+          {/* Description (Strict h-8 sm:h-9 line-clamp-2) */}
+          <p className="h-8 sm:h-9 text-[11px] sm:text-xs text-[#66706B] dark:text-[#94A39D] mt-0.5 line-clamp-2 leading-snug overflow-hidden">
             {item.description}
           </p>
         </div>
 
         {/* Location & Verification Indicator (Strict Uniform Lower Shelf) */}
-        <div className="pt-2.5 border-t border-[#E4E7E4] dark:border-[#263834] space-y-2">
+        <div className="pt-2 border-t border-[#E4E7E4] dark:border-[#263834] space-y-1.5">
           
           {/* Location row (h-5) */}
           <div className="h-5 flex items-center justify-between text-xs text-[#18201D] dark:text-[#F1F3F0]">

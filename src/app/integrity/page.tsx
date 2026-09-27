@@ -997,29 +997,6 @@ function StudentIntegrityFlow() {
                   </span>
                 </div>
 
-                {/* Center: Tap to Play/Listen Inviting Control when Idle */}
-                {!isPlaying && !selectedOption && (
-                  <div className="absolute inset-0 flex items-center justify-center p-4 z-20">
-                    <button
-                      type="button"
-                      onClick={handleTogglePlay}
-                      className="px-4 py-2.5 rounded-2xl bg-black/75 hover:bg-black/90 backdrop-blur-md border border-white/20 hover:border-emerald-400/50 text-white flex items-center gap-3 shadow-2xl transition-all hover:scale-105 active:scale-95 cursor-pointer group"
-                    >
-                      <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#176B5B] to-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/40 group-hover:scale-110 transition-transform">
-                        <Play className="w-4 h-4 fill-white ml-0.5" />
-                      </div>
-                      <div className="text-start">
-                        <span className="text-xs font-black block text-white">
-                          {language === 'en' ? 'Play Spoken Scene' : 'استمع للموقف بصوت الشخصية'}
-                        </span>
-                        <span className="text-[10px] text-emerald-300 font-medium">
-                          {activeScenario.characterSpeaker?.name || 'حوار حي تفاعلي'}
-                        </span>
-                      </div>
-                    </button>
-                  </div>
-                )}
-
                 {/* In-Video Decision Outcome HUD (Bandersnatch Reaction Stage) */}
                 {selectedOption && (
                   <div className={`absolute inset-0 z-30 flex flex-col items-center justify-end p-4 text-center backdrop-blur-xs animate-in fade-in duration-300 ${
@@ -1083,28 +1060,6 @@ function StudentIntegrityFlow() {
                     </div>
                   </div>
                 )}
-
-                {/* Subtitle Dialogue Box inside the Video (When not answered yet) */}
-                {!selectedOption && (
-                  <div className="absolute bottom-2.5 inset-x-2.5 z-20 pointer-events-none">
-                    <div className="p-2 sm:p-2.5 rounded-xl bg-slate-950/85 backdrop-blur-md border border-slate-700/60 shadow-xl text-center space-y-1">
-                      <div className="flex items-center justify-between gap-2 px-1">
-                        <span className="text-[10px] font-extrabold text-amber-300 flex items-center gap-1">
-                          <span>{activeScenario.characterSpeaker?.avatarEmoji || '🗣️'}</span>
-                          <span>{activeScenario.characterSpeaker?.name}:</span>
-                        </span>
-                        {isPlaying && (
-                          <span className="text-[9px] text-emerald-400 font-bold animate-pulse">
-                            {language === 'en' ? 'Speaking now...' : 'يتحدث الآن...'}
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-xs sm:text-sm font-black text-white drop-shadow leading-snug">
-                        «{activeScenario.dilemmaQuote}»
-                      </p>
-                    </div>
-                  </div>
-                )}
               </div>
 
               {/* Bottom Audio Progress Timeline */}
@@ -1117,48 +1072,40 @@ function StudentIntegrityFlow() {
 
             </div>
 
-            {/* 2. Interactive Living Character Dialogue Stage */}
+            {/* 2. Unified Living Character Dialogue & Context Stage */}
             <div className="p-4 rounded-2xl bg-white dark:bg-[#15201D] border border-[#E4E7E4] dark:border-[#263834] shadow-xs space-y-3 text-start">
               
-              {/* Speaker Character Header */}
-              <div className="flex items-center justify-between gap-3 border-b border-slate-100 dark:border-[#23332F] pb-2.5">
-                <div className="flex items-center gap-2.5">
-                  <div className={`w-10 h-10 rounded-2xl flex items-center justify-center text-xl shrink-0 transition-all ${
-                    isPlaying 
-                      ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 ring-4 ring-emerald-400/40 scale-105' 
-                      : 'bg-slate-100 dark:bg-[#1C2B27] text-slate-700 dark:text-slate-300'
-                  }`}>
-                    {activeScenario.characterSpeaker?.avatarEmoji || '💬'}
-                  </div>
-                  <div>
-                    <h3 className="text-xs sm:text-sm font-black text-[#18201D] dark:text-white flex items-center gap-1.5">
+              {/* Speaker Character Header with Emotion */}
+              <div className="flex items-center gap-3 border-b border-slate-100 dark:border-[#23332F] pb-3">
+                <div className={`w-11 h-11 rounded-2xl flex items-center justify-center text-2xl shrink-0 transition-all ${
+                  isPlaying 
+                    ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 ring-4 ring-emerald-400/40 scale-105' 
+                    : 'bg-slate-100 dark:bg-[#1C2B27] text-slate-700 dark:text-slate-300'
+                }`}>
+                  {activeScenario.characterSpeaker?.avatarEmoji || '💬'}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="text-sm font-black text-[#18201D] dark:text-white flex items-center gap-1.5">
                       <span>{activeScenario.characterSpeaker?.name || activeScenario.visualDetails.locationBadge}</span>
                       {isPlaying && (
-                        <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+                        <span className="inline-flex items-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-400 font-bold animate-pulse">
+                          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping inline-block" />
+                          <span>{language === 'en' ? 'Speaking...' : 'يتحدث الآن...'}</span>
+                        </span>
                       )}
                     </h3>
-                    <p className="text-[10px] text-amber-700 dark:text-amber-300 font-semibold">
-                      {activeScenario.characterSpeaker?.emotion || activeScenario.shortDescription}
-                    </p>
                   </div>
+                  <p className="text-xs text-amber-700 dark:text-amber-300 font-medium mt-0.5">
+                    {activeScenario.characterSpeaker?.emotion || activeScenario.shortDescription}
+                  </p>
                 </div>
-
-                {/* Instant Replay Voice Button */}
-                <button
-                  type="button"
-                  onClick={playScenarioAudio}
-                  className="px-2.5 py-1 rounded-xl bg-slate-100 dark:bg-[#1C2B27] hover:bg-emerald-50 dark:hover:bg-emerald-950/60 text-slate-700 dark:text-slate-200 hover:text-[#176B5B] dark:hover:text-emerald-400 border border-slate-200 dark:border-[#2D3E3A] text-[11px] font-bold flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
-                  title={language === 'en' ? 'Replay Voice' : 'إعادة نطق الحوار'}
-                >
-                  <Volume2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                  <span>{language === 'en' ? 'Speak' : 'نطق'}</span>
-                </button>
               </div>
 
-              {/* Dynamic Animated Speech Bubble */}
-              <div className="relative p-3.5 rounded-2xl bg-gradient-to-br from-slate-50 via-white to-emerald-50/20 dark:from-[#1C2B27] dark:via-[#162522] dark:to-[#122420] border border-slate-200/90 dark:border-[#2D3E3A] shadow-inner">
-                <span className="text-[10px] font-bold text-slate-400 block mb-1">
-                  {language === 'en' ? 'Direct Character Speech:' : 'كلام الشخصية المباشر في الموقف:'}
+              {/* Character Speech Quote */}
+              <div className="p-3.5 rounded-2xl bg-gradient-to-br from-slate-50 via-white to-emerald-50/20 dark:from-[#1C2B27] dark:via-[#162522] dark:to-[#122420] border border-slate-200/90 dark:border-[#2D3E3A] shadow-inner">
+                <span className="text-[10px] font-bold text-[#176B5B] dark:text-[#2DD4BF] block mb-1">
+                  {language === 'en' ? 'Direct Character Speech:' : 'نص الحوار في الموقف:'}
                 </span>
                 <p className="text-xs sm:text-sm font-black text-[#18201D] dark:text-emerald-100 leading-relaxed">
                   «{activeScenario.dilemmaQuote}»

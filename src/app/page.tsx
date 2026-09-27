@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useApp } from '@/context/AppContext';
 import { canAccessAdmin } from '@/lib/auth/permissions';
-import ItemCard from '@/components/ItemCard';
 import ItemVisual from '@/components/ItemVisual';
 import InstantSearchBar from '@/components/InstantSearchBar';
 import { getLocalizedItem, getLocalizedUser } from '@/lib/i18n/seedDataTranslations';
@@ -94,13 +93,6 @@ export default function HomePage() {
 
   const activeChallengeId = activeWeeklyChallenge?.week_id || 'week_1';
   const isChallengeCompleted = isWeekChallengeCompleted(activeChallengeId);
-
-  // Recent Items
-  const recentFoundItems = useMemo(() => {
-    return items
-      .filter((i) => i.type === 'found' && i.status !== 'reunited')
-      .slice(0, 4);
-  }, [items]);
 
   // Malak's Calculator for High-Match Spotlight
   const malakLostCalc = useMemo(() => {
@@ -332,11 +324,11 @@ export default function HomePage() {
       <section>
         <Link
           href="/activities"
-          className="w-full p-3 sm:p-3.5 rounded-2xl bg-white dark:bg-[#15201D] border border-slate-100 dark:border-slate-800/80 hover:border-emerald-500/40 dark:hover:border-[#2DD4BF]/40 transition-all flex items-center justify-between gap-2.5 shadow-sm group cursor-pointer"
+          className="w-full p-3.5 sm:p-4 rounded-2xl bg-white dark:bg-[#15201D] border border-slate-100 dark:border-slate-800/80 hover:border-emerald-500/40 dark:hover:border-[#2DD4BF]/40 transition-all flex items-center justify-between gap-3 shadow-xs group cursor-pointer"
         >
           <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-gradient-to-tr from-[#176B5B] to-emerald-600 dark:from-[#2DD4BF] dark:to-emerald-500 text-white dark:text-slate-950 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-xs">
-              <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#176B5B] text-white flex items-center justify-center shrink-0 shadow-xs">
+              <Sparkles className="w-4 h-4" />
             </div>
             <div className="min-w-0 text-start">
               <div className="flex items-center gap-1.5 flex-wrap">
@@ -360,32 +352,6 @@ export default function HomePage() {
             <ArrowIcon className="w-3.5 h-3.5" />
           </div>
         </Link>
-      </section>
-
-      {/* ========================================================
-          5. RECENT FOUND ITEMS FEED
-      ======================================================== */}
-      <section className="space-y-3 pt-1">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-sm sm:text-base font-black text-[#18201D] dark:text-white">
-              {language === 'en' ? 'Recently Found Belongings' : 'أحدث المعثورات المدرسية'}
-            </h2>
-            <p className="text-[11px] sm:text-xs text-[#66706B] dark:text-[#94A39D]">
-              {language === 'en' ? 'Items found across school premises waiting for owners' : 'أغراض تم تسليمها وتوثيقها بانتظار أصحابها'}
-            </p>
-          </div>
-          <Link href="/explore" className="text-xs font-bold text-[#176B5B] dark:text-[#2DD4BF] hover:underline flex items-center gap-1 group">
-            <span>{language === 'en' ? 'View All' : 'استعراض الكل'}</span>
-            <ArrowIcon className={`w-3.5 h-3.5 transition-transform ${isRtl ? 'group-hover:-translate-x-0.5' : 'group-hover:translate-x-0.5'}`} />
-          </Link>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {recentFoundItems.map((item) => (
-            <ItemCard key={item.id} item={item} />
-          ))}
-        </div>
       </section>
 
     </div>

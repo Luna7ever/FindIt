@@ -303,10 +303,11 @@ describe('Layout Integrity, Button Presence & Ergonomics Suite', () => {
         'School citizenship section must feature activities link'
       );
 
-      // Recent Found Items Feed: 1 col on mobile, 2 on sm, 4 on lg
+      // Dedicated Items Hub: items feed is delegated to Explore preserving Home page spaciousness
+      const explorePageSource = fs.readFileSync(path.resolve(__dirname, '../src/app/explore/page.tsx'), 'utf-8');
       assert.ok(
-        homePageSource.includes('grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4'),
-        'Recent feed must scale from 1 col to 2 col to 4 col'
+        explorePageSource.includes('grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4'),
+        'Explore page must house the multi-column items grid'
       );
     });
   });

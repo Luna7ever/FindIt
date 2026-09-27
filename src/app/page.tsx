@@ -120,7 +120,7 @@ export default function HomePage() {
       ======================================================== */}
       <section className="text-start pt-0 w-full max-w-full min-w-0 overflow-hidden">
         {/* Merged Single Compact Welcome & Student Badge */}
-        <div className="w-full flex items-center justify-between px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-[#E6F1ED] dark:bg-[#122823] text-xs font-bold border border-[#176B5B]/30 dark:border-[#263834] shadow-2xs">
+        <div className="w-full flex items-center justify-between px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-full bg-[#E6F1ED]/80 dark:bg-[#122823]/80 backdrop-blur-md text-xs font-bold border border-[#176B5B]/30 dark:border-[#263834] shadow-[0_2px_10px_-2px_rgba(0,0,0,0.04)]">
           <button
             onClick={openOnboardingModal}
             className="inline-flex items-center gap-1.5 text-[#176B5B] dark:text-[#2DD4BF] hover:underline cursor-pointer truncate min-w-0"
@@ -168,15 +168,15 @@ export default function HomePage() {
       ======================================================== */}
       {!isAdmin && (
         <section>
-          <div className={`relative overflow-hidden rounded-2xl border border-slate-100 dark:border-slate-800/80 p-3 sm:p-3.5 transition-all min-h-[50px] flex items-center justify-between gap-2.5 ${
+          <div className={`relative overflow-hidden rounded-3xl p-3.5 sm:p-4 transition-all min-h-[52px] flex items-center justify-between gap-3 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] ${
             isChallengeCompleted
-              ? 'bg-emerald-50/80 dark:bg-[#112420]/80 border-emerald-200/80 dark:border-emerald-800/60 shadow-sm'
-              : 'bg-white dark:bg-[#15201D] shadow-sm'
+              ? 'bg-emerald-50/80 dark:bg-[#112420]/80'
+              : 'bg-gradient-to-l from-emerald-50/70 via-white to-white dark:from-emerald-950/30 dark:via-[#15201D] dark:to-[#15201D]'
           }`}>
             {!isChallengeCompleted ? (
               <>
-                <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
-                  <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-rose-50 dark:bg-rose-950/40 border border-rose-100 dark:border-rose-900/50 flex items-center justify-center text-base shrink-0 select-none">
+                <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                  <div className="w-9 h-9 rounded-2xl bg-white dark:bg-[#1C2B27] shadow-xs flex items-center justify-center text-lg shrink-0 select-none">
                     🎯
                   </div>
                   <div className="min-w-0 text-start">
@@ -191,7 +191,7 @@ export default function HomePage() {
 
                 <Link
                   href="/integrity"
-                  className="inline-flex items-center justify-center gap-1.5 min-h-[42px] px-4 sm:px-5 py-2 rounded-xl font-bold text-xs sm:text-sm bg-[#176B5B] hover:bg-[#125648] text-white shadow-2xs transition-all active:scale-95 group shrink-0"
+                  className="inline-flex items-center justify-center gap-1.5 min-h-[40px] px-4 sm:px-5 py-2 rounded-2xl font-bold text-xs sm:text-sm bg-[#18201D] hover:bg-black text-white dark:bg-[#2DD4BF] dark:text-slate-950 dark:hover:bg-[#14B8A6] shadow-sm transition-all active:scale-95 group shrink-0"
                 >
                   <span>{language === 'en' ? 'Start Challenge' : 'ابدأ التحدي'}</span>
                   <ArrowIcon className="w-3.5 h-3.5 transition-transform group-hover:translate-x-[-2px] rtl:group-hover:translate-x-[-2px]" />
@@ -206,7 +206,7 @@ export default function HomePage() {
                   </span>
                 </div>
 
-                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-100/80 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 text-[11px] font-semibold shrink-0">
+                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-xl bg-emerald-100/80 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 text-[11px] font-semibold shrink-0">
                   <Lock className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                   <span>{language === 'en' ? 'Sunday' : 'الأحد القادم'}</span>
                 </span>
@@ -228,52 +228,50 @@ export default function HomePage() {
           {/* Card 1: Lost Item (Right card in RTL) */}
           <Link
             href="/report?type=lost"
-            className="app-card app-card-interactive p-3.5 sm:p-4 border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-[#15201D] flex flex-col justify-between space-y-2.5 group text-start shadow-xs rounded-2xl"
+            className="app-card app-card-interactive p-4 sm:p-5 bg-white dark:bg-[#15201D] flex flex-col justify-between group text-start shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] hover:shadow-md rounded-3xl active:scale-98 transition-all min-h-[120px] sm:min-h-[135px]"
           >
             <div className="flex items-center justify-between">
-              <div className="w-8 h-8 rounded-full bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200/50 dark:border-amber-800/40 flex items-center justify-center shrink-0">
-                <Search className="w-4 h-4" />
+              <div className="w-10 h-10 rounded-2xl bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 flex items-center justify-center shrink-0 shadow-2xs">
+                <Search className="w-5 h-5" />
               </div>
-              <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-200/50 dark:border-amber-800/40">
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300">
                 {language === 'en' ? 'Lost' : 'مفقود'}
               </span>
             </div>
 
-            <div>
-              <h2 className="text-xs sm:text-sm font-bold text-[#18201D] dark:text-white group-hover:text-amber-700 dark:group-hover:text-amber-400 transition-colors leading-tight truncate">
+            <div className="mt-3">
+              <h2 className="text-sm sm:text-base font-extrabold text-[#18201D] dark:text-white group-hover:text-amber-700 dark:group-hover:text-amber-400 transition-colors leading-tight truncate">
                 {language === 'en' ? 'Lost something?' : 'فقدت شيئاً؟'}
               </h2>
-            </div>
-
-            <div className="inline-flex items-center justify-center gap-1.5 w-full min-h-[42px] sm:min-h-[44px] py-2 px-3 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-200 dark:border-amber-800/60 text-xs sm:text-sm font-bold transition-all shadow-2xs active:scale-98">
-              <span>{language === 'en' ? 'Report Lost' : 'تسجيل مفقود'}</span>
-              <ArrowIcon className="w-3.5 h-3.5 transition-transform group-hover:translate-x-[-2px] rtl:group-hover:translate-x-[-2px]" />
+              <div className="flex items-center gap-1 text-xs text-amber-800 dark:text-amber-300 font-semibold mt-1">
+                <span>{language === 'en' ? 'Report Lost' : 'تسجيل بلاغ'}</span>
+                <ArrowIcon className="w-3.5 h-3.5 transition-transform group-hover:translate-x-[-2px] rtl:group-hover:translate-x-[-2px]" />
+              </div>
             </div>
           </Link>
 
           {/* Card 2: Found Item (Left card in RTL) */}
           <Link
             href="/report?type=found"
-            className="app-card app-card-interactive p-3.5 sm:p-4 border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-[#15201D] flex flex-col justify-between space-y-2.5 group text-start shadow-xs rounded-2xl"
+            className="app-card app-card-interactive p-4 sm:p-5 bg-white dark:bg-[#15201D] flex flex-col justify-between group text-start shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] hover:shadow-md rounded-3xl active:scale-98 transition-all min-h-[120px] sm:min-h-[135px]"
           >
             <div className="flex items-center justify-between">
-              <div className="w-8 h-8 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-800/40 flex items-center justify-center shrink-0">
-                <Handshake className="w-4 h-4" />
+              <div className="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 flex items-center justify-center shrink-0 shadow-2xs">
+                <Handshake className="w-5 h-5" />
               </div>
-              <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-800/40">
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300">
                 {language === 'en' ? 'Custody' : 'أمانة'}
               </span>
             </div>
 
-            <div>
-              <h2 className="text-xs sm:text-sm font-bold text-[#18201D] dark:text-white group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors leading-tight truncate">
+            <div className="mt-3">
+              <h2 className="text-sm sm:text-base font-extrabold text-[#18201D] dark:text-white group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors leading-tight truncate">
                 {language === 'en' ? 'Found custody?' : 'عثرت على أمانة؟'}
               </h2>
-            </div>
-
-            <div className="inline-flex items-center justify-center gap-1.5 w-full min-h-[42px] sm:min-h-[44px] py-2 px-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-200 dark:border-emerald-800/60 text-xs sm:text-sm font-bold transition-all shadow-2xs active:scale-98">
-              <span>{language === 'en' ? 'Handover' : 'تسليم أمانة'}</span>
-              <ArrowIcon className="w-3.5 h-3.5 transition-transform group-hover:translate-x-[-2px] rtl:group-hover:translate-x-[-2px]" />
+              <div className="flex items-center gap-1 text-xs text-emerald-800 dark:text-emerald-300 font-semibold mt-1">
+                <span>{language === 'en' ? 'Handover' : 'تسليم فوري'}</span>
+                <ArrowIcon className="w-3.5 h-3.5 transition-transform group-hover:translate-x-[-2px] rtl:group-hover:translate-x-[-2px]" />
+              </div>
             </div>
           </Link>
         </div>
@@ -283,7 +281,7 @@ export default function HomePage() {
           AI MATCH SPOTLIGHT (When Match Exists)
       ======================================================== */}
       {malakLostCalc && matchingFoundCalc && currentUser.id === 'user_malak' && (
-        <section className="bg-white dark:bg-[#15201D] p-3.5 sm:p-4 rounded-2xl border border-slate-100 dark:border-slate-800/80 shadow-xs space-y-3">
+        <section className="bg-white dark:bg-[#15201D] p-4 sm:p-5 rounded-3xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-[#176B5B] dark:bg-[#2DD4BF] animate-ping" />
@@ -298,7 +296,7 @@ export default function HomePage() {
 
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-0.5">
             <div className="flex items-center gap-3 w-full sm:w-auto">
-              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl overflow-hidden shrink-0 bg-slate-50 dark:bg-[#1C2B27] border border-slate-100 dark:border-slate-800/80 flex items-center justify-center p-1">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl overflow-hidden shrink-0 bg-slate-50 dark:bg-[#1C2B27] flex items-center justify-center p-1">
                 <ItemVisual
                   category={matchingFoundCalc.category}
                   title={matchingFoundCalc.title}
@@ -318,7 +316,7 @@ export default function HomePage() {
 
             <Link
               href={`/match/${malakLostCalc.id}`}
-              className="w-full sm:w-auto min-h-[42px] px-4 py-2 rounded-xl bg-[#176B5B] dark:bg-[#2DD4BF] hover:bg-[#125648] dark:hover:bg-[#14B8A6] text-white dark:text-slate-950 text-xs font-bold transition-colors shadow-2xs flex items-center justify-center cursor-pointer shrink-0"
+              className="w-full sm:w-auto min-h-[42px] px-5 py-2.5 rounded-2xl bg-[#176B5B] dark:bg-[#2DD4BF] hover:bg-[#125648] dark:hover:bg-[#14B8A6] text-white dark:text-slate-950 text-xs font-bold transition-all shadow-2xs flex items-center justify-center cursor-pointer shrink-0"
             >
               {language === 'en' ? 'Review Match & Claim' : 'معاينة المطابقة واسترداد الغرض'}
             </Link>
@@ -332,22 +330,22 @@ export default function HomePage() {
       <section>
         <Link
           href="/activities"
-          className="w-full px-3.5 py-3 sm:p-4 rounded-2xl bg-white dark:bg-[#15201D] border border-slate-100 dark:border-slate-800/80 hover:border-emerald-500/40 dark:hover:border-[#2DD4BF]/40 transition-all flex items-center justify-between gap-3 shadow-xs group cursor-pointer"
+          className="w-full px-4 py-3.5 sm:p-5 rounded-3xl bg-white dark:bg-[#15201D] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] hover:shadow-md transition-all flex items-center justify-between gap-3 group cursor-pointer"
         >
-          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#176B5B] text-white flex items-center justify-center shrink-0 shadow-xs">
-              <Sparkles className="w-4 h-4" />
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 rounded-2xl bg-[#176B5B] text-white flex items-center justify-center shrink-0 shadow-2xs">
+              <Sparkles className="w-5 h-5" />
             </div>
             <div className="min-w-0 text-start">
               <div className="flex items-center gap-1.5 flex-wrap">
                 <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white group-hover:text-[#176B5B] dark:group-hover:text-[#2DD4BF] transition-colors truncate">
                   {language === 'en' ? 'School Citizenship & Volunteering' : 'الأنشطة المدرسية والتطوع'}
                 </h3>
-                <span className="px-1.5 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/80 text-emerald-800 dark:text-[#2DD4BF] text-[9px] font-black shrink-0 border border-emerald-200/50 dark:border-emerald-800/40">
+                <span className="px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/80 text-emerald-800 dark:text-[#2DD4BF] text-[10px] font-black shrink-0">
                   {language === 'en' ? '+50 pts' : '+50ن'}
                 </span>
               </div>
-              <p className="text-[9.5px] sm:text-xs text-slate-500 dark:text-slate-400 tracking-tight leading-tight mt-0.5">
+              <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 tracking-tight leading-tight mt-0.5">
                 {language === 'en'
                   ? 'Field volunteering tasks and campus initiatives to foster school community'
                   : 'مهام ومبادرات ميدانية لتعزيز ثقافة الأمانة وخدمة الحرم المدرسي'}
@@ -355,9 +353,8 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="inline-flex items-center gap-1 text-[11px] font-bold text-[#176B5B] dark:text-[#2DD4BF] group-hover:translate-x-[-2px] rtl:group-hover:translate-x-[-2px] transition-transform shrink-0">
-            <span className="hidden sm:inline">{language === 'en' ? 'Explore Tasks' : 'استعراض المهام'}</span>
-            <ArrowIcon className="w-3.5 h-3.5" />
+          <div className="w-8 h-8 rounded-full bg-slate-50 dark:bg-[#1C2B27] flex items-center justify-center text-slate-400 group-hover:bg-[#176B5B] group-hover:text-white dark:group-hover:bg-[#2DD4BF] dark:group-hover:text-slate-950 transition-all shrink-0">
+            <ArrowIcon className="w-4 h-4" />
           </div>
         </Link>
       </section>
@@ -383,7 +380,7 @@ export default function HomePage() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {recentFoundItems.map((item) => (
-            <ItemCard key={item.id} item={item} />
+            <ItemCard key={item.id} item={item} variant="row" />
           ))}
         </div>
       </section>

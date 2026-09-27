@@ -66,6 +66,21 @@ export default function StudentOnboardingModal({ isOpen, onClose }: StudentOnboa
   // Check if chosen grade requires a track (تانية ثانوي or تالتة ثانوي)
   const isSecondarySenior = grade === 'تانية ثانوي' || grade === 'تالتة ثانوي';
 
+  // Strictly non-dismissible: Prevent closing via ESC key
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown, true);
+    return () => window.removeEventListener('keydown', handleKeyDown, true);
+  }, [isOpen]);
+
   useEffect(() => {
     if (currentUser) {
       const isDemo = !currentUser.name || currentUser.id === 'user_malak' || currentUser.name === 'ملك محمد فروق' || currentUser.name === 'ملك محمد';
@@ -208,11 +223,15 @@ export default function StudentOnboardingModal({ isOpen, onClose }: StudentOnboa
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center p-3.5 sm:p-5 bg-black/80 backdrop-blur-md animate-in fade-in duration-300"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3.5 sm:p-5 bg-black/85 backdrop-blur-md animate-in fade-in duration-300 select-none cursor-default"
       dir={dir}
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }}
     >
       <div 
-        className="w-full max-w-lg bg-white/95 dark:bg-[#111a17]/95 backdrop-blur-xl border border-slate-200/90 dark:border-emerald-500/20 rounded-3xl shadow-2xl shadow-emerald-950/25 overflow-hidden flex flex-col max-h-[92vh] animate-in zoom-in-95 duration-200"
+        className="w-full max-w-lg bg-white/95 dark:bg-[#111a17]/95 backdrop-blur-xl border border-slate-200/90 dark:border-emerald-500/20 rounded-3xl shadow-2xl shadow-emerald-950/25 overflow-hidden flex flex-col max-h-[92vh] animate-in zoom-in-95 duration-200 cursor-auto select-text"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Top Header Ribbon & Stepper Navigation */}
@@ -234,14 +253,11 @@ export default function StudentOnboardingModal({ isOpen, onClose }: StudentOnboa
               </div>
             </div>
 
-            {/* Optional dismiss button */}
-            <button
-              onClick={onClose}
-              className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white/70 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
-              title="إغلاق"
-            >
-              <X className="w-4 h-4" />
-            </button>
+            {/* Mandatory Student Registration Badge */}
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-200 text-[11px] font-bold shadow-xs">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+              <span>تسجيل إلزامي</span>
+            </div>
           </div>
 
           {/* Stepper Progress Bar & Dots */}

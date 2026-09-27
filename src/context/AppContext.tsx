@@ -955,7 +955,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const openOnboardingModal = useCallback(() => setIsOnboardingModalOpen(true), []);
-  const closeOnboardingModal = useCallback(() => setIsOnboardingModalOpen(false), []);
+  const closeOnboardingModal = useCallback(() => {
+    const student = getStoredStudent();
+    if (!student || !student.name || !student.classroom) {
+      return;
+    }
+    setIsOnboardingModalOpen(false);
+  }, []);
 
   const updateUserProfile = useCallback(async (updates: Partial<UserProfile>) => {
     return new Promise<void>((resolve) => {

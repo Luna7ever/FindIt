@@ -72,6 +72,39 @@ export function normalizeToIntegrityScenario(raw: any, index: number): Integrity
 }
 
 /**
+ * Rotating Moral Pledges for Weekly Priming
+ */
+export const MORAL_PLEDGES: string[] = [
+  // Week 1: الهوية والمبادئ الحقيقية
+  "أتعهد بأن تعبّر اختياراتي عن شخصيتي ومبادئي الحقيقية، وأن أختار التصرف الأمين في كل موقف يواجهني داخل المدرسة.",
+  
+  // Week 2: الرقابة الذاتية والصدق مع النفس
+  "أتعهد بأن أكون صادقاً مع نفسي أولاً؛ فنزاهتي الحقيقية تظهر في قراراتي عندما أكون مسؤولاً عن تصرفاتي في أي موقف مدرسي.",
+  
+  // Week 3: مقاومة الضغوط والعدل
+  "أتعهد بأن تكون كل إجابة أختارها ممثلة لسلوكي الفعلي، واضعاً الأمانة والعدل فوق أي ضغط أو مصلحة مؤقتة.",
+  
+  // Week 4: الأثر المجتمعي والقدوة
+  "أتعهد باتخاذ القرار الذي يحفظ حقي وحقوق الآخرين، وأن تكون اختياراتي خطوة نحو مجتمع مدرسي أكثر أمانة ونزاهة."
+];
+
+export const MORAL_PLEDGES_EN: string[] = [
+  "I pledge that my choices will reflect my true character and principles, and that I will choose the honest action in every school situation.",
+  "I pledge to be honest with myself first; my true integrity shines in my decisions when I am accountable for my actions in school.",
+  "I pledge that every answer I choose represents my actual behavior, placing honesty and justice above any pressure or temporary gain.",
+  "I pledge to make decisions that uphold my rights and the rights of others, making my choices a step towards a more honest school community."
+];
+
+export function getMoralPledgeForChallenge(challenge?: WeeklyChallenge | null, order?: number, lang: 'ar' | 'en' = 'ar'): string {
+  if (challenge?.pledge_text && lang === 'ar') {
+    return challenge.pledge_text;
+  }
+  const pledges = lang === 'en' ? MORAL_PLEDGES_EN : MORAL_PLEDGES;
+  const idx = Math.max(0, ((order ?? challenge?.order ?? 1) - 1) % pledges.length);
+  return pledges[idx];
+}
+
+/**
  * Default Seed Weekly Challenges for Firestore (Week 1 and Week 2)
  */
 export const DEFAULT_WEEKLY_CHALLENGES: WeeklyChallenge[] = [
@@ -88,6 +121,7 @@ export const DEFAULT_WEEKLY_CHALLENGES: WeeklyChallenge[] = [
     end_date: '2026-09-27T23:59:59.000Z',
     description: 'تحدي المواقف الميدانية داخل المدرسة؛ من قاعة الاختبار وطابور المقصف إلى معامل العلوم وغرف الحواسب.',
     badge_name: 'وسام سفير النزاهة الميدانية',
+    pledge_text: MORAL_PLEDGES[0],
     scenarios: INTEGRITY_SCENARIOS,
   },
 
@@ -104,6 +138,7 @@ export const DEFAULT_WEEKLY_CHALLENGES: WeeklyChallenge[] = [
     end_date: '2026-10-04T23:59:59.000Z',
     description: 'تحديات حماية الملكية الفكرية، شجاعة الاعتراف بالخطأ، المواطنة الرقمية، ورد الأمانات المالية في الملعب.',
     badge_name: 'وسام الوعي والمسؤولية الرقمية',
+    pledge_text: MORAL_PLEDGES[1],
     scenarios: [
       // 1. Intellectual Property
       normalizeToIntegrityScenario({

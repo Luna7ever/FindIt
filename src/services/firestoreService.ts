@@ -323,6 +323,7 @@ export const firestoreService = {
           end_date: data.end_date,
           description: data.description,
           badge_name: data.badge_name,
+          pledge_text: data.pledge_text,
           scenarios: normalizedScenarios,
         });
       });

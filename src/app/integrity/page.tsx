@@ -3,6 +3,7 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useApp } from '@/context/AppContext';
 import { INTEGRITY_SCENARIOS, SCHOOL_LOCATIONS, getCurrentWeekId } from '@/lib/constants';
 import { getLocalizedScenario } from '@/lib/i18n/scenarios';
+import { getMoralPledgeForChallenge } from '@/lib/challengesData';
 import { IntegrityOption, TrustTier } from '@/types';
 import TrustBadge from '@/components/TrustBadge';
 import AdminIntegritySupervisionView from '@/components/AdminIntegritySupervisionView';
@@ -40,7 +41,9 @@ import {
   FileCheck,
   TrendingUp,
   Zap,
-  Info
+  Info,
+  Scale,
+  ScrollText
 } from 'lucide-react';
 
 interface ScenarioAnswerState {
@@ -138,6 +141,30 @@ function StudentIntegrityFlow() {
     setAnswersMap({});
     setIsTestCompleted(false);
   }, [activeChallengeId]);
+
+  // Pre-test Moral Pledge Modal State
+  const [hasConfirmedPledge, setHasConfirmedPledge] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const pledgeKey = `ethos_pledged_${activeChallengeId}_${currentUser.id || 'anon'}`;
+      const savedPledge = localStorage.getItem(pledgeKey);
+      setHasConfirmedPledge(!!savedPledge);
+    }
+  }, [activeChallengeId, currentUser.id]);
+
+  const currentPledgeText = useMemo(() => {
+    return getMoralPledgeForChallenge(activeWeeklyChallenge, activeWeeklyChallenge?.order, language);
+  }, [activeWeeklyChallenge, language]);
+
+  const handleConfirmPledge = () => {
+    if (typeof window !== 'undefined') {
+      const pledgeKey = `ethos_pledged_${activeChallengeId}_${currentUser.id || 'anon'}`;
+      localStorage.setItem(pledgeKey, new Date().toISOString());
+    }
+    setHasConfirmedPledge(true);
+    playFeedbackSound(true);
+  };
 
   // Cinema Player animated playback state & audio engine
   const [isPlaying, setIsPlaying] = useState(false);
@@ -519,6 +546,72 @@ function StudentIntegrityFlow() {
   return (
     <div className="w-full max-w-full overflow-x-hidden min-w-0 px-3 sm:px-6 py-4 max-w-6xl mx-auto space-y-4 text-start font-sans" dir={dir}>
       
+      {/* ========================================================
+          0. PRE-TEST MORAL PLEDGE MODAL (Mandatory / Non-dismissible)
+      ======================================================== */}
+      {!isScreenCompleted && !hasConfirmedPledge && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md animate-in fade-in duration-300">
+          <div 
+            className="w-full max-w-lg bg-white dark:bg-[#15201D] border-2 border-emerald-500/40 dark:border-emerald-500/50 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-5 text-center relative overflow-hidden animate-in zoom-in-95 duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Subtle radial emerald background glow */}
+            <div className="absolute top-0 right-1/2 translate-x-1/2 w-64 h-64 bg-[#176B5B]/15 dark:bg-emerald-500/10 blur-3xl rounded-full pointer-events-none" />
+
+            {/* Icon Header */}
+            <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-tr from-[#176B5B] to-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-900/30 relative z-10">
+              <Scale className="w-8 h-8 text-amber-200" />
+            </div>
+
+            {/* Title & Badge */}
+            <div className="space-y-2 relative z-10">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950/70 border border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs font-black shadow-2xs">
+                <ScrollText className="w-3.5 h-3.5" />
+                <span>{language === 'en' ? 'Pre-Test Moral Priming Pledge' : 'تعهد النزاهة المسبق'}</span>
+              </div>
+              <h2 className="text-xl sm:text-2xl font-black text-[#18201D] dark:text-white leading-snug">
+                {language === 'en' ? 'Integrity & Moral Commitment' : 'ميثاق الأمانة والنزاهة المدرسية'}
+              </h2>
+              <p className="text-xs text-[#66706B] dark:text-[#94A39D]">
+                {language === 'en' 
+                  ? `${activeWeeklyChallenge?.theme_title || 'Weekly Challenge'} • Step into the dilemmas with sincere accountability` 
+                  : `${activeWeeklyChallenge?.theme_title || 'تحدي الأسبوع'} • نرجو قراءة التعهد بعناية واعتماده قبل بدء الموقف الأول`}
+              </p>
+            </div>
+
+            {/* Pledge Card Frame */}
+            <div className="p-5 sm:p-6 rounded-2xl bg-gradient-to-br from-emerald-50/80 via-slate-50 to-amber-50/50 dark:from-[#1C2B27] dark:via-[#162522] dark:to-[#122420] border border-emerald-500/30 dark:border-emerald-600/40 shadow-inner relative z-10 space-y-3.5">
+              <div className="flex items-center justify-center gap-1.5 text-amber-600 dark:text-amber-400 font-bold text-xs">
+                <Sparkles className="w-4 h-4 animate-pulse" />
+                <span>{language === 'en' ? 'Official Student Ethical Commitment' : 'تعهد الطالبـ/ـة المعتمد'}</span>
+                <Sparkles className="w-4 h-4 animate-pulse" />
+              </div>
+              <blockquote className="text-sm sm:text-base font-black text-[#18201D] dark:text-emerald-100 leading-relaxed italic px-2">
+                «{currentPledgeText}»
+              </blockquote>
+              {currentUser.name && (
+                <div className="pt-2.5 border-t border-emerald-200/70 dark:border-emerald-900/60 flex items-center justify-between text-xs text-[#66706B] dark:text-[#94A39D] font-bold px-2">
+                  <span>{language === 'en' ? 'Pledged by:' : 'المتعهدـ/ـة:'}</span>
+                  <span className="text-[#176B5B] dark:text-emerald-300 font-black">{currentUser.name}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Action Confirmation Button */}
+            <div className="pt-2 relative z-10">
+              <button
+                onClick={handleConfirmPledge}
+                className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-[#176B5B] to-emerald-600 hover:from-[#125648] hover:to-emerald-700 text-white font-black text-sm shadow-lg shadow-emerald-900/25 flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-98 cursor-pointer"
+              >
+                <CheckCircle2 className="w-5 h-5 text-amber-200" />
+                <span>{language === 'en' ? 'I Confirm My Pledge & Begin' : 'أؤكد تعهدي وأبدأ'}</span>
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
       {/* ========================================================
           1. RICH TOP BAR: IDENTITY, 5-SEGMENTS, COUNTDOWN, CONTROLS
       ======================================================== */}

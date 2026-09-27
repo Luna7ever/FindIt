@@ -350,6 +350,7 @@ export interface WeeklyChallenge {
   end_date?: string;
   description?: string;
   badge_name?: string;
+  pledge_text?: string;
   scenarios: IntegrityScenario[];
   createdAt?: string;
   updatedAt?: string;

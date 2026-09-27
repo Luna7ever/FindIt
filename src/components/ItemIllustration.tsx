@@ -19,35 +19,35 @@ export default function ItemIllustration({
   // 1. CALCULATOR (حاسبة)
   if (t.includes('حاسبة') || t.includes('كاسيو') || t.includes('calculator') || t.includes('fx-')) {
     return (
-      <div className={`w-full h-full flex items-center justify-center bg-[#EBF4F1] p-2 ${className}`}>
-        <div className="w-16 h-22 sm:w-18 sm:h-24 max-h-[92%] bg-[#18201D] rounded-xl sm:rounded-2xl p-2 shadow-md flex flex-col justify-between border border-[#2E3B36] relative">
+      <div className={`w-full h-full flex items-center justify-center ${className}`}>
+        <div className="w-12 h-16 max-h-16 bg-[#252E2B] dark:bg-[#18201D] rounded-xl p-1.5 shadow-2xs flex flex-col justify-between border border-[#3A4843] relative">
           {/* Solar Panel & Logo */}
           <div className="flex items-center justify-between px-1">
-            <span className="text-[7px] font-bold tracking-widest text-[#66706B] font-mono">CASIO</span>
-            <div className="w-5 h-1.5 bg-[#4A3B2C] rounded-xs border border-[#6B5540]/50" />
+            <span className="text-[6px] font-bold tracking-widest text-[#8F9E98] font-mono">CASIO</span>
+            <div className="w-3.5 h-1 bg-[#4A3B2C] rounded-xs border border-[#6B5540]/50" />
           </div>
 
           {/* LCD Screen */}
-          <div className="w-full h-6 bg-[#A8BFA8] rounded-lg px-1.5 flex items-center justify-end font-mono text-[9px] font-bold text-[#18201D] shadow-inner">
+          <div className="w-full h-4 bg-[#A8BFA8] rounded-xs px-1 flex items-center justify-end font-mono text-[7px] font-bold text-[#18201D] shadow-inner">
             <span>0.00</span>
           </div>
 
           {/* Keypad Grid */}
-          <div className="grid grid-cols-4 gap-1 pt-1">
-            <div className="h-2 rounded-xs bg-[#40534C]" />
-            <div className="h-2 rounded-xs bg-[#40534C]" />
-            <div className="h-2 rounded-xs bg-[#40534C]" />
-            <div className="h-2 rounded-xs bg-[#D97706]" />
+          <div className="grid grid-cols-4 gap-0.5 pt-0.5">
+            <div className="h-1.5 rounded-xs bg-[#40534C]" />
+            <div className="h-1.5 rounded-xs bg-[#40534C]" />
+            <div className="h-1.5 rounded-xs bg-[#40534C]" />
+            <div className="h-1.5 rounded-xs bg-amber-500" />
             
-            <div className="h-2 rounded-xs bg-[#2B3833]" />
-            <div className="h-2 rounded-xs bg-[#2B3833]" />
-            <div className="h-2 rounded-xs bg-[#2B3833]" />
-            <div className="h-2 rounded-xs bg-[#40534C]" />
+            <div className="h-1.5 rounded-xs bg-[#2B3833]" />
+            <div className="h-1.5 rounded-xs bg-[#2B3833]" />
+            <div className="h-1.5 rounded-xs bg-[#2B3833]" />
+            <div className="h-1.5 rounded-xs bg-[#40534C]" />
 
-            <div className="h-2 rounded-xs bg-[#2B3833]" />
-            <div className="h-2 rounded-xs bg-[#2B3833]" />
-            <div className="h-2 rounded-xs bg-[#2B3833]" />
-            <div className="h-2 rounded-xs bg-[#176B5B]" />
+            <div className="h-1.5 rounded-xs bg-[#2B3833]" />
+            <div className="h-1.5 rounded-xs bg-[#2B3833]" />
+            <div className="h-1.5 rounded-xs bg-[#2B3833]" />
+            <div className="h-1.5 rounded-xs bg-emerald-600" />
           </div>
         </div>
       </div>

@@ -270,10 +270,10 @@ describe('Layout Integrity, Button Presence & Ergonomics Suite', () => {
       );
     });
 
-    it('4.4 Quiet system status on HomePage displays active custody system status indicator', () => {
+    it('4.4 Welcome capsule on HomePage displays student greeting and ambassador tier', () => {
       assert.ok(
-        homePageSource.includes('منظومة الأمانات متاحة') || homePageSource.includes('Custody System Active'),
-        'HomePage must render quiet custody status indicator'
+        homePageSource.includes('greetingText') && homePageSource.includes('tierBadgeInfo'),
+        'HomePage must render welcome greeting and ambassador tier badge'
       );
     });
 

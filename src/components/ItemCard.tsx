@@ -44,16 +44,18 @@ export default function ItemCard({ item: rawItem, matchScore, showMatchButton = 
   return (
     <Link
       href={`/items/${item.id}`}
-      className="app-card app-card-interactive w-full max-w-full min-w-0 overflow-hidden flex flex-col justify-between group block text-start bg-white dark:bg-[#15201D] border-[#E4E7E4] dark:border-[#263834] transition-all"
+      className="app-card app-card-interactive w-full max-w-full min-w-0 overflow-hidden flex flex-col justify-between group block text-start bg-white dark:bg-[#15201D] border border-slate-100 dark:border-slate-800/80 shadow-sm transition-all rounded-2xl p-3.5"
     >
       {/* Visual Area */}
-      <div className="relative h-28 sm:h-32 max-h-28 sm:max-h-32 w-full overflow-hidden bg-[#F1F3F0] dark:bg-[#1C2B27] flex items-center justify-center">
-        <ItemVisual
-          category={item.category}
-          title={item.title}
-          imageUrl={item.imageUrl}
-          className="w-full h-full max-h-28 sm:max-h-32 object-contain"
-        />
+      <div className="relative w-full overflow-hidden flex flex-col items-center justify-center mb-2 bg-slate-50/50 dark:bg-[#1A2623]/40 rounded-xl py-2">
+        <div className="w-24 h-24 mx-auto bg-slate-50 dark:bg-[#182421] rounded-2xl flex items-center justify-center border border-slate-100/80 dark:border-slate-800/60 p-2 shadow-2xs">
+          <ItemVisual
+            category={item.category}
+            title={item.title}
+            imageUrl={item.imageUrl}
+            className="w-full h-full object-contain max-h-16"
+          />
+        </div>
 
         {/* Status Pill Badge */}
         <div className="absolute top-2.5 end-2.5 flex items-center gap-1.5 z-10">
@@ -103,7 +105,7 @@ export default function ItemCard({ item: rawItem, matchScore, showMatchButton = 
       </div>
 
       {/* Content Section - Strict Uniform Geometry */}
-      <div className="p-2.5 sm:p-3.5 flex-1 flex flex-col justify-between space-y-1.5 sm:space-y-2">
+      <div className="flex-1 flex flex-col justify-between space-y-1.5 sm:space-y-2">
         
         <div>
           {/* Metadata: Category & Relative Date (h-4) */}

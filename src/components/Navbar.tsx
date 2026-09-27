@@ -17,7 +17,8 @@ import {
   Trophy,
   Camera,
   Sparkles,
-  Award
+  Award,
+  GraduationCap
 } from 'lucide-react';
 import QRModal from '@/components/QRModal';
 import CameraQRScannerModal from '@/components/CameraQRScannerModal';
@@ -38,7 +39,8 @@ export default function Navbar() {
     closeQRScanner,
     isCertificateModalOpen,
     certificateUser,
-    closeCertificateModal
+    closeCertificateModal,
+    openOnboardingModal
   } = useApp();
   
   const [showQRModal, setShowQRModal] = useState(false);
@@ -178,6 +180,21 @@ export default function Navbar() {
               )}
             </Link>
 
+            {/* Student Registration / Edit Quick Trigger */}
+            <button
+              onClick={openOnboardingModal}
+              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold text-emerald-950 dark:text-emerald-200 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 transition-all shadow-xs cursor-pointer active:scale-95"
+              title="تسجيل أو تعديل بيانات الطالب"
+            >
+              <GraduationCap className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+              <span className="hidden sm:inline">
+                {currentUser.name ? 'بياناتي ✏️' : 'تسجيل طالب 🎓'}
+              </span>
+              <span className="sm:hidden">
+                {currentUser.name ? '✏️' : '🎓'}
+              </span>
+            </button>
+
             {/* Active User Switcher */}
             <div className="relative">
               <button
@@ -186,7 +203,7 @@ export default function Navbar() {
               >
                 <UserAvatar size="xs" name={currentUser.name} role={currentUser.role} />
                 <span className="hidden sm:inline font-semibold text-slate-800 text-xs max-w-[100px] truncate">
-                  {currentUser.name}
+                  {currentUser.name || 'طالب'}
                 </span>
                 {currentUser.isTrusted && (
                   <span title="طالب موثوق" className="flex items-center">
@@ -202,6 +219,21 @@ export default function Navbar() {
                   className="absolute left-0 mt-2 w-60 rounded-2xl bg-white p-2 shadow-xl border border-slate-200 z-50 animate-in fade-in zoom-in-95"
                   onClick={() => setShowUserMenu(false)}
                 >
+                  {/* Dedicated Onboarding Modal Trigger in Menu */}
+                  <button
+                    onClick={() => {
+                      setShowUserMenu(false);
+                      openOnboardingModal();
+                    }}
+                    className="w-full mb-2 p-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:from-emerald-500 hover:to-teal-500 text-xs font-bold flex items-center justify-between transition-all shadow-xs cursor-pointer"
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <GraduationCap className="w-4 h-4 text-emerald-200" />
+                      <span>{currentUser.name ? 'تعديل بيانات الطالب ✏️' : 'تسجيل حساب جديد 🎓'}</span>
+                    </div>
+                    <span className="text-[10px]">✨</span>
+                  </button>
+
                   <div className="px-3 py-1.5 border-b border-slate-100 mb-1 flex items-center justify-between">
                     <span className="text-[10px] font-bold text-slate-400">
                       تبديل الحساب التجريبي:

@@ -24,7 +24,8 @@ import {
   Sun,
   Moon,
   Laptop,
-  Cpu
+  Cpu,
+  GraduationCap
 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { canAccessAdmin } from '@/lib/auth/permissions';
@@ -38,6 +39,7 @@ interface NavigationDrawerProps {
   onOpenQRScanner: () => void;
   onOpenQRModal: () => void;
   onOpenCertificateModal: () => void;
+  onOpenOnboardingModal: () => void;
 }
 
 export default function NavigationDrawer({
@@ -45,7 +47,8 @@ export default function NavigationDrawer({
   onClose,
   onOpenQRScanner,
   onOpenQRModal,
-  onOpenCertificateModal
+  onOpenCertificateModal,
+  onOpenOnboardingModal
 }: NavigationDrawerProps) {
   const pathname = usePathname();
   const { 
@@ -208,6 +211,19 @@ export default function NavigationDrawer({
                     )}
                   </div>
                 </div>
+
+                {/* Direct Onboarding Modal Action */}
+                <button
+                  onClick={() => handleAction(onOpenOnboardingModal)}
+                  className="w-full mt-3 py-2 px-3 rounded-xl bg-gradient-to-r from-emerald-600/15 via-teal-600/15 to-emerald-600/15 hover:from-emerald-600/25 hover:to-teal-600/25 text-emerald-900 dark:text-emerald-300 border border-emerald-500/30 font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs active:scale-95"
+                >
+                  <GraduationCap className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                  <span>
+                    {currentUser.name 
+                      ? (language === 'en' ? '✏️ Edit Student Data (Onboarding)' : '✏️ تعديل بيانات الطالب (Onboarding)') 
+                      : (language === 'en' ? '🎓 Register Student Profile' : '🎓 تسجيل بيانات الطالب / الدخول')}
+                  </span>
+                </button>
               </div>
 
               {/* Quick Language & Theme Controls */}

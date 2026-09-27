@@ -332,8 +332,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (isLoaded && (currentUser.role === 'student' || !currentUser.name)) {
       const savedEthos = typeof window !== 'undefined' ? localStorage.getItem(ETHOS_STUDENT_STORAGE_KEY) : null;
-      const completed = typeof window !== 'undefined' ? localStorage.getItem('findit_onboarding_completed') : null;
-      if (!savedEthos && (!completed || !currentUser.classroom || !currentUser.name)) {
+      if (!savedEthos || !currentUser.name || !currentUser.classroom) {
         setIsOnboardingModalOpen(true);
       }
     }

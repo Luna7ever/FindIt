@@ -71,6 +71,7 @@ export default function AppShell({ children }: AppShellProps) {
     openCertificateModal,
     closeCertificateModal,
     isOnboardingModalOpen,
+    openOnboardingModal,
     closeOnboardingModal,
     currentUserTrustTier,
     language,
@@ -703,6 +704,7 @@ export default function AppShell({ children }: AppShellProps) {
         onOpenQRScanner={openQRScanner}
         onOpenQRModal={() => setShowQRModal(true)}
         onOpenCertificateModal={() => openCertificateModal(currentUser)}
+        onOpenOnboardingModal={openOnboardingModal}
       />
 
       <QRModal isOpen={showQRModal} onClose={() => setShowQRModal(false)} />

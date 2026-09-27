@@ -33,7 +33,8 @@ import {
   Camera,
   Award,
   Cpu,
-  ShoppingBag
+  ShoppingBag,
+  GraduationCap
 } from 'lucide-react';
 
 const categoryIconMap: Record<string, React.ReactNode> = {
@@ -56,7 +57,8 @@ export default function HomePage() {
     claims, 
     currentUser, 
     openQRScanner, 
-    openCertificateModal, 
+    openCertificateModal,
+    openOnboardingModal,
     dir, 
     language, 
     t 
@@ -126,6 +128,20 @@ export default function HomePage() {
               <span className="w-1.5 h-1.5 rounded-full bg-[#176B5B] dark:bg-[#2DD4BF] animate-pulse shrink-0" />
               <span className="truncate">{greetingText}</span>
             </div>
+
+            {/* Student Registration / Edit Trigger */}
+            <button
+              onClick={openOnboardingModal}
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:hover:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 text-xs font-bold border border-emerald-300/60 dark:border-emerald-700/60 transition-colors cursor-pointer shrink-0 active:scale-95"
+              title="تسجيل أو تعديل بيانات الطالب"
+            >
+              <GraduationCap className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+              <span>
+                {currentUser.name 
+                  ? (language === 'en' ? `Student: ${currentUser.name.split(' ')[0]} ✏️` : `بيانات الطالب: ${currentUser.name.split(' ')[0]} ✏️`) 
+                  : (language === 'en' ? 'Student Registration 🎓' : 'تسجيل بيانات الطالب 🎓')}
+              </span>
+            </button>
 
             {isAdmin && (
               <Link

@@ -243,17 +243,27 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         setUsers(parsedUsers);
         if (activeStudent) {
           setCurrentUser(activeStudent);
-        } else if (savedUserId) {
+        } else if (savedUserId && savedUserId !== 'user_malak') {
           const found = parsedUsers.find((u) => u.id === savedUserId);
           if (found) setCurrentUser(found);
+        } else {
+          setCurrentUser(EMPTY_STUDENT_PROFILE);
+          if (savedUserId === 'user_malak') {
+            localStorage.removeItem(CURRENT_USER_KEY);
+          }
         }
       } else {
         if (activeStudent) {
           setCurrentUser(activeStudent);
           setUsers([activeStudent, ...DEMO_USERS.filter((u) => u.role !== 'student' || u.id !== activeStudent.id)]);
-        } else if (savedUserId) {
+        } else if (savedUserId && savedUserId !== 'user_malak') {
           const found = DEMO_USERS.find((u) => u.id === savedUserId);
           if (found) setCurrentUser(found);
+        } else {
+          setCurrentUser(EMPTY_STUDENT_PROFILE);
+          if (savedUserId === 'user_malak') {
+            localStorage.removeItem(CURRENT_USER_KEY);
+          }
         }
       }
 

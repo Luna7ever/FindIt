@@ -41,11 +41,11 @@ interface StudentOnboardingModalProps {
 export default function StudentOnboardingModal({ isOpen, onClose }: StudentOnboardingModalProps) {
   const { currentUser, updateUserProfile, addToast, dir } = useApp();
 
-  const [name, setName] = useState(currentUser.name || '');
-  const [grade, setGrade] = useState(currentUser.grade || '');
-  const [track, setTrack] = useState(currentUser.track || '');
-  const [classroom, setClassroom] = useState(currentUser.classroom || '');
-  const [age, setAge] = useState<string>(currentUser.age ? String(currentUser.age) : '');
+  const [name, setName] = useState('');
+  const [grade, setGrade] = useState('');
+  const [track, setTrack] = useState('');
+  const [classroom, setClassroom] = useState('');
+  const [age, setAge] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [validationError, setValidationError] = useState('');
 
@@ -54,11 +54,12 @@ export default function StudentOnboardingModal({ isOpen, onClose }: StudentOnboa
 
   useEffect(() => {
     if (currentUser) {
-      setName(currentUser.name || '');
-      setGrade(currentUser.grade || '');
-      setTrack(currentUser.track || '');
-      setClassroom(currentUser.classroom || '');
-      setAge(currentUser.age ? String(currentUser.age) : '');
+      const isDemo = !currentUser.name || currentUser.id === 'user_malak' || currentUser.name === 'ملك محمد فروق' || currentUser.name === 'ملك محمد';
+      setName(isDemo ? '' : currentUser.name);
+      setGrade(isDemo ? '' : (currentUser.grade || ''));
+      setTrack(isDemo ? '' : (currentUser.track || ''));
+      setClassroom(isDemo ? '' : (currentUser.classroom || ''));
+      setAge(isDemo ? '' : (currentUser.age ? String(currentUser.age) : ''));
     }
   }, [currentUser]);
 

@@ -247,7 +247,7 @@ export const LOCALIZED_SCENARIOS_EN: Record<string, Partial<IntegrityScenario>> 
         options: [
           {
             id: 'phone_opt_1',
-            text: 'Turn the screen off immediately without reading any notifications, log a found item report on FindIt with a secret question, or deliver it to the library desk.',
+            text: 'Turn the screen off immediately without reading any notifications, log a found item report on ETHOS with a secret question, or deliver it to the library desk.',
             score: 100,
             feedback: 'Supreme respect for digital privacy! Guarding personal boundaries is the cornerstone of modern digital citizenship.',
             whyWrong: '',
@@ -267,7 +267,7 @@ export const LOCALIZED_SCENARIOS_EN: Record<string, Partial<IntegrityScenario>> 
             score: 50,
             feedback: 'Unauthorized access to accounts can cause social embarrassment and confusion for the owner\'s contacts.',
             whyWrong: 'Posting from someone else\'s device creates confusion and oversteps privacy boundaries.',
-            correctActionText: 'Use official school channels (FindIt or Administration) to return the device safely.',
+            correctActionText: 'Use official school channels (ETHOS or Administration) to return the device safely.',
           },
           {
             id: 'phone_opt_4',
@@ -315,7 +315,7 @@ export const LOCALIZED_SCENARIOS_EN: Record<string, Partial<IntegrityScenario>> 
             score: 50,
             feedback: 'Good intention, but browsing call logs infringes privacy and may cause embarrassment.',
             whyWrong: 'Accessing phone history without consent violates digital privacy boundaries.',
-            correctActionText: 'Hand over device locked and allow FindIt matching algorithms to locate the owner safely.',
+            correctActionText: 'Hand over device locked and allow ETHOS matching algorithms to locate the owner safely.',
           },
           {
             id: 'phone_opt_3',
@@ -471,11 +471,11 @@ export const LOCALIZED_SCENARIOS_EN: Record<string, Partial<IntegrityScenario>> 
         options: [
           {
             id: 'calc_opt_1',
-            text: 'Photograph the model, register it immediately on FindIt with specific pickup location, and hand it to the lab teacher.',
+            text: 'Photograph the model, register it immediately on ETHOS with specific pickup location, and hand it to the lab teacher.',
             score: 100,
             feedback: 'Heroic academic solidarity! Quick digital logging ensures the student recovers their essential exam tool in time.',
             whyWrong: '',
-            correctActionText: 'Registering on FindIt and securing with the teacher guarantees rapid recovery before the exam bell.',
+            correctActionText: 'Registering on ETHOS and securing with the teacher guarantees rapid recovery before the exam bell.',
           },
           {
             id: 'calc_opt_2',
@@ -499,7 +499,7 @@ export const LOCALIZED_SCENARIOS_EN: Record<string, Partial<IntegrityScenario>> 
             score: 0,
             feedback: 'Indifference that exposes valuable study equipment to potential theft or permanent loss.',
             whyWrong: 'Passive neglect allows lost educational items to disappear in busy public spaces.',
-            correctActionText: 'Practice proactive citizenship: safeguard the item and initiate recovery via FindIt.',
+            correctActionText: 'Practice proactive citizenship: safeguard the item and initiate recovery via ETHOS.',
           },
         ],
       },

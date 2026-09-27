@@ -288,7 +288,7 @@ export const ACTIVITIES_EN: Record<string, { title: string; description: string 
   },
   act_integrity_ambassador: {
     title: 'Integrity Awareness & Barcode Posters Outreach',
-    description: 'Post informational QR stickers on classroom doors and guide peers on claiming found items via FindIt.',
+    description: 'Post informational QR stickers on classroom doors and guide peers on claiming found items via ETHOS.',
   },
   act_peer_tutoring: {
     title: 'Morning Peer Study & Academic Assistance',

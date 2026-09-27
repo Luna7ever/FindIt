@@ -164,7 +164,7 @@ export default function StudentOnboardingModal({ isOpen, onClose }: StudentOnboa
               <GraduationCap className="w-7 h-7" />
             </div>
             <h2 className="text-xl sm:text-2xl font-black tracking-tight text-white">
-              تسجيل بيانات الطالب في FindIt
+              تسجيل بيانات الطالب في Ethos
             </h2>
             <p className="text-xs text-emerald-200/80 mt-1 max-w-sm mx-auto leading-relaxed">
               المنصة المدرسية الذكية لحفظ الأمانات وتوثيق سلوكيات النزاهة الطلابية
@@ -311,7 +311,7 @@ export default function StudentOnboardingModal({ isOpen, onClose }: StudentOnboa
           <div className="p-3 bg-emerald-500/5 dark:bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-[11px] text-slate-600 dark:text-emerald-200/80 flex items-start gap-2.5">
             <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
             <p className="leading-relaxed">
-              يتم توثيق هذه البيانات مباشرة في السجل المدرسي لمنظومة FindIt لربطها بكارنيه الطالب وشهادة سفير النزاهة دون مشاركة أي بيانات شخصية حساسة.
+              يتم توثيق هذه البيانات مباشرة في السجل المدرسي لمنظومة Ethos لربطها بكارنيه الطالب وشهادة سفير النزاهة دون مشاركة أي بيانات شخصية حساسة.
             </p>
           </div>
 

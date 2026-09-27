@@ -195,7 +195,7 @@ export default function ItemIllustration({
 
           {/* Fabric Pattern Patch */}
           <div className="px-3 py-1 bg-white/20 rounded-xl flex items-center justify-center">
-            <span className="text-[8px] font-bold text-white tracking-wider">FINDIT POUCH</span>
+            <span className="text-[8px] font-bold text-white tracking-wider">ETHOS POUCH</span>
           </div>
 
           {/* Bottom Stitching */}

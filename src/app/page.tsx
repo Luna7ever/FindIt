@@ -68,6 +68,33 @@ export default function HomePage() {
     );
   }, [localizedUser.name, currentUser.role, campusPeriod, language, isAdmin]);
 
+  // Split greeting into main headline, optional custody reminder, and name to fit mobile screens elegantly without truncation
+  const parsedGreeting = useMemo(() => {
+    if (!greetingText) return { main: '', reminder: '', name: '' };
+    
+    let text = greetingText;
+    let namePart = '';
+    const nameSplit = text.split(' · ');
+    if (nameSplit.length > 1) {
+      namePart = nameSplit[1];
+      text = nameSplit[0];
+    }
+    
+    let mainPart = text;
+    let reminderPart = '';
+    const reminderSplit = text.split(' — ');
+    if (reminderSplit.length > 1) {
+      mainPart = reminderSplit[0];
+      reminderPart = reminderSplit[1];
+    }
+
+    return {
+      main: mainPart,
+      reminder: reminderPart,
+      name: namePart,
+    };
+  }, [greetingText]);
+
   const tierBadgeInfo = useMemo(() => {
     switch (currentUserTrustTier) {
       case 'gold':
@@ -113,170 +140,181 @@ export default function HomePage() {
 
   return (
     <div
-      className="w-full max-w-full overflow-x-hidden px-4 sm:px-6 pt-2 pb-32 sm:pb-16 space-y-3.5 sm:space-y-4.5 max-w-5xl mx-auto text-[#18201D] dark:text-[#F1F5F3]"
+      className="w-full max-w-full overflow-x-hidden px-4 sm:px-6 pt-2 pb-32 sm:pb-16 space-y-3.5 sm:space-y-4 max-w-5xl mx-auto text-[#18201D] dark:text-[#F1F5F3]"
       dir={dir}
     >
       {/* ========================================================
           1. COMPACT WELCOME CAPSULE HEADER
       ======================================================== */}
       <section className="text-start pt-0 w-full max-w-full min-w-0 overflow-hidden">
-          {/* Merged Single Compact Welcome & Student Badge */}
-          <div className="w-full flex items-center justify-between px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-full bg-[#E6F1ED]/80 dark:bg-[#122823]/80 backdrop-blur-md text-xs font-bold border border-[#176B5B]/30 dark:border-[#263834] shadow-[0_2px_10px_-2px_rgba(0,0,0,0.04)]">
-            <button
-              onClick={openOnboardingModal}
-              className="inline-flex items-center gap-1.5 text-[#176B5B] dark:text-[#2DD4BF] hover:underline cursor-pointer truncate min-w-0"
-              title={language === 'en' ? 'Edit student profile' : 'تعديل بيانات الطالب'}
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-[#176B5B] dark:bg-[#2DD4BF] animate-pulse shrink-0" />
-              <span className="truncate">{greetingText}</span>
-              <span className="text-[11px] opacity-75 shrink-0">{currentUser.name ? '✏️' : '🎓'}</span>
-            </button>
+        {/* Merged Single Compact Welcome & Student Badge */}
+        <div className="w-full flex items-center justify-between px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-full bg-[#E6F1ED]/80 dark:bg-[#122823]/80 backdrop-blur-md text-xs font-bold border border-[#176B5B]/30 dark:border-[#263834] shadow-[0_2px_10px_-2px_rgba(0,0,0,0.04)]">
+          <button
+            onClick={openOnboardingModal}
+            className="inline-flex items-center gap-1.5 text-[#176B5B] dark:text-[#2DD4BF] hover:underline cursor-pointer min-w-0"
+            title={`${greetingText} - ${language === 'en' ? 'Edit student profile' : 'تعديل بيانات الطالب'}`}
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-[#176B5B] dark:bg-[#2DD4BF] animate-pulse shrink-0" />
+            <span className="sr-only">{greetingText}</span>
+            <span className="font-bold shrink-0">{parsedGreeting.main}</span>
+            {parsedGreeting.reminder && (
+              <span className={`${isAdmin ? 'inline' : 'hidden md:inline'} font-normal text-slate-500 dark:text-slate-400 shrink-0`}>
+                — {parsedGreeting.reminder}
+              </span>
+            )}
+            {parsedGreeting.name && (
+              <span className="font-medium truncate">
+                · {parsedGreeting.name}
+              </span>
+            )}
+            <span className="text-[11px] opacity-75 shrink-0">{currentUser.name ? '✏️' : '🎓'}</span>
+          </button>
 
-            {!isAdmin && (
-              <div className="inline-flex items-center gap-1.5 shrink-0">
-                <span className="text-slate-300 dark:text-slate-600 select-none">|</span>
+          {!isAdmin && (
+            <div className="inline-flex items-center gap-1.5 shrink-0">
+              <span className="text-slate-300 dark:text-slate-600 select-none">|</span>
+              <Link
+                href="/integrity"
+                className="inline-flex items-center gap-1 text-slate-700 dark:text-slate-300 hover:text-[#176B5B] dark:hover:text-[#2DD4BF] transition-colors shrink-0"
+                title={tierBadgeInfo.title}
+              >
+                <span>{tierBadgeInfo.emoji}</span>
+                <span className="font-semibold">{tierBadgeInfo.shortTitle}</span>
+                <span className="text-[#176B5B] dark:text-[#2DD4BF] font-extrabold text-[11px]">
+                  ({currentUser.goodwillPoints || 0}{language === 'en' ? 'pts' : 'ن'})
+                </span>
+              </Link>
+            </div>
+          )}
+
+          {isAdmin && (
+            <div className="inline-flex items-center gap-1.5 shrink-0">
+              <span className="text-slate-300 dark:text-slate-600 select-none">|</span>
+              <Link
+                href="/admin"
+                className="inline-flex items-center gap-1 text-[#176B5B] dark:text-[#2DD4BF] hover:underline shrink-0"
+              >
+                <Building2 className="w-3 h-3" />
+                <span>{language === 'en' ? 'Admin 🏛️' : 'الإدارة 🏛️'}</span>
+              </Link>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* ========================================================
+          2. BEHAVIORAL INTERVENTION: WEEKLY INTEGRITY CHALLENGE
+      ======================================================== */}
+      {!isAdmin && (
+        <section>
+          <div className={`relative overflow-hidden rounded-3xl p-3.5 sm:p-4 transition-all min-h-[52px] flex items-center justify-between gap-3 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] ${
+            isChallengeCompleted
+              ? 'bg-emerald-50/80 dark:bg-[#112420]/80'
+              : 'bg-gradient-to-l from-emerald-50/70 via-white to-white dark:from-emerald-950/30 dark:via-[#15201D] dark:to-[#15201D]'
+          }`}>
+            {!isChallengeCompleted ? (
+              <>
+                <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                  <div className="w-9 h-9 rounded-2xl bg-white dark:bg-[#1C2B27] shadow-xs flex items-center justify-center text-lg shrink-0 select-none">
+                    🎯
+                  </div>
+                  <div className="min-w-0 text-start">
+                    <h3 className="text-xs sm:text-sm font-extrabold text-slate-900 dark:white leading-tight truncate">
+                      {language === 'en' ? 'Weekly Integrity Challenge' : 'تحدي النزاهة الأسبوعي'}
+                    </h3>
+                    <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium leading-tight mt-0.5 truncate">
+                      {language === 'en' ? '5 quick dilemmas' : '5 مواقف سريعة'}
+                    </p>
+                  </div>
+                </div>
+
                 <Link
                   href="/integrity"
-                  className="inline-flex items-center gap-1 text-slate-700 dark:text-slate-300 hover:text-[#176B5B] dark:hover:text-[#2DD4BF] transition-colors truncate"
-                  title={tierBadgeInfo.title}
+                  className="inline-flex items-center justify-center gap-1.5 min-h-[40px] px-4 sm:px-5 py-2 rounded-2xl font-bold text-xs sm:text-sm bg-[#18201D] hover:bg-black text-white dark:bg-[#2DD4BF] dark:text-slate-950 dark:hover:bg-[#14B8A6] shadow-sm transition-all active:scale-95 group shrink-0"
                 >
-                  <span>{tierBadgeInfo.emoji}</span>
-                  <span className="font-semibold">{tierBadgeInfo.shortTitle}</span>
-                  <span className="text-[#176B5B] dark:text-[#2DD4BF] font-extrabold text-[11px]">
-                    ({currentUser.goodwillPoints || 0}{language === 'en' ? 'pts' : 'ن'})
+                  <span>{language === 'en' ? 'Start Challenge' : 'ابدأ التحدي'}</span>
+                  <ArrowIcon className="w-3.5 h-3.5 transition-transform group-hover:translate-x-[-2px] rtl:group-hover:translate-x-[-2px]" />
+                </Link>
+              </>
+            ) : (
+              <>
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="text-sm shrink-0">✅</span>
+                  <span className="text-xs sm:text-sm font-bold text-emerald-900 dark:text-emerald-200 truncate">
+                    {language === 'en' ? 'You completed this week\'s challenge successfully' : 'أتممت مشاركة الأسبوع بنجاح'}
                   </span>
-                </Link>
-              </div>
-            )}
+                </div>
 
-            {isAdmin && (
-              <div className="inline-flex items-center gap-1.5 shrink-0">
-                <span className="text-slate-300 dark:text-slate-600 select-none">|</span>
-                <Link
-                  href="/admin"
-                  className="inline-flex items-center gap-1 text-[#176B5B] dark:text-[#2DD4BF] hover:underline"
-                >
-                  <Building2 className="w-3 h-3" />
-                  <span>{language === 'en' ? 'Admin 🏛️' : 'الإدارة 🏛️'}</span>
-                </Link>
-              </div>
+                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-xl bg-emerald-100/80 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 text-[11px] font-semibold shrink-0">
+                  <Lock className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                  <span>{language === 'en' ? 'Sunday' : 'الأحد القادم'}</span>
+                </span>
+              </>
             )}
           </div>
         </section>
+      )}
 
-        {/* ========================================================
-            2. BEHAVIORAL INTERVENTION: WEEKLY INTEGRITY CHALLENGE
-        ======================================================== */}
-        {!isAdmin && (
-          <section>
-            <div className={`relative overflow-hidden rounded-3xl p-3.5 sm:p-4 transition-all min-h-[52px] flex items-center justify-between gap-3 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] ${
-              isChallengeCompleted
-                ? 'bg-emerald-50/80 dark:bg-[#112420]/80'
-                : 'bg-gradient-to-l from-emerald-50/70 via-white to-white dark:from-emerald-950/30 dark:via-[#15201D] dark:to-[#15201D]'
-            }`}>
-              {!isChallengeCompleted ? (
-                <>
-                  <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-                    <div className="w-9 h-9 rounded-2xl bg-white dark:bg-[#1C2B27] shadow-xs flex items-center justify-center text-lg shrink-0 select-none">
-                      🎯
-                    </div>
-                    <div className="min-w-0 text-start">
-                      <h3 className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white leading-tight truncate">
-                        {language === 'en' ? 'Weekly Integrity Challenge' : 'تحدي النزاهة الأسبوعي'}
-                      </h3>
-                      <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 font-medium leading-tight mt-0.5 truncate">
-                        {language === 'en' ? '5 quick dilemmas' : '5 مواقف سريعة'}
-                      </p>
-                    </div>
-                  </div>
+      {/* ========================================================
+          3. LOST & FOUND HUB (Search Bar + Dual Action Cards)
+      ======================================================== */}
+      <section className="space-y-3.5 sm:space-y-4">
+        {/* Integrated Live Interactive Instant Search Bar */}
+        <InstantSearchBar />
 
-                  <Link
-                    href="/integrity"
-                    className="inline-flex items-center justify-center gap-1.5 min-h-[40px] px-4 sm:px-5 py-2 rounded-2xl font-bold text-xs sm:text-sm bg-[#18201D] hover:bg-black text-white dark:bg-[#2DD4BF] dark:text-slate-950 dark:hover:bg-[#14B8A6] shadow-sm transition-all active:scale-95 group shrink-0"
-                  >
-                    <span>{language === 'en' ? 'Start Challenge' : 'ابدأ التحدي'}</span>
-                    <ArrowIcon className="w-3.5 h-3.5 transition-transform group-hover:translate-x-[-2px] rtl:group-hover:translate-x-[-2px]" />
-                  </Link>
-                </>
-              ) : (
-                <>
-                  <div className="flex items-center gap-2 min-w-0">
-                    <span className="text-sm shrink-0">✅</span>
-                    <span className="text-xs sm:text-sm font-bold text-emerald-900 dark:text-emerald-200 truncate">
-                      {language === 'en' ? 'You completed this week\'s challenge successfully' : 'أتممت مشاركة الأسبوع بنجاح'}
-                    </span>
-                  </div>
-
-                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-xl bg-emerald-100/80 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 text-[11px] font-semibold shrink-0">
-                    <Lock className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                    <span>{language === 'en' ? 'Sunday' : 'الأحد القادم'}</span>
-                  </span>
-                </>
-              )}
+        {/* Two-Column Action Grid (Lost / Found side-by-side on mobile & desktop) */}
+        <div className="grid grid-cols-2 gap-2.5 sm:gap-4">
+          {/* Card 1: Lost Item (Right card in RTL) */}
+          <Link
+            href="/report?type=lost"
+            className="app-card app-card-interactive p-3.5 sm:p-5 bg-white dark:bg-[#15201D] flex flex-col justify-between group text-start shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] hover:shadow-md rounded-3xl active:scale-98 transition-all min-h-[120px] sm:min-h-[135px]"
+          >
+            <div className="flex items-center justify-between">
+              <div className="w-10 h-10 rounded-2xl bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 flex items-center justify-center shrink-0 shadow-2xs">
+                <Search className="w-5 h-5" />
+              </div>
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300">
+                {language === 'en' ? 'Lost' : 'مفقود'}
+              </span>
             </div>
-          </section>
-        )}
 
-        {/* ========================================================
-            3. LOST & FOUND HUB (Search Bar + Dual Action Cards)
-        ======================================================== */}
-        <section className="space-y-3 sm:space-y-4">
-          {/* Integrated Live Interactive Instant Search Bar */}
-          <InstantSearchBar />
-
-          {/* Two-Column Action Grid (Lost / Found side-by-side on mobile & desktop) */}
-          <div className="grid grid-cols-2 gap-2.5 sm:gap-4">
-            {/* Card 1: Lost Item (Right card in RTL) */}
-            <Link
-              href="/report?type=lost"
-              className="app-card app-card-interactive p-4 sm:p-5 bg-white dark:bg-[#15201D] flex flex-col justify-between group text-start shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] hover:shadow-md rounded-3xl active:scale-98 transition-all min-h-[120px] sm:min-h-[135px]"
-            >
-              <div className="flex items-center justify-between">
-                <div className="w-10 h-10 rounded-2xl bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 flex items-center justify-center shrink-0 shadow-2xs">
-                  <Search className="w-5 h-5" />
-                </div>
-                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300">
-                  {language === 'en' ? 'Lost' : 'مفقود'}
-                </span>
+            <div className="mt-3">
+              <h2 className="text-sm sm:text-base font-extrabold text-[#18201D] dark:text-white group-hover:text-amber-700 dark:group-hover:text-amber-400 transition-colors leading-tight truncate">
+                {language === 'en' ? 'Lost something?' : 'فقدت شيئاً؟'}
+              </h2>
+              <div className="flex items-center gap-1 text-xs text-amber-800 dark:text-amber-300 font-semibold mt-1">
+                <span>{language === 'en' ? 'Report Lost' : 'تسجيل بلاغ'}</span>
+                <ArrowIcon className="w-3.5 h-3.5 transition-transform group-hover:translate-x-[-2px] rtl:group-hover:translate-x-[-2px]" />
               </div>
+            </div>
+          </Link>
 
-              <div className="mt-3">
-                <h2 className="text-sm sm:text-base font-extrabold text-[#18201D] dark:text-white group-hover:text-amber-700 dark:group-hover:text-amber-400 transition-colors leading-tight truncate">
-                  {language === 'en' ? 'Lost something?' : 'فقدت شيئاً؟'}
-                </h2>
-                <div className="flex items-center gap-1 text-xs text-amber-800 dark:text-amber-300 font-semibold mt-1">
-                  <span>{language === 'en' ? 'Report Lost' : 'تسجيل بلاغ'}</span>
-                  <ArrowIcon className="w-3.5 h-3.5 transition-transform group-hover:translate-x-[-2px] rtl:group-hover:translate-x-[-2px]" />
-                </div>
+          {/* Card 2: Found Item (Left card in RTL) */}
+          <Link
+            href="/report?type=found"
+            className="app-card app-card-interactive p-3.5 sm:p-5 bg-white dark:bg-[#15201D] flex flex-col justify-between group text-start shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] hover:shadow-md rounded-3xl active:scale-98 transition-all min-h-[120px] sm:min-h-[135px]"
+          >
+            <div className="flex items-center justify-between">
+              <div className="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-[#2DD4BF] flex items-center justify-center shrink-0 shadow-2xs">
+                <Handshake className="w-5 h-5" />
               </div>
-            </Link>
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-[#2DD4BF]">
+                {language === 'en' ? 'Found' : 'أمانة'}
+              </span>
+            </div>
 
-            {/* Card 2: Found Item (Left card in RTL) */}
-            <Link
-              href="/report?type=found"
-              className="app-card app-card-interactive p-4 sm:p-5 bg-white dark:bg-[#15201D] flex flex-col justify-between group text-start shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] hover:shadow-md rounded-3xl active:scale-98 transition-all min-h-[120px] sm:min-h-[135px]"
-            >
-              <div className="flex items-center justify-between">
-                <div className="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 flex items-center justify-center shrink-0 shadow-2xs">
-                  <Handshake className="w-5 h-5" />
-                </div>
-                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300">
-                  {language === 'en' ? 'Custody' : 'أمانة'}
-                </span>
+            <div className="mt-3">
+              <h2 className="text-sm sm:text-base font-extrabold text-[#18201D] dark:text-white group-hover:text-[#176B5B] dark:group-hover:text-[#2DD4BF] transition-colors leading-tight truncate">
+                {language === 'en' ? 'Found something?' : 'عثرت على أمانة؟'}
+              </h2>
+              <div className="flex items-center gap-1 text-xs text-[#176B5B] dark:text-[#2DD4BF] font-semibold mt-1">
+                <span>{language === 'en' ? 'Record Found' : 'تسليم أمانة'}</span>
+                <ArrowIcon className="w-3.5 h-3.5 transition-transform group-hover:translate-x-[-2px] rtl:group-hover:translate-x-[-2px]" />
               </div>
-
-              <div className="mt-3">
-                <h2 className="text-sm sm:text-base font-extrabold text-[#18201D] dark:text-white group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors leading-tight truncate">
-                  {language === 'en' ? 'Found custody?' : 'عثرت على أمانة؟'}
-                </h2>
-                <div className="flex items-center gap-1 text-xs text-emerald-800 dark:text-emerald-300 font-semibold mt-1">
-                  <span>{language === 'en' ? 'Handover' : 'تسليم فوري'}</span>
-                  <ArrowIcon className="w-3.5 h-3.5 transition-transform group-hover:translate-x-[-2px] rtl:group-hover:translate-x-[-2px]" />
-                </div>
-              </div>
-            </Link>
-          </div>
-        </section>
+            </div>
+          </Link>
+        </div>
+      </section>
 
         {/* ========================================================
             AI MATCH SPOTLIGHT (When Match Exists)

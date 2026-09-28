@@ -147,10 +147,16 @@ export default function HomePage() {
 
   return (
     <div
-      className="w-full max-w-full overflow-x-hidden px-4 sm:px-6 pt-1 pb-32 sm:pb-16 flex flex-col justify-start gap-4 max-w-5xl mx-auto text-[#18201D] dark:text-[#F1F5F3]"
+      className="w-full max-w-full overflow-x-hidden px-4 sm:px-6 pt-1 max-w-5xl mx-auto text-[#18201D] dark:text-[#F1F5F3]"
       dir={dir}
     >
-      {/* --- Header Section (Clean & Borderless) --- */}
+      {/* ========================================================
+          1. FIRST VIEWPORT CONTAINER (Dashboard Canvas)
+          - Ends cleanly at the School Activities card above the dock
+          - Strictly NO justify-between; uniform gap-4 stacking
+      ======================================================== */}
+      <div className="w-full min-h-[calc(100dvh-5rem)] flex flex-col justify-start gap-4 pb-4">
+        {/* --- Header Section (Clean & Borderless) --- */}
       <div className="w-full flex items-center justify-between pt-1 pb-1">
         {/* Right: Greetings & Subtitle */}
         <div className="flex flex-col items-start text-right">
@@ -239,7 +245,7 @@ export default function HomePage() {
           {/* Card 1: Lost Item (Right card in RTL) */}
           <Link
             href="/report?type=lost"
-            className="app-card app-card-interactive p-4 sm:p-5 bg-white dark:bg-[#15201D] flex flex-col justify-between group text-start shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] hover:shadow-md rounded-3xl active:scale-98 transition-all min-h-[124px] sm:min-h-[135px]"
+            className="app-card app-card-interactive py-5 px-4 bg-white dark:bg-[#15201D] flex flex-col justify-between group text-start shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] hover:shadow-md rounded-3xl active:scale-98 transition-all min-h-[135px]"
           >
             <div className="flex items-center justify-between">
               <div className="w-10 h-10 rounded-2xl bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 flex items-center justify-center shrink-0 shadow-2xs">
@@ -264,7 +270,7 @@ export default function HomePage() {
           {/* Card 2: Found Item (Left card in RTL) */}
           <Link
             href="/report?type=found"
-            className="app-card app-card-interactive p-4 sm:p-5 bg-white dark:bg-[#15201D] flex flex-col justify-between group text-start shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] hover:shadow-md rounded-3xl active:scale-98 transition-all min-h-[124px] sm:min-h-[135px]"
+            className="app-card app-card-interactive py-5 px-4 bg-white dark:bg-[#15201D] flex flex-col justify-between group text-start shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] hover:shadow-md rounded-3xl active:scale-98 transition-all min-h-[135px]"
           >
             <div className="flex items-center justify-between">
               <div className="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-[#2DD4BF] flex items-center justify-center shrink-0 shadow-2xs">
@@ -369,11 +375,13 @@ export default function HomePage() {
             </div>
           </Link>
         </section>
+      </div>
 
       {/* ========================================================
-          5. RECENT FOUND ITEMS FEED (Spacious & Comfortable)
+          2. SCROLLABLE FEED: RECENT FOUND ITEMS
+          - Strictly below the fold; revealed only upon scrolling
       ======================================================== */}
-      <section className="flex flex-col justify-start gap-4 pt-6 sm:pt-8 border-t border-slate-100 dark:border-slate-800/40">
+      <div className="w-full pt-6 pb-32 flex flex-col justify-start gap-4 border-t border-slate-100 dark:border-slate-800/40">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-sm sm:text-base font-extrabold text-[#18201D] dark:text-white">
@@ -394,7 +402,7 @@ export default function HomePage() {
             <ItemCard key={item.id} item={item} variant="row" />
           ))}
         </div>
-      </section>
+      </div>
 
     </div>
   );

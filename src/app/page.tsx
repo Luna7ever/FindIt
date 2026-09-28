@@ -147,7 +147,7 @@ export default function HomePage() {
 
   return (
     <div
-      className="w-full max-w-full overflow-x-hidden px-4 sm:px-6 pt-1 pb-28 sm:pb-16 space-y-2.5 sm:space-y-3 max-w-5xl mx-auto text-[#18201D] dark:text-[#F1F5F3]"
+      className="w-full max-w-full overflow-x-hidden px-4 sm:px-6 pt-1 pb-32 sm:pb-16 flex flex-col justify-start gap-4 max-w-5xl mx-auto text-[#18201D] dark:text-[#F1F5F3]"
       dir={dir}
     >
       {/* --- Header Section (Clean & Borderless) --- */}
@@ -179,7 +179,7 @@ export default function HomePage() {
       ======================================================== */}
       {!isAdmin && (
         <section>
-          <div className={`relative overflow-hidden rounded-3xl p-3.5 sm:p-4 transition-all min-h-[52px] flex items-center justify-between gap-3 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] ${
+          <div className={`relative overflow-hidden rounded-3xl p-4 transition-all min-h-[56px] flex items-center justify-between gap-3 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] ${
             isChallengeCompleted
               ? 'bg-emerald-50/80 dark:bg-[#112420]/80'
               : 'bg-gradient-to-l from-emerald-50/70 via-white to-white dark:from-emerald-950/30 dark:via-[#15201D] dark:to-[#15201D]'
@@ -230,7 +230,7 @@ export default function HomePage() {
       {/* ========================================================
           3. LOST & FOUND HUB (Search Bar + Dual Action Cards)
       ======================================================== */}
-      <section className="space-y-2.5 sm:space-y-3">
+      <section className="flex flex-col justify-start gap-4">
         {/* Integrated Live Interactive Instant Search Bar */}
         <InstantSearchBar />
 
@@ -239,7 +239,7 @@ export default function HomePage() {
           {/* Card 1: Lost Item (Right card in RTL) */}
           <Link
             href="/report?type=lost"
-            className="app-card app-card-interactive p-4 sm:p-5 bg-white dark:bg-[#15201D] flex flex-col justify-between group text-start shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] hover:shadow-md rounded-3xl active:scale-98 transition-all min-h-[120px] sm:min-h-[135px]"
+            className="app-card app-card-interactive p-4 sm:p-5 bg-white dark:bg-[#15201D] flex flex-col justify-between group text-start shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] hover:shadow-md rounded-3xl active:scale-98 transition-all min-h-[124px] sm:min-h-[135px]"
           >
             <div className="flex items-center justify-between">
               <div className="w-10 h-10 rounded-2xl bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 flex items-center justify-center shrink-0 shadow-2xs">
@@ -264,7 +264,7 @@ export default function HomePage() {
           {/* Card 2: Found Item (Left card in RTL) */}
           <Link
             href="/report?type=found"
-            className="app-card app-card-interactive p-4 sm:p-5 bg-white dark:bg-[#15201D] flex flex-col justify-between group text-start shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] hover:shadow-md rounded-3xl active:scale-98 transition-all min-h-[120px] sm:min-h-[135px]"
+            className="app-card app-card-interactive p-4 sm:p-5 bg-white dark:bg-[#15201D] flex flex-col justify-between group text-start shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] hover:shadow-md rounded-3xl active:scale-98 transition-all min-h-[124px] sm:min-h-[135px]"
           >
             <div className="flex items-center justify-between">
               <div className="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-[#2DD4BF] flex items-center justify-center shrink-0 shadow-2xs">
@@ -341,7 +341,7 @@ export default function HomePage() {
         <section>
           <Link
             href="/activities"
-            className="w-full px-4 py-3.5 sm:p-5 rounded-3xl bg-white dark:bg-[#15201D] border border-[#176B5B]/30 dark:border-[#263834] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] hover:shadow-md transition-all flex items-center justify-between gap-3 group cursor-pointer"
+            className="w-full p-4 sm:p-5 rounded-3xl bg-white dark:bg-[#15201D] border border-[#176B5B]/30 dark:border-[#263834] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] hover:shadow-md transition-all flex items-center justify-between gap-3 group cursor-pointer"
           >
             <div className="flex items-center gap-3 min-w-0">
               <div className="w-10 h-10 rounded-2xl bg-[#176B5B] text-white flex items-center justify-center shrink-0 shadow-2xs">
@@ -373,7 +373,7 @@ export default function HomePage() {
       {/* ========================================================
           5. RECENT FOUND ITEMS FEED (Spacious & Comfortable)
       ======================================================== */}
-      <section className="space-y-3 pt-2.5 sm:pt-3 border-t border-slate-100 dark:border-slate-800/40">
+      <section className="flex flex-col justify-start gap-4 pt-6 sm:pt-8 border-t border-slate-100 dark:border-slate-800/40">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-sm sm:text-base font-extrabold text-[#18201D] dark:text-white">

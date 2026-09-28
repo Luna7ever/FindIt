@@ -147,19 +147,10 @@ export default function HomePage() {
 
   return (
     <div
-      className="w-full max-w-full overflow-x-hidden px-4 sm:px-6 pt-1 max-w-5xl mx-auto text-[#18201D] dark:text-[#F1F5F3]"
+      className="flex flex-col gap-4 w-full px-4 pt-2 pb-28 max-w-5xl mx-auto text-[#18201D] dark:text-[#F1F5F3] overflow-x-hidden"
       dir={dir}
     >
-      {/* ========================================================
-          1. FIRST VIEWPORT CONTAINER (Dashboard Canvas)
-          - Ends cleanly at the Recent Items Hint Row above the dock
-          - Strictly NO justify-between among cards; uniform gap-4 stacking
-          - Enforces min-h so the cards grid is strictly below the fold
-      ======================================================== */}
-      <div className="w-full min-h-[calc(100dvh-8rem)] md:min-h-0 flex flex-col justify-start">
-        {/* --- Top Dashboard Stack (Uniform gap-4) --- */}
-        <div className="w-full flex flex-col justify-start gap-4">
-        {/* --- Header Section (Clean & Borderless) --- */}
+      {/* --- Header Section (Clean & Borderless) --- */}
       <div className="w-full flex items-center justify-between pt-1 pb-1">
         {/* Right: Greetings & Subtitle */}
         <div className="flex flex-col items-start text-right">
@@ -379,31 +370,28 @@ export default function HomePage() {
           </Link>
 
         </section>
-        </div>
 
-        {/* --- Recent Items Hint Row (Strict Fixed Dimensions) --- */}
-        <div className="w-full flex items-center justify-between mt-auto pt-3 px-1 h-[24px] shrink-0">
-          {/* Right: Section Title */}
-          <span className="text-[13px] font-bold text-slate-800 dark:text-white leading-none">
-            {language === 'en' ? 'Recently Found Belongings' : 'أحدث المعثورات المدرسية'}
-          </span>
+      {/* --- Recent Items Hint Row (Strict Fixed Dimensions) --- */}
+      <div className="w-full flex items-center justify-between mt-2 px-1 h-[24px]">
+        {/* Right: Section Title */}
+        <span className="text-[13px] font-bold text-slate-800 dark:text-white leading-none">
+          {language === 'en' ? 'Recently Found Belongings' : 'أحدث المعثورات المدرسية'}
+        </span>
 
-          {/* Left: Interactive Action */}
-          <button
-            onClick={() => router.push('/explore')}
-            className="text-[11px] font-medium text-[#176B5B] dark:text-[#2DD4BF] flex items-center gap-1 leading-none hover:opacity-80 transition-opacity cursor-pointer"
-          >
-            <span>{language === 'en' ? 'View All' : 'استعراض الكل'}</span>
-            <span className="text-[12px]">{isRtl ? '←' : '→'}</span>
-          </button>
-        </div>
+        {/* Left: Interactive Action */}
+        <button
+          onClick={() => router.push('/explore')}
+          className="text-[11px] font-medium text-[#176B5B] dark:text-[#2DD4BF] flex items-center gap-1 leading-none hover:opacity-80 transition-opacity cursor-pointer"
+        >
+          <span>{language === 'en' ? 'View All' : 'استعراض الكل'}</span>
+          <span className="text-[12px]">{isRtl ? '←' : '→'}</span>
+        </button>
       </div>
 
       {/* ========================================================
-          5. RECENT FOUND ITEMS CARDS (Strict Scroll Containment)
-          - Starts below the first viewport; revealed only upon scroll
+          5. RECENT FOUND ITEMS CARDS (Normal Scrolling Flow)
       ======================================================== */}
-      <div className="w-full mt-6 md:mt-4 pb-32">
+      <div className="w-full">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {recentFoundItems.map((item) => (
             <ItemCard key={item.id} item={item} variant="row" />

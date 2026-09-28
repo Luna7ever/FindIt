@@ -155,7 +155,7 @@ export default function HomePage() {
           - Ends cleanly at the School Activities card above the dock
           - Strictly NO justify-between; uniform gap-4 stacking
       ======================================================== */}
-      <div className="w-full min-h-[calc(100dvh-5rem)] flex flex-col justify-start gap-4 pb-4">
+      <div className="w-full flex flex-col justify-start gap-4">
         {/* --- Header Section (Clean & Borderless) --- */}
       <div className="w-full flex items-center justify-between pt-1 pb-1">
         {/* Right: Greetings & Subtitle */}
@@ -208,7 +208,7 @@ export default function HomePage() {
 
                 <Link
                   href="/integrity"
-                  className="inline-flex items-center justify-center gap-1.5 min-h-[40px] px-4 sm:px-5 py-2 rounded-2xl font-bold text-xs sm:text-sm bg-[#18201D] hover:bg-black text-white dark:bg-[#2DD4BF] dark:text-slate-950 dark:hover:bg-[#14B8A6] shadow-sm transition-all active:scale-95 group shrink-0"
+                  className="inline-flex items-center justify-center gap-1.5 min-h-[40px] px-4 py-2 rounded-xl font-semibold text-xs bg-[#007A55] hover:bg-[#006647] text-white dark:bg-[#2DD4BF] dark:text-slate-950 dark:hover:bg-[#14B8A6] shadow-sm transition-all active:scale-95 group shrink-0"
                 >
                   <span>{language === 'en' ? 'Start Challenge' : 'ابدأ التحدي'}</span>
                   <ArrowIcon className="w-3.5 h-3.5 transition-transform group-hover:translate-x-[-2px] rtl:group-hover:translate-x-[-2px]" />
@@ -374,29 +374,31 @@ export default function HomePage() {
               <ArrowIcon className="w-4 h-4" />
             </div>
           </Link>
+
+          {/* --- Recent Items Hint Row (Strict Fixed Dimensions) --- */}
+          <div className="w-full flex items-center justify-between mt-[12px] px-1 h-[24px]">
+            {/* Right: Section Title */}
+            <span className="text-[13px] font-bold text-slate-800 dark:text-white leading-none">
+              {language === 'en' ? 'Recently Found Belongings' : 'أحدث المعثورات المدرسية'}
+            </span>
+
+            {/* Left: Interactive Action */}
+            <button
+              onClick={() => router.push('/explore')}
+              className="text-[11px] font-medium text-[#007A55] dark:text-[#2DD4BF] flex items-center gap-1 leading-none hover:opacity-80 transition-opacity cursor-pointer"
+            >
+              <span>{language === 'en' ? 'View All' : 'استعراض الكل'}</span>
+              <span className="text-[12px]">{isRtl ? '←' : '→'}</span>
+            </button>
+          </div>
         </section>
       </div>
 
       {/* ========================================================
-          2. SCROLLABLE FEED: RECENT FOUND ITEMS
-          - Strictly below the fold; revealed only upon scrolling
+          5. RECENT FOUND ITEMS CARDS (Strict Scroll Containment)
+          - Starts mt-[14px] under hint row; pb-32 bottom clearance
       ======================================================== */}
-      <div className="w-full pt-6 pb-32 flex flex-col justify-start gap-4 border-t border-slate-100 dark:border-slate-800/40">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-sm sm:text-base font-extrabold text-[#18201D] dark:text-white">
-              {language === 'en' ? 'Recently Found Belongings' : 'أحدث المعثورات المدرسية'}
-            </h2>
-            <p className="text-[11px] sm:text-xs text-[#66706B] dark:text-[#94A39D] mt-0.5">
-              {language === 'en' ? 'Items found across school premises waiting for owners' : 'أغراض تم تسليمها وتوثيقها بانتظار أصحابها'}
-            </p>
-          </div>
-          <Link href="/explore" className="text-xs font-bold text-[#176B5B] dark:text-[#2DD4BF] hover:underline flex items-center gap-1 group">
-            <span>{language === 'en' ? 'View All' : 'استعراض الكل'}</span>
-            <ArrowIcon className={`w-3.5 h-3.5 transition-transform ${isRtl ? 'group-hover:-translate-x-0.5' : 'group-hover:translate-x-0.5'}`} />
-          </Link>
-        </div>
-
+      <div className="w-full mt-[14px] pb-32">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {recentFoundItems.map((item) => (
             <ItemCard key={item.id} item={item} variant="row" />

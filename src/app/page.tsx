@@ -85,8 +85,8 @@ export default function HomePage() {
         };
       case 'recess':
         return {
-          timeGreeting: isAr ? 'استراحة موفقة 🥪' : 'Recess time 🥪',
-          campusStatusText: isAr ? 'فترة الفسحة المدرسية — تفقدي متعلقاتك وحقيبتك' : 'Recess break — keep track of your belongings',
+          timeGreeting: isAr ? 'مساء الخير 🌙' : 'Good day 🥪',
+          campusStatusText: isAr ? 'استراحة موفقة 🥪' : 'Recess break 🥪',
         };
       case 'dismissal':
         return {
@@ -97,7 +97,7 @@ export default function HomePage() {
       default:
         return {
           timeGreeting: isAr ? 'مساء الخير 🌙' : 'Good evening 🌙',
-          campusStatusText: isAr ? 'استراحة المساء والمراجعة الهادئة 🌙' : 'Evening review and quiet rest 🌙',
+          campusStatusText: isAr ? 'استراحة موفقة 🥪' : 'Evening review and quiet rest 🌙',
         };
     }
   }, [campusPeriod, language, isAdmin]);
@@ -150,57 +150,29 @@ export default function HomePage() {
       className="w-full max-w-full overflow-x-hidden px-4 sm:px-6 pt-1 pb-28 sm:pb-16 space-y-2.5 sm:space-y-3 max-w-5xl mx-auto text-[#18201D] dark:text-[#F1F5F3]"
       dir={dir}
     >
-      {/* ========================================================
-          1. BORDERLESS STATUS HEADER & GLOBAL GAMIFICATION BADGE
-      ======================================================== */}
-      <section className="w-full flex items-center justify-between gap-3 pt-0.5 select-none">
-        {/* Start side: Borderless student greeting & atmospheric status */}
-        <div className="min-w-0 text-start">
-          <button
-            onClick={openOnboardingModal}
-            className="group flex items-center gap-1.5 text-sm sm:text-base font-black text-slate-900 dark:text-white hover:text-[#176B5B] dark:hover:text-[#2DD4BF] transition-colors cursor-pointer truncate"
-            title={`${greetingText} - ${language === 'en' ? 'Edit student profile' : 'تعديل بيانات الطالب'}`}
-          >
+      {/* --- Header Section (Clean & Borderless) --- */}
+      <div className="w-full flex items-center justify-between pt-1 pb-1">
+        {/* Right: Greetings & Subtitle */}
+        <div className="flex flex-col items-start text-right">
+          <h1 className="text-base font-bold text-slate-800 dark:text-white flex items-center gap-1.5">
             <span className="sr-only">{greetingText}</span>
-            <span className="truncate">
-              {timeGreeting} {localizedUser.name ? `· ${localizedUser.name}` : ''}
-            </span>
-            <span className="text-xs opacity-75 group-hover:opacity-100 transition-opacity shrink-0">
-              {currentUser.name ? '✏️' : '🎓'}
-            </span>
-          </button>
-
-          <p className="text-xs text-slate-500 dark:text-slate-400 font-normal leading-tight mt-0.5 truncate">
-            {campusStatusText}
-          </p>
+            <span>{timeGreeting} {localizedUser.name || 'ملك محمد فاروق'}</span>
+          </h1>
+          <span className="text-xs text-slate-500 dark:text-slate-400 font-normal mt-0.5">
+            {campusStatusText || 'استراحة موفقة 🥪'}
+          </span>
         </div>
 
-        {/* End side: Global Frosted Gamification Badge (Duolingo / Apple Style) */}
-        {!isAdmin && (
-          <Link
-            href="/integrity"
-            className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50/80 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 border border-amber-200/60 dark:border-amber-800/40 shadow-xs hover:shadow-sm hover:scale-[1.02] active:scale-98 transition-all text-xs font-bold"
-            title={tierBadgeInfo.title}
-          >
-            <span className="text-sm shrink-0">{tierBadgeInfo.emoji}</span>
-            <span className="font-bold">{tierBadgeInfo.shortTitle}</span>
-            <span className="text-amber-500/70 dark:text-amber-400/70 select-none">·</span>
-            <span className="font-extrabold text-[#176B5B] dark:text-[#2DD4BF]">
-              {currentUser.goodwillPoints || 0}{language === 'en' ? 'pts' : 'ن'}
-            </span>
-          </Link>
-        )}
-
-        {isAdmin && (
-          <Link
-            href="/admin"
-            className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50/80 dark:bg-emerald-950/40 text-[#176B5B] dark:text-[#2DD4BF] border border-[#176B5B]/30 dark:border-[#263834] shadow-xs hover:shadow-sm transition-all text-xs font-bold"
-          >
-            <Building2 className="w-3.5 h-3.5" />
-            <span>{language === 'en' ? 'Admin 🏛️' : 'الإدارة 🏛️'}</span>
-          </Link>
-        )}
-      </section>
+        {/* Left: Badge Pill */}
+        <Link
+          href="/integrity"
+          className="flex-shrink-0 flex items-center gap-1.5 bg-amber-50/80 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 border border-amber-200/60 dark:border-amber-800/40 rounded-full px-3 py-1 text-xs font-semibold shadow-sm hover:scale-[1.02] active:scale-98 transition-all"
+          title={tierBadgeInfo.title}
+        >
+          <span>{tierBadgeInfo.emoji || '🥈'}</span>
+          <span>{tierBadgeInfo.shortTitle || 'سفير فضي'} · {currentUser.goodwillPoints || 150}{language === 'en' ? 'pts' : 'ن'}</span>
+        </Link>
+      </div>
 
       {/* ========================================================
           2. BEHAVIORAL INTERVENTION: WEEKLY INTEGRITY CHALLENGE

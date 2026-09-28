@@ -68,32 +68,39 @@ export default function HomePage() {
     );
   }, [localizedUser.name, currentUser.role, campusPeriod, language, isAdmin]);
 
-  // Split greeting into main headline, optional custody reminder, and name to fit mobile screens elegantly without truncation
-  const parsedGreeting = useMemo(() => {
-    if (!greetingText) return { main: '', reminder: '', name: '' };
-    
-    let text = greetingText;
-    let namePart = '';
-    const nameSplit = text.split(' · ');
-    if (nameSplit.length > 1) {
-      namePart = nameSplit[1];
-      text = nameSplit[0];
-    }
-    
-    let mainPart = text;
-    let reminderPart = '';
-    const reminderSplit = text.split(' — ');
-    if (reminderSplit.length > 1) {
-      mainPart = reminderSplit[0];
-      reminderPart = reminderSplit[1];
+  const { timeGreeting, campusStatusText } = useMemo(() => {
+    const isAr = language === 'ar';
+    if (isAdmin) {
+      return {
+        timeGreeting: isAr ? 'أهلاً بك 🏛️' : 'Welcome 🏛️',
+        campusStatusText: isAr ? 'منظومة إدارة المدرسة وحفظ الأمانات' : 'School Administration Portal',
+      };
     }
 
-    return {
-      main: mainPart,
-      reminder: reminderPart,
-      name: namePart,
-    };
-  }, [greetingText]);
+    switch (campusPeriod) {
+      case 'morning':
+        return {
+          timeGreeting: isAr ? 'صباح الخير ☀️' : 'Good morning ☀️',
+          campusStatusText: isAr ? 'طاب يومك الدراسي بكل همة ونشاط 🎒' : 'Ready for an active day at school 🎒',
+        };
+      case 'recess':
+        return {
+          timeGreeting: isAr ? 'استراحة موفقة 🥪' : 'Recess time 🥪',
+          campusStatusText: isAr ? 'فترة الفسحة المدرسية — تفقدي متعلقاتك وحقيبتك' : 'Recess break — keep track of your belongings',
+        };
+      case 'dismissal':
+        return {
+          timeGreeting: isAr ? 'دمتِ بخير 🏫' : 'Good afternoon 🏫',
+          campusStatusText: isAr ? 'نهاية اليوم الدراسي — تأكدي من حقيبتك وكتبك 🎒' : 'Dismissal — check your bag and books 🎒',
+        };
+      case 'evening':
+      default:
+        return {
+          timeGreeting: isAr ? 'مساء الخير 🌙' : 'Good evening 🌙',
+          campusStatusText: isAr ? 'استراحة المساء والمراجعة الهادئة 🌙' : 'Evening review and quiet rest 🌙',
+        };
+    }
+  }, [campusPeriod, language, isAdmin]);
 
   const tierBadgeInfo = useMemo(() => {
     switch (currentUserTrustTier) {
@@ -140,67 +147,59 @@ export default function HomePage() {
 
   return (
     <div
-      className="w-full max-w-full overflow-x-hidden px-4 sm:px-6 pt-2 pb-32 sm:pb-16 space-y-3 sm:space-y-4 max-w-5xl mx-auto text-[#18201D] dark:text-[#F1F5F3]"
+      className="w-full max-w-full overflow-x-hidden px-4 sm:px-6 pt-1 pb-28 sm:pb-16 space-y-2.5 sm:space-y-3 max-w-5xl mx-auto text-[#18201D] dark:text-[#F1F5F3]"
       dir={dir}
-      style={{ paddingBottom: '120px' }}
     >
       {/* ========================================================
-          1. COMPACT WELCOME CAPSULE HEADER
+          1. BORDERLESS STATUS HEADER & GLOBAL GAMIFICATION BADGE
       ======================================================== */}
-      <section className="text-start pt-0 w-full max-w-full min-w-0 overflow-hidden">
-        {/* Merged Single Compact Welcome & Student Badge */}
-        <div className="w-full flex items-center justify-between px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-full bg-[#E6F1ED]/80 dark:bg-[#122823]/80 backdrop-blur-md text-xs font-bold border border-[#176B5B]/30 dark:border-[#263834] shadow-[0_2px_10px_-2px_rgba(0,0,0,0.04)]">
+      <section className="w-full flex items-center justify-between gap-3 pt-0.5 select-none">
+        {/* Start side: Borderless student greeting & atmospheric status */}
+        <div className="min-w-0 text-start">
           <button
             onClick={openOnboardingModal}
-            className="inline-flex items-center gap-1.5 text-[#176B5B] dark:text-[#2DD4BF] hover:underline cursor-pointer min-w-0"
+            className="group flex items-center gap-1.5 text-sm sm:text-base font-black text-slate-900 dark:text-white hover:text-[#176B5B] dark:hover:text-[#2DD4BF] transition-colors cursor-pointer truncate"
             title={`${greetingText} - ${language === 'en' ? 'Edit student profile' : 'تعديل بيانات الطالب'}`}
           >
-            <span className="w-1.5 h-1.5 rounded-full bg-[#176B5B] dark:bg-[#2DD4BF] animate-pulse shrink-0" />
             <span className="sr-only">{greetingText}</span>
-            <span className="font-bold shrink-0">{parsedGreeting.main}</span>
-            {parsedGreeting.reminder && (
-              <span className={`${isAdmin ? 'inline' : 'hidden md:inline'} font-normal text-slate-500 dark:text-slate-400 shrink-0`}>
-                — {parsedGreeting.reminder}
-              </span>
-            )}
-            {parsedGreeting.name && (
-              <span className="font-medium truncate">
-                · {parsedGreeting.name}
-              </span>
-            )}
-            <span className="text-[11px] opacity-75 shrink-0">{currentUser.name ? '✏️' : '🎓'}</span>
+            <span className="truncate">
+              {timeGreeting} {localizedUser.name ? `· ${localizedUser.name}` : ''}
+            </span>
+            <span className="text-xs opacity-75 group-hover:opacity-100 transition-opacity shrink-0">
+              {currentUser.name ? '✏️' : '🎓'}
+            </span>
           </button>
 
-          {!isAdmin && (
-            <div className="inline-flex items-center gap-1.5 shrink-0">
-              <span className="text-slate-300 dark:text-slate-600 select-none">|</span>
-              <Link
-                href="/integrity"
-                className="inline-flex items-center gap-1 text-slate-700 dark:text-slate-300 hover:text-[#176B5B] dark:hover:text-[#2DD4BF] transition-colors shrink-0"
-                title={tierBadgeInfo.title}
-              >
-                <span>{tierBadgeInfo.emoji}</span>
-                <span className="font-semibold">{tierBadgeInfo.shortTitle}</span>
-                <span className="text-[#176B5B] dark:text-[#2DD4BF] font-extrabold text-[11px]">
-                  ({currentUser.goodwillPoints || 0}{language === 'en' ? 'pts' : 'ن'})
-                </span>
-              </Link>
-            </div>
-          )}
-
-          {isAdmin && (
-            <div className="inline-flex items-center gap-1.5 shrink-0">
-              <span className="text-slate-300 dark:text-slate-600 select-none">|</span>
-              <Link
-                href="/admin"
-                className="inline-flex items-center gap-1 text-[#176B5B] dark:text-[#2DD4BF] hover:underline shrink-0"
-              >
-                <Building2 className="w-3 h-3" />
-                <span>{language === 'en' ? 'Admin 🏛️' : 'الإدارة 🏛️'}</span>
-              </Link>
-            </div>
-          )}
+          <p className="text-xs text-slate-500 dark:text-slate-400 font-normal leading-tight mt-0.5 truncate">
+            {campusStatusText}
+          </p>
         </div>
+
+        {/* End side: Global Frosted Gamification Badge (Duolingo / Apple Style) */}
+        {!isAdmin && (
+          <Link
+            href="/integrity"
+            className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50/80 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 border border-amber-200/60 dark:border-amber-800/40 shadow-xs hover:shadow-sm hover:scale-[1.02] active:scale-98 transition-all text-xs font-bold"
+            title={tierBadgeInfo.title}
+          >
+            <span className="text-sm shrink-0">{tierBadgeInfo.emoji}</span>
+            <span className="font-bold">{tierBadgeInfo.shortTitle}</span>
+            <span className="text-amber-500/70 dark:text-amber-400/70 select-none">·</span>
+            <span className="font-extrabold text-[#176B5B] dark:text-[#2DD4BF]">
+              {currentUser.goodwillPoints || 0}{language === 'en' ? 'pts' : 'ن'}
+            </span>
+          </Link>
+        )}
+
+        {isAdmin && (
+          <Link
+            href="/admin"
+            className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50/80 dark:bg-emerald-950/40 text-[#176B5B] dark:text-[#2DD4BF] border border-[#176B5B]/30 dark:border-[#263834] shadow-xs hover:shadow-sm transition-all text-xs font-bold"
+          >
+            <Building2 className="w-3.5 h-3.5" />
+            <span>{language === 'en' ? 'Admin 🏛️' : 'الإدارة 🏛️'}</span>
+          </Link>
+        )}
       </section>
 
       {/* ========================================================
@@ -259,7 +258,7 @@ export default function HomePage() {
       {/* ========================================================
           3. LOST & FOUND HUB (Search Bar + Dual Action Cards)
       ======================================================== */}
-      <section className="space-y-3 sm:space-y-4">
+      <section className="space-y-2.5 sm:space-y-3">
         {/* Integrated Live Interactive Instant Search Bar */}
         <InstantSearchBar />
 
@@ -370,7 +369,7 @@ export default function HomePage() {
         <section>
           <Link
             href="/activities"
-            className="w-full px-4 py-3.5 sm:p-5 rounded-3xl bg-white dark:bg-[#15201D] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] hover:shadow-md transition-all flex items-center justify-between gap-3 group cursor-pointer"
+            className="w-full px-4 py-3.5 sm:p-5 rounded-3xl bg-white dark:bg-[#15201D] border border-[#176B5B]/30 dark:border-[#263834] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] hover:shadow-md transition-all flex items-center justify-between gap-3 group cursor-pointer"
           >
             <div className="flex items-center gap-3 min-w-0">
               <div className="w-10 h-10 rounded-2xl bg-[#176B5B] text-white flex items-center justify-center shrink-0 shadow-2xs">
@@ -402,7 +401,7 @@ export default function HomePage() {
       {/* ========================================================
           5. RECENT FOUND ITEMS FEED (Spacious & Comfortable)
       ======================================================== */}
-      <section className="space-y-4 pt-3 sm:pt-4 border-t border-slate-100 dark:border-slate-800/40">
+      <section className="space-y-3 pt-2.5 sm:pt-3 border-t border-slate-100 dark:border-slate-800/40">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-sm sm:text-base font-extrabold text-[#18201D] dark:text-white">

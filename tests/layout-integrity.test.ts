@@ -86,7 +86,7 @@ describe('Layout Integrity, Button Presence & Ergonomics Suite', () => {
       assert.ok(html.includes('md:hidden fixed bottom-3 left-0 right-0 z-40'), 'Mobile dock container must exist');
 
       // The 5 core mobile dock action routes
-      const mobileDockHrefs = ['/', '/explore', '/report', '/integrity', '/my-items'];
+      const mobileDockHrefs = ['/', '/explore', '/leaderboard', '/integrity', '/my-items'];
       for (const href of mobileDockHrefs) {
         assert.ok(html.includes(`href="${href}"`), `Mobile dock must include href: ${href}`);
       }

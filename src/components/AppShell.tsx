@@ -121,11 +121,11 @@ export default function AppShell({ children }: AppShellProps) {
       isActive: isExplore 
     },
     { 
-      id: 'report', 
-      label: t('nav.report'), 
-      href: '/report', 
-      icon: PlusCircle, 
-      isActive: isReport 
+      id: 'leaderboard', 
+      label: language === 'en' ? 'Honor Roll' : 'لوحة الشرف', 
+      href: '/leaderboard', 
+      icon: Trophy, 
+      isActive: isLeaderboard 
     },
     { 
       id: 'integrity', 

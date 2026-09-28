@@ -152,11 +152,13 @@ export default function HomePage() {
     >
       {/* ========================================================
           1. FIRST VIEWPORT CONTAINER (Dashboard Canvas)
-          - Fills full viewport above bottom navigation dock
-          - Balances breathing room with justify-between
-          - Strictly ends at Recent Items Hint Row above the dock
+          - Ends cleanly at the Recent Items Hint Row above the dock
+          - Strictly NO justify-between among cards; uniform gap-4 stacking
+          - Enforces min-h so the cards grid is strictly below the fold
       ======================================================== */}
-      <div className="w-full min-h-[calc(100dvh-5rem)] flex flex-col justify-between pb-3">
+      <div className="w-full min-h-[calc(100dvh-8rem)] md:min-h-0 flex flex-col justify-start">
+        {/* --- Top Dashboard Stack (Uniform gap-4) --- */}
+        <div className="w-full flex flex-col justify-start gap-4">
         {/* --- Header Section (Clean & Borderless) --- */}
       <div className="w-full flex items-center justify-between pt-1 pb-1">
         {/* Right: Greetings & Subtitle */}
@@ -377,9 +379,10 @@ export default function HomePage() {
           </Link>
 
         </section>
+        </div>
 
         {/* --- Recent Items Hint Row (Strict Fixed Dimensions) --- */}
-        <div className="w-full flex items-center justify-between px-1 h-[24px] shrink-0">
+        <div className="w-full flex items-center justify-between mt-auto pt-3 px-1 h-[24px] shrink-0">
           {/* Right: Section Title */}
           <span className="text-[13px] font-bold text-slate-800 dark:text-white leading-none">
             {language === 'en' ? 'Recently Found Belongings' : 'أحدث المعثورات المدرسية'}
@@ -397,10 +400,10 @@ export default function HomePage() {
       </div>
 
       {/* ========================================================
-          5. RECENT FOUND ITEMS CARDS (Strict Below-the-fold Containment)
+          5. RECENT FOUND ITEMS CARDS (Strict Scroll Containment)
           - Starts below the first viewport; revealed only upon scroll
       ======================================================== */}
-      <div className="w-full pt-4 pb-32">
+      <div className="w-full mt-6 md:mt-4 pb-32">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {recentFoundItems.map((item) => (
             <ItemCard key={item.id} item={item} variant="row" />

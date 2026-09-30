@@ -91,8 +91,8 @@ export default function AppShell({ children }: AppShellProps) {
 
   const isAdminUser = canAccessAdmin(currentUser);
 
-  const pendingClaimsCount = getClaimsForMyItems().filter(
-    (c) => c.claim.status === 'pending'
+  const pendingClaimsCount = (getClaimsForMyItems() || []).filter(
+    (c) => c?.claim?.status === 'pending'
   ).length;
 
   const isHome = pathname === '/';

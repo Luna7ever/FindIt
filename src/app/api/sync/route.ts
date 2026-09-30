@@ -18,6 +18,56 @@ let edgeMemoryStore = {
   lastSyncedAt: new Date().toISOString(),
 };
 
+function formatD1Item(row: any) {
+  let visualFeatures = undefined;
+  if (row.visual_features) {
+    try {
+      visualFeatures = typeof row.visual_features === 'string' ? JSON.parse(row.visual_features) : row.visual_features;
+    } catch {}
+  }
+  return {
+    id: row.id,
+    title: row.title || '',
+    type: row.type || 'lost',
+    category: row.category || 'other',
+    locationId: row.location_id || row.locationId || 'unknown',
+    color: row.color || undefined,
+    brand: row.brand || undefined,
+    description: row.description || '',
+    imageUrl: row.image_url || row.imageUrl || undefined,
+    visualFeatures,
+    status: row.status || 'open',
+    custody: row.custody || 'student',
+    secretQuestion: row.secret_question || row.secretQuestion || undefined,
+    secretAnswer: row.secret_answer_hash || undefined,
+    reportedBy: {
+      id: row.reported_by_id || row.reportedBy?.id || 'unknown',
+      name: row.reported_by_name || row.reportedBy?.name || 'مستخدم',
+      role: row.reported_by_role || row.reportedBy?.role || 'student',
+    },
+    createdAt: row.created_at || row.createdAt || new Date().toISOString(),
+    updatedAt: row.updated_at || row.updatedAt || new Date().toISOString(),
+  };
+}
+
+function formatD1Claim(row: any) {
+  return {
+    id: row.id,
+    itemId: row.item_id || row.itemId,
+    claimant: {
+      id: row.claimer_id || row.claimant?.id || 'unknown',
+      name: row.claimer_name || row.claimant?.name || 'مستخدم',
+      role: row.claimer_role || row.claimant?.role || 'student',
+    },
+    answerText: row.answer_text || row.answerText || '',
+    status: row.status || 'pending',
+    handoverPin: row.handover_pin || row.handoverPin || '',
+    failedPinAttempts: row.failed_pin_attempts || 0,
+    createdAt: row.created_at || row.createdAt || new Date().toISOString(),
+    updatedAt: row.updated_at || row.updatedAt || new Date().toISOString(),
+  };
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -29,17 +79,32 @@ export async function GET(request: NextRequest) {
 
     if (d1 && typeof d1.prepare === 'function') {
       try {
+        let items: any[] = [];
+        let claims: any[] = [];
+
         if (entity === 'items' || entity === 'all') {
           const itemsResult = await d1.prepare('SELECT * FROM items ORDER BY updated_at DESC LIMIT 200').all();
-          return NextResponse.json({
-            status: 'ok',
-            provider: 'cloudflare_d1_native',
-            connected: true,
-            totalItems: itemsResult.results?.length || 0,
-            items: itemsResult.results || [],
-            syncedAt: new Date().toISOString(),
-          });
+          items = (itemsResult.results || []).map(formatD1Item);
         }
+
+        if (entity === 'claims' || entity === 'all') {
+          try {
+            const claimsResult = await d1.prepare('SELECT * FROM claims ORDER BY updated_at DESC LIMIT 200').all();
+            claims = (claimsResult.results || []).map(formatD1Claim);
+          } catch (claimsErr) {
+            console.warn('Cloudflare D1 claims query failed, fallback empty:', claimsErr);
+          }
+        }
+
+        return NextResponse.json({
+          status: 'ok',
+          provider: 'cloudflare_d1_native',
+          connected: true,
+          totalItems: items.length,
+          items,
+          claims,
+          syncedAt: new Date().toISOString(),
+        });
       } catch (d1Err) {
         console.warn('Cloudflare D1 query error, falling back to edge store:', d1Err);
       }
@@ -51,8 +116,8 @@ export async function GET(request: NextRequest) {
       connected: true,
       totalItems: edgeMemoryStore.items.length,
       syncedAt: edgeMemoryStore.lastSyncedAt,
-      items: edgeMemoryStore.items,
-      claims: edgeMemoryStore.claims,
+      items: (edgeMemoryStore.items || []).map(formatD1Item),
+      claims: (edgeMemoryStore.claims || []).map(formatD1Claim),
       activities: edgeMemoryStore.activitySubmissions,
     });
   } catch (error) {
@@ -139,9 +204,9 @@ export async function POST(request: NextRequest) {
             `).bind(
               claim.id,
               claim.itemId,
-              claim.claimer?.id || 'unknown',
-              claim.claimer?.name || 'Unknown',
-              claim.claimer?.role || 'student',
+              claim.claimant?.id || claim.claimer?.id || 'unknown',
+              claim.claimant?.name || claim.claimer?.name || 'Unknown',
+              claim.claimant?.role || claim.claimer?.role || 'student',
               claim.answerText || '',
               claim.status || 'pending',
               claim.handoverPin || null,

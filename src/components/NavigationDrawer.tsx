@@ -72,8 +72,8 @@ export default function NavigationDrawer({
   const [showPledge, setShowPledge] = useState(false);
   const isAdminUser = canAccessAdmin(currentUser);
 
-  const pendingClaimsCount = getClaimsForMyItems().filter(
-    (c) => c.claim.status === 'pending'
+  const pendingClaimsCount = (getClaimsForMyItems() || []).filter(
+    (c) => c?.claim?.status === 'pending'
   ).length;
 
   // Close on escape key

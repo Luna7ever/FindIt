@@ -167,9 +167,50 @@ class CloudflareSyncService {
       const data = await response.json();
       if (data.status === 'ok') {
         this.lastSyncedAt = data.syncedAt;
+        const normalizedItems: Item[] = Array.isArray(data.items)
+          ? data.items.map((item: any) => ({
+              ...item,
+              locationId: item.locationId || item.location_id || 'unknown',
+              imageUrl: item.imageUrl || item.image_url,
+              createdAt: item.createdAt || item.created_at || new Date().toISOString(),
+              updatedAt: item.updatedAt || item.updated_at || new Date().toISOString(),
+              reportedBy: {
+                id: item.reportedBy?.id || item.reported_by_id || 'unknown',
+                name: item.reportedBy?.name || item.reported_by_name || 'مستخدم',
+                role: item.reportedBy?.role || item.reported_by_role || 'student',
+                grade: item.reportedBy?.grade,
+                classroom: item.reportedBy?.classroom,
+                avatar: item.reportedBy?.avatar,
+                isTrusted: item.reportedBy?.isTrusted,
+                goodwillPoints: item.reportedBy?.goodwillPoints,
+                returnedCount: item.reportedBy?.returnedCount,
+              },
+            }))
+          : [];
+
+        const normalizedClaims: Claim[] = Array.isArray(data.claims)
+          ? data.claims.map((claim: any) => ({
+              ...claim,
+              itemId: claim.itemId || claim.item_id,
+              handoverPin: claim.handoverPin || claim.handover_pin || '',
+              failedPinAttempts: claim.failedPinAttempts || claim.failed_pin_attempts || 0,
+              createdAt: claim.createdAt || claim.created_at || new Date().toISOString(),
+              updatedAt: claim.updatedAt || claim.updated_at || new Date().toISOString(),
+              claimant: {
+                id: claim.claimant?.id || claim.claimer_id || 'unknown',
+                name: claim.claimant?.name || claim.claimer_name || 'مستخدم',
+                role: claim.claimant?.role || claim.claimer_role || 'student',
+                grade: claim.claimant?.grade,
+                classroom: claim.claimant?.classroom,
+                avatar: claim.claimant?.avatar,
+                isTrusted: claim.claimant?.isTrusted,
+              },
+            }))
+          : [];
+
         return {
-          items: data.items,
-          claims: data.claims,
+          items: normalizedItems,
+          claims: normalizedClaims,
           activitySubmissions: data.activities,
           syncedAt: data.syncedAt,
         };

@@ -180,6 +180,57 @@ export function getStoredStudent(): UserProfile | null {
   return null;
 }
 
+export function normalizeItem(raw: any): Item {
+  if (!raw || typeof raw !== 'object') {
+    return raw;
+  }
+  const reportedBy = raw.reportedBy || {};
+  return {
+    ...raw,
+    locationId: raw.locationId || raw.location_id || 'unknown',
+    imageUrl: raw.imageUrl || raw.image_url,
+    createdAt: raw.createdAt || raw.created_at || new Date().toISOString(),
+    updatedAt: raw.updatedAt || raw.updated_at || new Date().toISOString(),
+    reportedBy: {
+      id: reportedBy?.id || raw.reported_by_id || 'unknown',
+      name: reportedBy?.name || raw.reported_by_name || 'مستخدم',
+      role: reportedBy?.role || raw.reported_by_role || 'student',
+      grade: reportedBy?.grade,
+      classroom: reportedBy?.classroom,
+      avatar: reportedBy?.avatar,
+      isTrusted: Boolean(reportedBy?.isTrusted),
+      goodwillPoints: typeof reportedBy?.goodwillPoints === 'number' ? reportedBy.goodwillPoints : 0,
+      returnedCount: typeof reportedBy?.returnedCount === 'number' ? reportedBy.returnedCount : 0,
+    },
+  };
+}
+
+export function normalizeClaim(raw: any): Claim {
+  if (!raw || typeof raw !== 'object') {
+    return raw;
+  }
+  const claimant = raw.claimant || {};
+  return {
+    ...raw,
+    itemId: raw.itemId || raw.item_id || '',
+    answerText: raw.answerText || raw.answer_text || '',
+    status: raw.status || 'pending',
+    handoverPin: raw.handoverPin || raw.handover_pin || '',
+    failedPinAttempts: typeof raw.failedPinAttempts === 'number' ? raw.failedPinAttempts : (raw.failed_pin_attempts || 0),
+    createdAt: raw.createdAt || raw.created_at || new Date().toISOString(),
+    updatedAt: raw.updatedAt || raw.updated_at || new Date().toISOString(),
+    claimant: {
+      id: claimant?.id || raw.claimer_id || 'unknown',
+      name: claimant?.name || raw.claimer_name || 'مستخدم',
+      role: claimant?.role || raw.claimer_role || 'student',
+      grade: claimant?.grade,
+      classroom: claimant?.classroom,
+      avatar: claimant?.avatar,
+      isTrusted: Boolean(claimant?.isTrusted),
+    },
+  };
+}
+
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<Item[]>(INITIAL_SEED_ITEMS);
   const [claims, setClaims] = useState<Claim[]>([]);
@@ -249,10 +300,20 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       const savedTheme = localStorage.getItem(THEME_STORAGE_KEY) as AppTheme | null;
 
       if (savedItems) {
-        setItems(JSON.parse(savedItems));
+        try {
+          const parsed = JSON.parse(savedItems);
+          if (Array.isArray(parsed)) {
+            setItems(parsed.map(normalizeItem));
+          }
+        } catch {}
       }
       if (savedClaims) {
-        setClaims(JSON.parse(savedClaims));
+        try {
+          const parsed = JSON.parse(savedClaims);
+          if (Array.isArray(parsed)) {
+            setClaims(parsed.map(normalizeClaim));
+          }
+        } catch {}
       }
       if (savedIntegrity) {
         setIntegrityAttempts(JSON.parse(savedIntegrity));
@@ -392,13 +453,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const unsubItems = firestoreService.subscribeToItems((firestoreItems) => {
       if (firestoreItems && firestoreItems.length > 0) {
-        setItems(firestoreItems);
+        setItems(firestoreItems.map(normalizeItem));
       }
     });
 
     const unsubClaims = firestoreService.subscribeToClaims((firestoreClaims) => {
       if (firestoreClaims && firestoreClaims.length > 0) {
-        setClaims(firestoreClaims);
+        setClaims(firestoreClaims.map(normalizeClaim));
       }
     });
 
@@ -554,9 +615,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
       if (Array.isArray(remoteData.items) && remoteData.items.length > 0) {
         setItems((current) => {
-          const map = new Map(current.map((item) => [item.id, item]));
+          const map = new Map(current.map((item) => [item.id, normalizeItem(item)]));
           let hasNew = false;
-          remoteData.items!.forEach((remoteItem) => {
+          remoteData.items!.forEach((rawRemoteItem) => {
+            const remoteItem = normalizeItem(rawRemoteItem);
             const existing = map.get(remoteItem.id);
             if (!existing) {
               map.set(remoteItem.id, remoteItem);
@@ -572,9 +634,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
       if (Array.isArray(remoteData.claims) && remoteData.claims.length > 0) {
         setClaims((current) => {
-          const map = new Map(current.map((claim) => [claim.id, claim]));
+          const map = new Map(current.map((claim) => [claim.id, normalizeClaim(claim)]));
           let hasNew = false;
-          remoteData.claims!.forEach((remoteClaim) => {
+          remoteData.claims!.forEach((rawRemoteClaim) => {
+            const remoteClaim = normalizeClaim(rawRemoteClaim);
             const existing = map.get(remoteClaim.id);
             if (!existing) {
               map.set(remoteClaim.id, remoteClaim);
@@ -838,29 +901,59 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [claims, items]);
 
   const getClaimForCurrentUserAndItem = useCallback((itemId: string): Claim | undefined => {
-    return claims.find(
-      (c) => c.itemId === itemId && c.claimant.id === currentUser.id
-    );
-  }, [claims, currentUser.id]);
+    try {
+      if (!currentUser?.id || !itemId || !Array.isArray(claims)) return undefined;
+      return claims.find(
+        (c) => Boolean(c && c.itemId === itemId && (c.claimant?.id === currentUser.id || (c as any)?.claimer_id === currentUser.id))
+      );
+    } catch {
+      return undefined;
+    }
+  }, [claims, currentUser?.id]);
 
   const getClaimsForMyItems = useCallback((): { claim: Claim; item: Item }[] => {
-    if (currentUser.role === 'admin') {
-      return claims.map((claim) => ({
-        claim,
-        item: items.find((i) => i.id === claim.itemId)!,
-      })).filter((entry) => !!entry.item);
-    }
+    try {
+      if (!currentUser?.id) {
+        return [];
+      }
 
-    const myItemIds = new Set(
-      items.filter((i) => i.reportedBy.id === currentUser.id).map((i) => i.id)
-    );
-    return claims
-      .filter((c) => myItemIds.has(c.itemId) || c.claimant.id === currentUser.id)
-      .map((claim) => ({
-        claim,
-        item: items.find((i) => i.id === claim.itemId)!,
-      }))
-      .filter((entry) => !!entry.item);
+      const safeClaims = Array.isArray(claims) ? claims : [];
+      const safeItems = Array.isArray(items) ? items : [];
+
+      if (currentUser.role === 'admin') {
+        return safeClaims
+          .filter(Boolean)
+          .map((claim) => ({
+            claim,
+            item: safeItems.find((i) => i && i.id === claim.itemId),
+          }))
+          .filter((entry): entry is { claim: Claim; item: Item } => Boolean(entry.claim && entry.item));
+      }
+
+      const currentUserId = currentUser.id;
+      const myItemIds = new Set(
+        safeItems
+          .filter((i) => {
+            const reporterId = i?.reportedBy?.id || (i as any)?.reported_by_id;
+            return Boolean(reporterId && reporterId === currentUserId);
+          })
+          .map((i) => i.id)
+      );
+
+      return safeClaims
+        .filter((c) => {
+          if (!c) return false;
+          const claimantId = c.claimant?.id || (c as any)?.claimer_id;
+          return Boolean((c.itemId && myItemIds.has(c.itemId)) || (claimantId && claimantId === currentUserId));
+        })
+        .map((claim) => ({
+          claim,
+          item: safeItems.find((i) => i && i.id === claim.itemId),
+        }))
+        .filter((entry): entry is { claim: Claim; item: Item } => Boolean(entry.claim && entry.item));
+    } catch {
+      return [];
+    }
   }, [currentUser, items, claims]);
 
   const currentUserTrustTier = useMemo(() => {

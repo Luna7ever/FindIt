@@ -46,8 +46,8 @@ export default function Navbar() {
   const [showQRModal, setShowQRModal] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
 
-  const pendingClaimsCount = getClaimsForMyItems().filter(
-    (c) => c.claim.status === 'pending'
+  const pendingClaimsCount = (getClaimsForMyItems() || []).filter(
+    (c) => c?.claim?.status === 'pending'
   ).length;
 
   return (

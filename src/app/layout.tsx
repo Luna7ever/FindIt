@@ -70,13 +70,37 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ar" dir="rtl" suppressHydrationWarning className={`${ibmPlexArabic.variable} ${plusJakarta.variable}`}>
+    <html lang="ar" dir="rtl" translate="no" suppressHydrationWarning className={`notranslate ${ibmPlexArabic.variable} ${plusJakarta.variable}`}>
       <head>
+        <meta name="google" content="notranslate" />
         <link rel="icon" href="/icon.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/icon.svg" />
         <script
           dangerouslySetInnerHTML={{
             __html: `
+              // 1. Google Translate & Browser Extension DOM Reconciliation Shield
+              (function() {
+                try {
+                  if (typeof Node !== 'undefined' && Node.prototype) {
+                    var originalRemoveChild = Node.prototype.removeChild;
+                    Node.prototype.removeChild = function(child) {
+                      if (child && child.parentNode !== this) {
+                        return child;
+                      }
+                      return originalRemoveChild.apply(this, arguments);
+                    };
+                    var originalInsertBefore = Node.prototype.insertBefore;
+                    Node.prototype.insertBefore = function(newNode, referenceNode) {
+                      if (referenceNode && referenceNode.parentNode !== this) {
+                        return newNode;
+                      }
+                      return originalInsertBefore.apply(this, arguments);
+                    };
+                  }
+                } catch(e) {}
+              })();
+
+              // 2. Client Theme & Language Early Rehydration
               (function() {
                 try {
                   var savedTheme = localStorage.getItem('findit_theme_v4');
@@ -100,7 +124,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="min-h-screen bg-[#F7F7F4] dark:bg-[#0D1412] text-[#18201D] dark:text-[#F0F4F2] font-sans antialiased selection:bg-[#E6F1ED] selection:text-[#176B5B]">
+      <body className="notranslate min-h-screen bg-[#F7F7F4] dark:bg-[#0D1412] text-[#18201D] dark:text-[#F0F4F2] font-sans antialiased selection:bg-[#E6F1ED] selection:text-[#176B5B]" translate="no">
         <AppProvider>
           <AppShell>
             {children}

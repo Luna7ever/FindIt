@@ -40,6 +40,7 @@ import NotificationCenter from '@/components/NotificationCenter';
 import ToastNotification from '@/components/ToastNotification';
 import UserAvatar from '@/components/UserAvatar';
 import TrustBadge from '@/components/TrustBadge';
+import { ContentErrorBoundary } from '@/components/ContentErrorBoundary';
 import { env } from '@/config/env';
 
 interface AppShellProps {
@@ -574,7 +575,9 @@ export default function AppShell({ children }: AppShellProps) {
             transition={{ duration: 0.15, ease: "easeOut" }}
             className="w-full max-w-5xl mx-auto flex-1 flex flex-col min-w-0 overflow-x-hidden pb-[90px] md:pb-0"
           >
-            {children}
+            <ContentErrorBoundary>
+              {children}
+            </ContentErrorBoundary>
           </motion.div>
         </AnimatePresence>
       </main>

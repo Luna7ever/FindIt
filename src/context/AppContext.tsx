@@ -183,15 +183,9 @@ export function getStoredStudent(): UserProfile | null {
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<Item[]>(INITIAL_SEED_ITEMS);
   const [claims, setClaims] = useState<Claim[]>([]);
-  // Lazy initial state dynamically reads registered student from localStorage, eliminating any hardcoded demo profile
-  const [currentUser, setCurrentUser] = useState<UserProfile>(() => getStoredStudent() || EMPTY_STUDENT_PROFILE);
-  const [users, setUsers] = useState<UserProfile[]>(() => {
-    const student = getStoredStudent();
-    if (student && student.name) {
-      return [student, ...DEMO_USERS.filter((u) => u.role !== 'student' || u.id !== student.id)];
-    }
-    return DEMO_USERS;
-  });
+  // Deterministic initial state ensures zero hydration mismatch between SSR and client
+  const [currentUser, setCurrentUser] = useState<UserProfile>(EMPTY_STUDENT_PROFILE);
+  const [users, setUsers] = useState<UserProfile[]>(DEMO_USERS);
   const [integrityAttempts, setIntegrityAttempts] = useState<IntegrityAttempt[]>([]);
   const [notifications, setNotifications] = useState<NotificationItem[]>(INITIAL_NOTIFICATIONS);
   const [activitySubmissions, setActivitySubmissions] = useState<ActivitySubmission[]>(INITIAL_ACTIVITY_SUBMISSIONS);

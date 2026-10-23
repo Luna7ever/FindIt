@@ -12,7 +12,10 @@ import {
   CheckCircle2, 
   MapPin, 
   HelpCircle,
-  ArrowLeft
+  ArrowLeft,
+  Clock,
+  KeyRound,
+  AlertCircle
 } from 'lucide-react';
 
 interface ClaimModalProps {
@@ -138,39 +141,120 @@ export default function ClaimModal({ itemId, isOpen, onClose }: ClaimModalProps)
 
           </div>
         ) : (
-          <div className="space-y-5 text-center py-2">
-            <div className="w-14 h-14 rounded-2xl bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-[#2DD4BF] mx-auto flex items-center justify-center">
-              <CheckCircle2 className="w-8 h-8" />
-            </div>
+          (() => {
+            const currentClaim = existingClaim || (isSuccess ? { status: 'pending', answerText, handoverPin: generatedClaimPin } : null);
+            const status = currentClaim?.status || 'pending';
 
-            <div className="space-y-1">
-              <h2 className="text-xl font-black text-[#18201D] dark:text-white">
-                {language === 'en' ? 'Claim Submitted Successfully!' : 'تم تقديم طلب الاسترداد بنجاح!'}
-              </h2>
-              <p className="text-xs text-[#66706B] dark:text-[#94A39D]">
-                {language === 'en' ? 'Your request has been recorded. Present this PIN upon collection.' : 'تم تسجيل طلبك، استخدم رمز PIN السري أدناه عند استلام الغرض.'}
-              </p>
-            </div>
+            if (status === 'approved') {
+              return (
+                <div className="space-y-5 text-center py-2">
+                  <div className="w-14 h-14 rounded-2xl bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-[#2DD4BF] mx-auto flex items-center justify-center">
+                    <CheckCircle2 className="w-8 h-8" />
+                  </div>
 
-            <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-[#122823] dark:to-[#173830] border border-emerald-200 dark:border-[#1E463D] space-y-1">
-              <span className="text-[11px] font-bold text-[#66706B] dark:text-[#94A39D] block">
-                {language === 'en' ? 'Your Secret Handover PIN:' : 'رمز التسليم السري (PIN):'}
-              </span>
-              <span className="font-mono text-3xl font-black tracking-widest text-[#176B5B] dark:text-[#2DD4BF]">
-                {generatedClaimPin || existingClaim?.handoverPin || '----'}
-              </span>
-            </div>
+                  <div className="space-y-1">
+                    <h2 className="text-xl font-black text-[#18201D] dark:text-white">
+                      {language === 'en' ? 'Claim Approved by Finder! 🎉' : 'تم قبول إثبات الملكية بنجاح! 🎉'}
+                    </h2>
+                    <p className="text-xs text-[#66706B] dark:text-[#94A39D]">
+                      {language === 'en' 
+                        ? 'The finder verified your answer. Present this 4-digit PIN when meeting to collect your item.' 
+                        : 'وافق العاثر على إجابتك وتأكد من ملكيتك. أعطه رمز التسليم السري (PIN) أدناه عند المقابلة لاستلام أمانتك.'}
+                    </p>
+                  </div>
 
-            <button
-              onClick={() => {
-                onClose();
-                router.push('/my-items');
-              }}
-              className="w-full py-3 rounded-2xl bg-[#176B5B] dark:bg-[#2DD4BF] text-white dark:text-slate-950 font-bold text-xs hover:bg-[#125648] dark:hover:bg-[#14B8A6] transition-colors cursor-pointer"
-            >
-              {language === 'en' ? 'View in My Items' : 'متابعة الطلب في صفحة أغراضي'}
-            </button>
-          </div>
+                  <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-[#122823] dark:to-[#173830] border border-emerald-200 dark:border-[#1E463D] space-y-1">
+                    <span className="text-[11px] font-bold text-[#66706B] dark:text-[#94A39D] block">
+                      {language === 'en' ? 'Your Secret Handover PIN:' : 'رمز التسليم السري الخاص بك (PIN):'}
+                    </span>
+                    <span className="font-mono text-3xl font-black tracking-widest text-[#176B5B] dark:text-[#2DD4BF]">
+                      {currentClaim?.handoverPin || '----'}
+                    </span>
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      onClose();
+                      router.push('/my-items');
+                    }}
+                    className="w-full py-3 rounded-2xl bg-[#176B5B] dark:bg-[#2DD4BF] text-white dark:text-slate-950 font-bold text-xs hover:bg-[#125648] dark:hover:bg-[#14B8A6] transition-colors cursor-pointer"
+                  >
+                    {language === 'en' ? 'View in My Items' : 'متابعة الطلب في صفحة أغراضي'}
+                  </button>
+                </div>
+              );
+            }
+
+            if (status === 'rejected') {
+              return (
+                <div className="space-y-5 text-center py-2">
+                  <div className="w-14 h-14 rounded-2xl bg-rose-100 dark:bg-rose-950/80 text-rose-700 dark:text-rose-400 mx-auto flex items-center justify-center">
+                    <AlertCircle className="w-8 h-8" />
+                  </div>
+
+                  <div className="space-y-1">
+                    <h2 className="text-xl font-black text-[#18201D] dark:text-white">
+                      {language === 'en' ? 'Answer Not Approved' : 'لم يتم قبول الإجابة'}
+                    </h2>
+                    <p className="text-xs text-[#66706B] dark:text-[#94A39D]">
+                      {language === 'en'
+                        ? 'The finder reviewed your answer and found it does not match. If this is yours, please visit the school admin office.'
+                        : 'راجع العاثر إجابتك وتبيّن عدم تطابقها مع مواصفات الأمانة. إذا كانت تخصك، يرجى التوجه لغرفة الإشراف أو إدارة المدرسة.'}
+                    </p>
+                  </div>
+
+                  <button
+                    onClick={onClose}
+                    className="w-full py-3 rounded-2xl bg-[#18201D] dark:bg-[#1C2B27] text-white font-bold text-xs hover:bg-[#2A3834] transition-colors cursor-pointer"
+                  >
+                    {language === 'en' ? 'Close' : 'إغلاق'}
+                  </button>
+                </div>
+              );
+            }
+
+            // Default: Pending review by finder
+            return (
+              <div className="space-y-5 text-center py-2">
+                <div className="w-14 h-14 rounded-2xl bg-amber-100 dark:bg-amber-950/80 text-amber-700 dark:text-amber-400 mx-auto flex items-center justify-center">
+                  <Clock className="w-8 h-8" />
+                </div>
+
+                <div className="space-y-1">
+                  <h2 className="text-xl font-black text-[#18201D] dark:text-white">
+                    {language === 'en' ? 'Answer Sent to Finder ⏳' : 'تم إرسال إجابتك للعاثر بنجاح ⏳'}
+                  </h2>
+                  <p className="text-xs text-[#66706B] dark:text-[#94A39D]">
+                    {language === 'en' 
+                      ? 'Your answer is currently under review by the student who found the item. Once approved, your Handover PIN will activate.' 
+                      : 'طلبك قيد مراجعة الطالب الذي عثر على الأمانة للتأكد من صحة إجابتك. بمجرد موافقته، سيتفعل رمز الاستلام (PIN) فوراً لتلتقيا في المدرسة.'}
+                  </p>
+                </div>
+
+                <div className="p-3.5 rounded-2xl bg-[#F1F3F0] dark:bg-[#1C2B27] border border-[#E4E7E4] dark:border-[#2D3E3A] text-start space-y-1">
+                  <span className="text-[10px] font-bold text-[#66706B] dark:text-[#94A39D] block">
+                    {language === 'en' ? 'Your Submitted Answer:' : 'إجابتك المسجلة على السؤال السري:'}
+                  </span>
+                  <p className="font-bold text-xs text-[#18201D] dark:text-white">
+                    «{answerText || (currentClaim as any)?.answerText}»
+                  </p>
+                  <span className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold block pt-1">
+                    • {language === 'en' ? 'Status: Awaiting human verification by finder' : 'الحالة: بانتظار التحقق اليدوي والموافقة من العاثر'}
+                  </span>
+                </div>
+
+                <button
+                  onClick={() => {
+                    onClose();
+                    router.push('/my-items');
+                  }}
+                  className="w-full py-3 rounded-2xl bg-[#176B5B] dark:bg-[#2DD4BF] text-white dark:text-slate-950 font-bold text-xs hover:bg-[#125648] dark:hover:bg-[#14B8A6] transition-colors cursor-pointer"
+                >
+                  {language === 'en' ? 'View Status in My Items' : 'متابعة الحالة في صفحة أغراضي'}
+                </button>
+              </div>
+            );
+          })()
         )}
       </div>
     </div>

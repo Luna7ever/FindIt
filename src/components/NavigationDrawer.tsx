@@ -36,8 +36,6 @@ import { env } from '@/config/env';
 interface NavigationDrawerProps {
   isOpen: boolean;
   onClose: () => void;
-  onOpenQRScanner: () => void;
-  onOpenQRModal: () => void;
   onOpenCertificateModal: () => void;
   onOpenOnboardingModal: () => void;
 }
@@ -45,8 +43,6 @@ interface NavigationDrawerProps {
 export default function NavigationDrawer({
   isOpen,
   onClose,
-  onOpenQRScanner,
-  onOpenQRModal,
   onOpenCertificateModal,
   onOpenOnboardingModal
 }: NavigationDrawerProps) {
@@ -298,36 +294,7 @@ export default function NavigationDrawer({
                 </span>
                 <div className="space-y-1.5">
                   
-                  {/* ISEF Benchmark Suite Link (Available on Mobile to Judges & Students) */}
-                  <Link
-                    href="/admin/benchmark"
-                    onClick={onClose}
-                    className={`w-full flex items-center justify-between p-2.5 rounded-2xl transition-all border ${
-                      pathname === '/admin/benchmark'
-                        ? 'bg-[#E6F1ED] dark:bg-[#122823] border-[#176B5B] dark:border-[#2DD4BF] text-[#176B5B] dark:text-[#2DD4BF] font-black shadow-xs'
-                        : 'bg-gradient-to-r from-emerald-50/70 to-teal-50/70 dark:from-[#13201D] dark:to-[#162723] border-[#176B5B]/30 dark:border-[#2DD4BF]/30 text-[#18201D] dark:text-white hover:bg-[#E6F1ED] dark:hover:bg-[#1C2724]'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-xl bg-[#176B5B] text-white dark:bg-[#2DD4BF] dark:text-[#18201D] flex items-center justify-center shrink-0 shadow-2xs">
-                        <Cpu className="w-4.5 h-4.5" />
-                      </div>
-                      <div className="text-start">
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-xs font-bold leading-tight">
-                            {language === 'en' ? 'ISEF Scientific Benchmark' : 'لوحة تقييم أيسف العلمي'}
-                          </span>
-                          <span className="px-1.5 py-0.5 rounded bg-[#176B5B] text-white dark:bg-[#2DD4BF] dark:text-[#18201D] text-[8px] font-black">
-                            ISEF
-                          </span>
-                        </div>
-                        <p className="text-[10px] text-[#66706B] dark:text-[#94A39D]">
-                          {language === 'en' ? 'Live Confusion Matrix & F1-Score' : 'مصفوفة الارتباك والدقة العلمية'}
-                        </p>
-                      </div>
-                    </div>
-                    <ArrowIcon className="w-4 h-4 text-[#176B5B] dark:text-[#2DD4BF]" />
-                  </Link>
+
 
                   {/* School Activities & Volunteering Quests */}
                   <Link
@@ -446,59 +413,6 @@ export default function NavigationDrawer({
                       <ArrowIcon className="w-4 h-4 text-[#66706B] dark:text-[#94A39D]" />
                     </button>
                   )}
-
-                </div>
-              </div>
-
-              {/* SECTION 2: School Field & Operations Tools */}
-              <div>
-                <span className="text-[10px] font-black text-[#66706B] dark:text-[#94A39D] uppercase tracking-wider px-2 block mb-2">
-                  {t('drawer.toolsSection')}
-                </span>
-                <div className="space-y-1.5">
-                  
-                  {/* Live Camera Scanner */}
-                  <button
-                    onClick={() => handleAction(onOpenQRScanner)}
-                    className="w-full flex items-center justify-between p-2.5 rounded-2xl bg-white dark:bg-[#15201D] border border-[#E4E7E4] dark:border-[#263834] hover:bg-[#F8FAF9] dark:hover:bg-[#1C2724] transition-all text-start cursor-pointer"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 flex items-center justify-center">
-                        <Camera className="w-4.5 h-4.5" />
-                      </div>
-                      <div className="text-start">
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-xs font-bold leading-tight text-[#18201D] dark:text-white">{t('drawer.cameraScanner')}</span>
-                          <span className="px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-300 text-[8px] font-bold font-mono">
-                            {t('drawer.live')}
-                          </span>
-                        </div>
-                        <p className="text-[10px] text-[#66706B] dark:text-[#94A39D]">
-                          {t('drawer.cameraScannerDesc')}
-                        </p>
-                      </div>
-                    </div>
-                    <ArrowIcon className="w-4 h-4 text-[#66706B] dark:text-[#94A39D]" />
-                  </button>
-
-                  {/* Printable QR Posters */}
-                  <button
-                    onClick={() => handleAction(onOpenQRModal)}
-                    className="w-full flex items-center justify-between p-2.5 rounded-2xl bg-white dark:bg-[#15201D] border border-[#E4E7E4] dark:border-[#263834] hover:bg-[#F8FAF9] dark:hover:bg-[#1C2724] transition-all text-start cursor-pointer"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-xl bg-[#F1F3F0] dark:bg-[#1C2724] text-[#66706B] dark:text-[#94A39D] flex items-center justify-center">
-                        <QrCode className="w-4.5 h-4.5" />
-                      </div>
-                      <div className="text-start">
-                        <span className="text-xs font-bold leading-tight text-[#18201D] dark:text-white block">{t('drawer.qrPosters')}</span>
-                        <p className="text-[10px] text-[#66706B] dark:text-[#94A39D]">
-                          {t('drawer.qrPostersDesc')}
-                        </p>
-                      </div>
-                    </div>
-                    <ArrowIcon className="w-4 h-4 text-[#66706B] dark:text-[#94A39D]" />
-                  </button>
 
                 </div>
               </div>

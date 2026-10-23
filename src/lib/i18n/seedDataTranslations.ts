@@ -85,27 +85,27 @@ export const DEMO_USERS_EN: Record<string, Partial<UserProfile>> = {
     grade: 'School Principal & Custody Committee Head',
   },
   student_finder_sara: {
-    name: 'Sara Al-Qahtani',
+    name: 'Sara Ahmed',
     grade: 'Grade 10 - Section A',
   },
   student_khalid: {
-    name: 'Khalid Al-Dossary',
+    name: 'Khaled Mahmoud',
     grade: 'Grade 12 - Science',
   },
   student_reem: {
-    name: 'Reem Al-Ghamdi',
+    name: 'Reem Mostafa',
     grade: 'Grade 11 - Science',
   },
   student_fahad: {
-    name: 'Fahad Al-Mutairi',
+    name: 'Ziad Tarek',
     grade: 'Grade 10 - Section B',
   },
   student_nour: {
-    name: 'Nour Al-Otaibi',
+    name: 'Nour Ibrahim',
     grade: 'Grade 12 - Arts',
   },
   student_omar: {
-    name: 'Omar Al-Tamimi',
+    name: 'Omar Hassan',
     grade: 'Grade 10 - Section B',
   },
 };
@@ -270,37 +270,29 @@ export function getLocalizedColorName(color: string, lang: 'ar' | 'en' = 'ar'): 
 }
 
 export const ACTIVITIES_EN: Record<string, { title: string; description: string }> = {
-  act_break_custody: {
-    title: 'Break-Time Custody Patrol & Playground Check',
-    description: 'Inspect school corridors and courtyards after recess to ensure no belongings or items were left behind, and record them immediately.',
-  },
-  act_lab_assistance: {
-    title: 'Science Lab Equipment & Inventory Assistant',
-    description: 'Participate in organizing and auditing experimental instruments in the science laboratory after practical sessions.',
+  act_eco_clean: {
+    title: 'Classroom & School Cleanliness 🌱',
+    description: 'Help keep the classroom and school yard tidy by placing wrappers and recyclables in bins.',
   },
   act_library_books: {
-    title: 'School Library Books Sorting & Organization',
-    description: 'Assist the librarian in returning borrowed books to designated shelves and keeping reading tables neat.',
+    title: 'Picture Books & Stories Organization 📚',
+    description: 'Assist the teacher in placing storybooks and illustrated books neatly on library shelves.',
   },
-  act_eco_clean: {
-    title: 'School Environmental Cleanliness & Recycling Drive',
-    description: 'Lead initiatives to sort and recycle plastic bottles and maintain overall campus cleanliness and hygiene.',
-  },
-  act_integrity_ambassador: {
-    title: 'Integrity Awareness & Barcode Posters Outreach',
-    description: 'Post informational QR stickers on classroom doors and guide peers on claiming found items via ETHOS.',
-  },
-  act_peer_tutoring: {
-    title: 'Morning Peer Study & Academic Assistance',
-    description: 'Provide academic support and clarify challenging exercises for classmates during morning assembly or free study periods.',
+  act_break_custody: {
+    title: 'Recess Lost & Found Check 🎒',
+    description: 'Check the playground after recess to ensure no school bags or supplies are forgotten, returning them safely.',
   },
   act_gym_organization: {
-    title: 'Sports Hall Equipment Count & Organization',
-    description: 'Help organize sports balls and gym gear following physical education classes and ensure no belongings are forgotten.',
+    title: 'Sports Balls & Games Tidy-up ⚽',
+    description: 'Help gather balls, cones, and sports gear after gym and physical activity periods.',
   },
   act_prayer_room_care: {
-    title: 'School Prayer Hall Care & Quran Arrangement',
-    description: 'Arrange Qurans and prayer rugs in the school prayer room, maintaining a peaceful, orderly, and pristine sanctuary.',
+    title: 'Prayer Hall Care & Serenity 🌙',
+    description: 'Arrange prayer rugs and keep the school prayer room clean, peaceful, and reverent.',
+  },
+  act_peer_tutoring: {
+    title: 'Play & Learn with Friends 🤝',
+    description: 'Cooperate with classmates in drawing, fun learning games, and sharing supplies with kindness.',
   },
 };
 

@@ -16,9 +16,7 @@ import {
   ArrowRight, 
   PlusCircle, 
   PackageSearch,
-  Sparkles,
-  QrCode,
-  Camera
+  Sparkles
 } from 'lucide-react';
 
 /**
@@ -50,7 +48,7 @@ export default function InstantSearchBar({
   className = '',
 }: InstantSearchBarProps) {
   const router = useRouter();
-  const { items, openQRScanner, dir, isRtl, language, t } = useApp();
+  const { items, dir, isRtl, language, t } = useApp();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
@@ -189,19 +187,13 @@ export default function InstantSearchBar({
             </button>
           )}
 
-          {/* Quick QR Scanner Icon Button */}
+          {/* Search Submit Button */}
           <button
-            type="button"
-            onClick={openQRScanner}
-            className="w-10 h-10 min-w-[40px] min-h-[40px] rounded-xl text-slate-500 hover:text-[#176B5B] dark:text-slate-400 dark:hover:text-[#2DD4BF] hover:bg-slate-50 dark:hover:bg-[#1C2724] transition-colors cursor-pointer flex items-center justify-center shrink-0"
-            title={language === 'en' ? 'Scan Item QR Code' : 'مسح باركود الغرض'}
-            aria-label={language === 'en' ? 'Scan Item QR Code' : 'مسح باركود الغرض'}
+            type="submit"
+            className="px-3 sm:px-3.5 h-8 sm:h-9 min-h-[36px] rounded-xl bg-[#176B5B] dark:bg-[#2DD4BF] hover:bg-[#125648] dark:hover:bg-[#14B8A6] text-white dark:text-[#18201D] text-xs font-bold transition-all shadow-2xs flex items-center justify-center cursor-pointer shrink-0"
+            title={language === 'en' ? 'Search' : 'بحث'}
+            aria-label={language === 'en' ? 'Search' : 'بحث'}
           >
-            <QrCode className="w-4 h-4 sm:w-5 sm:h-5 text-[#176B5B] dark:text-[#2DD4BF]" />
-          </button>
-
-          {/* Accessible Form Submit */}
-          <button type="submit" className="sr-only">
             {language === 'en' ? 'Search' : 'بحث'}
           </button>
         </div>

@@ -29,6 +29,7 @@ import {
   ShoppingBag, 
   CupSoda 
 } from 'lucide-react';
+import AudioVoiceButton from '@/components/AudioVoiceButton';
 
 const categoryIcons: Record<string, React.ReactNode> = {
   electronics: <Laptop className="w-5 h-5" />,
@@ -185,9 +186,12 @@ function ReportWizardContent() {
       {/* Wizard Progress Header */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h1 className="text-xl sm:text-2xl font-black text-[#18201D] dark:text-white tracking-tight">
-            {language === 'en' ? 'Record School Report' : 'تسجيل بلاغ جديد'}
-          </h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl sm:text-2xl font-black text-[#18201D] dark:text-white tracking-tight">
+              {language === 'en' ? 'Record School Report' : 'تسجيل بلاغ جديد'}
+            </h1>
+            <AudioVoiceButton text={language === 'en' ? 'Record School Report' : 'تسجيل بلاغ جديد'} size="sm" />
+          </div>
           <span className="text-xs font-bold text-[#176B5B] dark:text-[#2DD4BF] bg-[#E6F1ED] dark:bg-[#122823] px-3 py-1 rounded-full border border-emerald-200/60 dark:border-[#1E463D]">
             {language === 'en' ? `Step ${currentStep} of 3` : `الخطوة ${currentStep} من 3`}
           </span>
@@ -207,27 +211,29 @@ function ReportWizardContent() {
         <button
           type="button"
           onClick={() => setType('lost')}
-          className={`py-3 px-4 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer ${
+          className={`py-3 px-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
             type === 'lost'
               ? 'bg-[#FEF3C7] dark:bg-amber-950/80 text-[#92400E] dark:text-amber-300 border border-[#FDE68A] dark:border-amber-800 shadow-xs'
               : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-[#1C2B27]'
           }`}
         >
-          <Search className="w-4 h-4" />
-          <span>{language === 'en' ? 'Lost Item (I lost it)' : 'غرض مفقود (أضعته)'}</span>
+          <Search className="w-4 h-4 shrink-0" />
+          <span className="truncate">{language === 'en' ? 'Lost Item' : 'غرض مفقود'}</span>
+          <AudioVoiceButton text={language === 'en' ? 'Lost Item' : 'غرض مفقود، أضعته'} size="sm" />
         </button>
 
         <button
           type="button"
           onClick={() => setType('found')}
-          className={`py-3 px-4 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer ${
+          className={`py-3 px-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
             type === 'found'
               ? 'bg-[#D1FAE5] dark:bg-emerald-950/80 text-[#065F46] dark:text-emerald-300 border border-[#A7F3D0] dark:border-emerald-800 shadow-xs'
               : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-[#1C2B27]'
           }`}
         >
-          <PlusCircle className="w-4 h-4" />
-          <span>{language === 'en' ? 'Found Item (I found it)' : 'غرض معثور عليه (أمانة)'}</span>
+          <PlusCircle className="w-4 h-4 shrink-0" />
+          <span className="truncate">{language === 'en' ? 'Found Item' : 'غرض أمانة'}</span>
+          <AudioVoiceButton text={language === 'en' ? 'Found Item' : 'عثرت على أمانة'} size="sm" />
         </button>
       </div>
 

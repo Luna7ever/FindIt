@@ -37,7 +37,8 @@ import {
   HeartHandshake,
   FileSpreadsheet,
   Cloud,
-  RefreshCw
+  RefreshCw,
+  Volume2
 } from 'lucide-react';
 
 export default function AdminPage() {
@@ -65,7 +66,7 @@ export default function AdminPage() {
     t
   } = useApp();
 
-  const [activeTab, setActiveTab] = useState<'overview' | 'claims' | 'inventory' | 'qr_generator' | 'activities' | 'benchmark' | 'behavioral'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'claims' | 'inventory' | 'activities' | 'behavioral'>('overview');
   const [activityStatusFilter, setActivityStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'lost' | 'found' | 'at_office' | 'reunited'>('all');
@@ -175,7 +176,7 @@ export default function AdminPage() {
   const lostCount = items.filter((i) => i.type === 'lost' && i.status !== 'reunited').length;
   const foundCount = items.filter((i) => i.type === 'found' && i.status !== 'reunited').length;
   const atOfficeCount = items.filter((i) => i.custody === 'at_office' && i.status !== 'reunited').length;
-  const reunitedCount = items.filter((i) => i.status === 'reunited').length + 42;
+  const reunitedCount = items.filter((i) => i.status === 'reunited').length;
   const pendingClaims = claims.filter((c) => c.status === 'pending');
   const pendingActivities = (activitySubmissions || []).filter((a) => a.status === 'pending');
 
@@ -417,113 +418,100 @@ export default function AdminPage() {
           <span>{t('admin.tabBehavioral')}</span>
         </button>
 
-        <button
-          onClick={() => setActiveTab('benchmark')}
-          className={`flex-1 py-2.5 px-3 min-h-[42px] sm:min-h-[44px] rounded-xl text-[11px] sm:text-xs font-bold transition-all flex items-center justify-center gap-1.5 whitespace-nowrap shrink-0 sm:shrink cursor-pointer ${
-            activeTab === 'benchmark'
-              ? 'bg-white dark:bg-[#1C2B27] text-[#18201D] dark:text-white shadow-2xs font-black'
-              : 'text-[#66706B] dark:text-[#94A39D] hover:text-[#18201D] dark:hover:text-white'
-          }`}
-        >
-          <Cpu className="w-3.5 h-3.5 text-[#176B5B] dark:text-[#2DD4BF]" />
-          <span>{t('admin.tabBenchmark') || (language === 'en' ? 'ISEF Benchmark' : 'تقييم أيسف')}</span>
-        </button>
 
-        <button
-          onClick={() => setActiveTab('qr_generator')}
-          className={`flex-1 py-2.5 px-3 min-h-[42px] sm:min-h-[44px] rounded-xl text-[11px] sm:text-xs font-bold transition-all flex items-center justify-center gap-1.5 whitespace-nowrap shrink-0 sm:shrink cursor-pointer ${
-            activeTab === 'qr_generator'
-              ? 'bg-white dark:bg-[#1C2B27] text-[#18201D] dark:text-white shadow-2xs font-black'
-              : 'text-[#66706B] dark:text-[#94A39D] hover:text-[#18201D] dark:hover:text-white'
-          }`}
-        >
-          <QrCode className="w-3.5 h-3.5" />
-          <span>{t('admin.tabQr')}</span>
-        </button>
       </div>
 
       {/* ========================================================
           TAB 1: Overview & Pending Claims Queue
       ======================================================== */}
+      {/* ========================================================
+          TAB 1: Overview & School Operations
+      ======================================================== */}
       {activeTab === 'overview' && (
         <div className="space-y-4 sm:space-y-6 animate-in fade-in">
 
-          {/* ISEF Multimodal AI Science Hero Card */}
-          <div className="p-4 sm:p-5 rounded-2xl bg-[#E8F3EF] dark:bg-[#13231F] border-2 border-[#176B5B] dark:border-[#2DD4BF] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-start shadow-xs">
-            <div className="flex items-center gap-3.5">
-              <div className="w-11 h-11 rounded-xl bg-[#176B5B] dark:bg-[#2DD4BF] text-white dark:text-[#18201D] flex items-center justify-center shrink-0">
-                <Cpu className="w-6 h-6" />
-              </div>
-              <div className="space-y-0.5">
-                <div className="flex items-center gap-2">
-                  <span className="px-2 py-0.5 rounded text-[10px] font-black bg-[#176B5B] text-white dark:bg-[#2DD4BF] dark:text-[#18201D]">
-                    Regeneron ISEF 2026
-                  </span>
-                  <span className="text-[11px] font-bold text-[#144F43] dark:text-[#5EEAD4]">
-                    {language === 'en' ? 'Multimodal Edge AI Vision & OCR' : 'الرؤية الحاسوبية والذكاء الاصطناعي الطرفي'}
-                  </span>
+          {/* Office Custody Cabinet (Physical items in administration custody) */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#15201D] border border-[#E4E7E4] dark:border-[#263834] shadow-xs space-y-3.5 text-start">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-[#E6F1ED] dark:bg-[#176B5B]/20 text-[#176B5B] dark:text-emerald-400 flex items-center justify-center">
+                  <Building2 className="w-4 h-4" />
                 </div>
-                <h3 className="text-sm sm:text-base font-bold text-[#18201D] dark:text-white">
-                  {language === 'en' ? 'Scientific Benchmarking & XAI Inspector' : 'منظومة القياس العلمي ومصفوفة الارتباك التجريبية'}
-                </h3>
-                <p className="text-[11px] text-[#4E5D57] dark:text-[#9FB1AA]">
-                  {language === 'en'
-                    ? 'Empirically proven F1-score of >=94% vs ~58% Baseline with zero-server privacy.'
-                    : 'تفوق خوارزمي مثبت بمعامل دقة F1 يتجاوز 94% مقارنة بـ 58% للأنظمة التقليدية.'}
-                </p>
+                <div>
+                  <h2 className="text-xs sm:text-sm font-black text-[#18201D] dark:text-white">
+                    {language === 'en' ? 'School Office Custody Cabinet' : 'غرفة العهدة والأمانات بمكتب الإدارة'}
+                  </h2>
+                  <p className="text-[10px] sm:text-[11px] text-[#66706B] dark:text-[#94A39D]">
+                    {language === 'en'
+                      ? 'Items physically handed over to the school supervisor desk awaiting verified owners.'
+                      : 'أمانات سلمها الطلاب لإشراف المدرسة ومحفوظة حالياً في دولاب مكتب الأمانات.'}
+                  </p>
+                </div>
               </div>
+              <button
+                onClick={() => { setActiveTab('inventory'); setStatusFilter('at_office'); }}
+                className="text-[11px] text-[#176B5B] dark:text-emerald-400 font-bold hover:underline cursor-pointer"
+              >
+                {language === 'en' ? 'View Cabinet' : 'سجل العهدة ←'}
+              </button>
             </div>
 
-            <Link
-              href="/admin/benchmark"
-              className="w-full sm:w-auto py-2.5 px-4 rounded-xl bg-[#176B5B] dark:bg-[#2DD4BF] hover:bg-[#125648] dark:hover:bg-[#14B8A6] text-white dark:text-[#18201D] font-bold text-xs transition-all shadow-xs flex items-center justify-center gap-1.5 shrink-0 cursor-pointer"
-            >
-              <Cpu className="w-4 h-4" />
-              <span>{language === 'en' ? 'Launch Benchmark' : 'تشغيل الاختبار العلمي'}</span>
-            </Link>
+            {items.filter((i) => i.custody === 'at_office' && i.status !== 'reunited').length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                {items.filter((i) => i.custody === 'at_office' && i.status !== 'reunited').slice(0, 4).map((item) => {
+                  const loc = SCHOOL_LOCATIONS.find((l) => l.id === item.locationId);
+                  return (
+                    <div
+                      key={item.id}
+                      className="p-3 rounded-xl bg-[#F8FAF9] dark:bg-[#192421] border border-[#E4E7E4] dark:border-[#2D3E3A] flex items-center justify-between gap-2.5 text-start"
+                    >
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-[#E6F1ED] dark:bg-[#176B5B]/30 text-[#176B5B] dark:text-emerald-300">
+                            {language === 'en' ? '🏛️ In Custody' : '🏛️ في العهدة'}
+                          </span>
+                          <span className="text-[10px] text-[#66706B] dark:text-[#94A39D] truncate">{loc?.name || item.locationId}</span>
+                        </div>
+                        <h4 className="font-bold text-xs text-[#18201D] dark:text-white truncate mt-0.5">{item.title}</h4>
+                        <p className="text-[10px] text-[#66706B] dark:text-[#94A39D] truncate">
+                          المسلم: {item.reportedBy?.name || 'مجهول'}
+                        </p>
+                      </div>
+
+                      <button
+                        onClick={() => {
+                          adminDirectReunite(item.id);
+                          showFeedback('تم توثيق تسليم العهدة رسمياً لصاحبها بالسجل الإداري 🎉');
+                        }}
+                        className="py-1.5 px-2.5 rounded-lg bg-[#059669] hover:bg-[#047857] text-white text-[11px] font-bold shrink-0 transition-colors cursor-pointer"
+                        title={language === 'en' ? 'Document physical return to owner in office ledger' : 'توثيق تسليم العهدة حضورياً للمالك في مكتب الإشراف'}
+                      >
+                        {language === 'en' ? 'Log Return' : 'تسليم للمالك'}
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="p-4 text-center rounded-xl bg-[#F8FAF9] dark:bg-[#182220] border border-[#E4E7E4] dark:border-[#263834] text-xs text-[#66706B] dark:text-[#94A39D]">
+                {language === 'en' ? 'No items currently in office custody.' : 'لا توجد أمانات محتجزة في عهدة المكتب حالياً (العهد مستقرة).'}
+              </div>
+            )}
           </div>
 
-          {/* ISEF Behavioral Survey & Field Data Card */}
-          <div className="p-4 sm:p-5 rounded-2xl bg-[#E6F4F1] dark:bg-[#132321] border-2 border-teal-600 dark:border-[#2DD4BF] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-start shadow-xs">
-            <div className="flex items-center gap-3.5">
-              <div className="w-11 h-11 rounded-xl bg-teal-600 dark:bg-[#2DD4BF] text-white dark:text-[#18201D] flex items-center justify-center shrink-0 shadow-2xs">
-                <FileSpreadsheet className="w-6 h-6" />
-              </div>
-              <div className="space-y-0.5">
-                <div className="flex items-center gap-2">
-                  <span className="px-2 py-0.5 rounded text-[10px] font-black bg-teal-700 text-white dark:bg-[#2DD4BF] dark:text-[#18201D]">
-                    ISEF BEHA 2026
-                  </span>
-                  <span className="text-[11px] font-bold text-teal-800 dark:text-[#5EEAD4]">
-                    {language === 'en' ? '120-Student Field Survey' : 'استبيان وبيانات الأثر السلوكي (120 طالب)'}
-                  </span>
-                </div>
-                <h3 className="text-sm sm:text-base font-bold text-[#18201D] dark:text-white">
-                  {language === 'en' ? 'Student Survey & Empirical Field Results' : 'نتائج استبيان الطلاب والبيانات الميدانية الموثقة'}
-                </h3>
-                <p className="text-[11px] text-[#4E5D57] dark:text-[#9FB1AA]">
-                  {language === 'en'
-                    ? 'Field study of 120 students proving the elimination of bystander apathy and accusation fear.'
-                    : 'استبيان ميداني معتمد لـ 120 طالباً يثبت انخفاض التردد والخوف من الاتهام بالسرقة من 76% إلى 8%.'}
-                </p>
-              </div>
-            </div>
-
-            <button
-              onClick={() => setActiveTab('behavioral')}
-              className="w-full sm:w-auto py-2.5 px-4 min-h-[40px] rounded-xl bg-teal-600 dark:bg-[#2DD4BF] hover:bg-teal-700 dark:hover:bg-[#14B8A6] text-white dark:text-[#18201D] font-bold text-xs transition-all shadow-xs flex items-center justify-center gap-1.5 shrink-0 cursor-pointer"
-            >
-              <FileSpreadsheet className="w-4 h-4" />
-              <span>{language === 'en' ? 'View Survey & Data' : 'عرض نتائج الاستبيان والبيانات'}</span>
-            </button>
-          </div>
-          
-          {/* Quick Operations Highlight */}
+          {/* Supervisory Claims Monitor (Strictly oversight - finder evaluates) */}
           <div className="p-4 sm:p-6 bg-white dark:bg-[#15201D] border border-[#E4E7E4] dark:border-[#263834] rounded-2xl shadow-xs space-y-3.5 text-start">
             <div className="flex items-center justify-between">
-              <h2 className="text-sm sm:text-base font-black text-[#18201D] dark:text-white">
-                {t('admin.pendingClaimsTitle')}
-              </h2>
+              <div>
+                <h2 className="text-sm sm:text-base font-black text-[#18201D] dark:text-white">
+                  {t('admin.pendingClaimsTitle')}
+                </h2>
+                <p className="text-[10px] sm:text-[11px] text-[#66706B] dark:text-[#94A39D]">
+                  {language === 'en'
+                    ? 'Supervisory tracking of peer-to-peer verification between finders and claimants.'
+                    : 'متابعة إشرافية فقط: التحقق من إجابة السؤال السري يتم بواسطة الطالب العاثر أولاً لترسيخ الأمانة.'}
+                </p>
+              </div>
               <button
                 onClick={() => setActiveTab('claims')}
                 className="text-xs text-[#176B5B] dark:text-emerald-400 font-bold hover:underline cursor-pointer"
@@ -536,46 +524,52 @@ export default function AdminPage() {
               <div className="space-y-2.5">
                 {pendingClaims.slice(0, 3).map((claim) => {
                   const item = items.find((i) => i.id === claim.itemId);
+                  const isItemAtOffice = item?.custody === 'at_office';
                   return (
                     <div
                       key={claim.id}
                       className="p-3.5 sm:p-4 rounded-2xl bg-[#F1F3F0] dark:bg-[#1C2B27] border border-transparent dark:border-[#2D3E3A] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-start"
                     >
-                      <div className="space-y-0.5">
-                        <div className="flex items-center gap-2 mb-0.5">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
                           <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-[#FEF3C7] dark:bg-amber-950/80 text-[#92400E] dark:text-amber-200 border border-amber-300 dark:border-amber-800">
-                            طلب بانتظار الاعتماد
+                            {isItemAtOffice ? 'أمانة بمكتب الإدارة 🏛️' : 'قيد مراجعة العاثر ⏳'}
                           </span>
                           <span className="text-[10px] text-[#66706B] dark:text-[#94A39D]">{formatAppDate(claim.createdAt)}</span>
                         </div>
                         <h4 className="font-bold text-xs sm:text-sm text-[#18201D] dark:text-white">{item?.title}</h4>
                         <p className="text-[11px] text-[#66706B] dark:text-[#94A39D]">
+                          العاثر: <strong className="text-[#18201D] dark:text-white">{item?.reportedBy?.name || 'طالب مجهول'}</strong>
+                          <span className="mx-1.5">•</span>
                           مقدم الطلب: <strong className="text-[#18201D] dark:text-white">{claim.claimant.name}</strong> ({claim.claimant.grade})
                         </p>
-                        <p className="text-[11px] text-[#176B5B] dark:text-emerald-400 font-semibold mt-1">
-                          الإجابة: «{claim.answerText}»
+                        <p className="text-[11px] text-[#176B5B] dark:text-emerald-400 font-medium">
+                          الإجابة المسجلة: «{claim.answerText}»
                         </p>
                       </div>
 
                       <div className="flex items-center gap-2 w-full sm:w-auto justify-end pt-2 sm:pt-0 border-t sm:border-t-0 border-[#E4E7E4] dark:border-[#23332F]">
-                        <button
-                          onClick={() => {
-                            approveClaim(claim.id);
-                            showFeedback('تم اعتماد طلب (' + claim.claimant.name + ') وتوليد رمز PIN بنجاح!');
-                          }}
-                          className="flex-1 sm:flex-initial py-2.5 px-3.5 min-h-[42px] rounded-xl bg-[#176B5B] dark:bg-[#2DD4BF] hover:bg-[#125648] dark:hover:bg-[#14B8A6] text-white dark:text-[#18201D] text-xs font-bold shadow-xs cursor-pointer active:scale-95 text-center"
+                        {isItemAtOffice ? (
+                          <button
+                            onClick={() => {
+                              adminDirectReunite(claim.itemId);
+                              showFeedback('تم توثيق تسليم العهدة رسمياً للطالب وإغلاق البلاغ بالسجل الإداري 🎉');
+                            }}
+                            className="py-2 px-3.5 rounded-xl bg-[#059669] hover:bg-[#047857] text-white text-xs font-bold transition-colors cursor-pointer"
+                          >
+                            {language === 'en' ? 'Document Office Handover' : 'توثيق تسليم العهدة'}
+                          </button>
+                        ) : (
+                          <span className="text-[10px] text-[#66706B] dark:text-[#94A39D] font-medium bg-white dark:bg-[#182220] py-1.5 px-2.5 rounded-xl border border-[#E4E7E4] dark:border-[#2D3E3A]">
+                            {language === 'en' ? 'Supervisory Oversight Active' : 'إشراف إداري (التحقق مع العاثر)'}
+                          </span>
+                        )}
+                        <Link
+                          href={`/items/${claim.itemId}`}
+                          className="py-2 px-3 rounded-xl bg-white dark:bg-[#15201D] hover:bg-[#E4E7E4] dark:hover:bg-[#23332F] text-[#18201D] dark:text-white text-xs font-bold border border-[#E4E7E4] dark:border-[#2D3E3A] cursor-pointer"
                         >
-                          {t('admin.approveAndPin')}
-                        </button>
-                        <button
-                          onClick={() => {
-                            rejectClaim(claim.id);
-                            showFeedback(language === 'en' ? 'Claim rejected' : 'تم رفض الطلب');
-                          }}
-                          className="py-2.5 px-3 min-h-[42px] rounded-xl bg-white dark:bg-[#15201D] hover:bg-[#FEE2E2] dark:hover:bg-rose-950/40 text-[#E11D48] dark:text-rose-400 text-xs font-bold border border-[#E4E7E4] dark:border-[#2D3E3A] cursor-pointer"
-                        >
-                          {t('admin.rejectBtn')}
-                        </button>
+                          {t('admin.preview')}
+                        </Link>
                       </div>
                     </div>
                   );
@@ -606,15 +600,19 @@ export default function AdminPage() {
             </div>
 
             <div
-              onClick={() => setActiveTab('qr_generator')}
+              onClick={() => setActiveTab('activities')}
               className="p-4 sm:p-5 bg-white dark:bg-[#15201D] border border-[#E4E7E4] dark:border-[#263834] rounded-2xl shadow-xs space-y-1.5 cursor-pointer hover:border-[#176B5B] dark:hover:border-emerald-500 transition-all"
             >
-              <div className="w-8 h-8 rounded-xl bg-[#E6F1ED] dark:bg-[#176B5B]/20 text-[#176B5B] dark:text-emerald-400 flex items-center justify-center">
-                <QrCode className="w-4 h-4" />
+              <div className="w-8 h-8 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                <Award className="w-4 h-4" />
               </div>
-              <h3 className="font-bold text-xs sm:text-sm text-[#18201D] dark:text-white">{t('admin.qrShortcut')}</h3>
+              <h3 className="font-bold text-xs sm:text-sm text-[#18201D] dark:text-white">
+                {language === 'en' ? 'Student Field Activities' : 'اعتماد المبادرات الميدانية'}
+              </h3>
               <p className="text-[11px] text-[#66706B] dark:text-[#94A39D]">
-                {t('admin.qrShortcutDesc')}
+                {language === 'en'
+                  ? 'Review and officially certify student volunteering and integrity initiatives.'
+                  : 'مراجعة واعتماد مبادرات الطلاب الميدانية وتوثيق نقاط النزاهة.'}
               </p>
             </div>
           </div>
@@ -665,56 +663,67 @@ export default function AdminPage() {
                           </span>
                         ) : isApproved ? (
                           <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#E6F1ED] dark:bg-[#176B5B]/30 text-[#176B5B] dark:text-emerald-300 border border-[#176B5B]/40">
-                            معتمد · رمز PIN: {claim.handoverPin}
+                            اعتمدها العاثر · رمز PIN: {claim.handoverPin}
+                          </span>
+                        ) : item?.custody === 'at_office' ? (
+                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#E6F1ED] dark:bg-[#176B5B]/30 text-[#176B5B] dark:text-emerald-300 border border-[#176B5B]/40">
+                            أمانة بمكتب الإدارة 🏛️
                           </span>
                         ) : (
                           <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#FEF3C7] dark:bg-amber-950/80 text-[#92400E] dark:text-amber-200 border border-amber-300 dark:border-amber-800">
-                            بانتظار المراجعة
+                            قيد مراجعة العاثر ⏳
                           </span>
                         )}
                       </div>
                     </div>
 
                     <div className="p-3 rounded-xl bg-[#F1F3F0] dark:bg-[#1C2B27] text-xs space-y-1 border border-transparent dark:border-[#2D3E3A]">
-                      <span className="text-[#66706B] dark:text-[#94A39D] text-[10px] block">السؤال السري: «{item?.secretQuestion || 'العلامة المميزة'}»</span>
+                      <div className="flex items-center justify-between text-[10px] text-[#66706B] dark:text-[#94A39D]">
+                        <span>السؤال السري: «{item?.secretQuestion || 'العلامة المميزة'}»</span>
+                        <span>
+                          مكان الحيازة:{' '}
+                          <strong className={item?.custody === 'at_office' ? 'text-[#176B5B] dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}>
+                            {item?.custody === 'at_office' ? 'مكتب الإدارة (غرفة العهدة)' : `مع العاثر (${item?.reportedBy?.name || 'طالب'})`}
+                          </strong>
+                        </span>
+                      </div>
                       <p className="font-bold text-[#18201D] dark:text-white text-xs">إجابة الطالب: «{claim.answerText}»</p>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-2 pt-1 w-full sm:w-auto">
-                      {isPending && (
-                        <>
-                          <button
-                            onClick={() => {
-                              approveClaim(claim.id);
-                              showFeedback('تم اعتماد الطلب وتوليد الرمز');
-                            }}
-                            className="flex-1 sm:flex-initial py-2.5 px-3.5 min-h-[42px] rounded-xl bg-[#176B5B] dark:bg-[#2DD4BF] hover:bg-[#125648] dark:hover:bg-[#14B8A6] text-white dark:text-[#18201D] text-xs font-bold shadow-xs cursor-pointer active:scale-95 text-center"
-                          >
-                            اعتماد
-                          </button>
-                          <button
-                            onClick={() => {
-                              rejectClaim(claim.id);
-                              showFeedback('تم رفض الطلب');
-                            }}
-                            className="py-2.5 px-3 min-h-[42px] rounded-xl bg-[#F1F3F0] dark:bg-[#1C2B27] text-[#E11D48] dark:text-rose-400 text-xs font-bold border border-transparent dark:border-[#2D3E3A] cursor-pointer"
-                          >
-                            رفض
-                          </button>
-                        </>
-                      )}
-
-                      {!isCompleted && isApproved && (
+                    <div className="flex flex-wrap items-center gap-2 pt-1 w-full sm:w-auto justify-end">
+                      {/* Supervisory Notice / Action */}
+                      {item?.custody === 'at_office' && !isCompleted ? (
                         <button
                           onClick={() => {
                             adminDirectReunite(claim.itemId);
-                            showFeedback('تم تأكيد تسليم الغرض رسمياً وإغلاق البلاغ 🎉');
+                            showFeedback('تم توثيق تسليم العهدة رسمياً للمالك وإغلاق البلاغ بالسجل الإداري 🎉');
                           }}
-                          className="w-full sm:w-auto py-2.5 px-3.5 min-h-[42px] rounded-xl bg-[#059669] hover:bg-[#047857] text-white text-xs font-bold shadow-xs cursor-pointer active:scale-95 text-center"
+                          className="py-2 px-3.5 min-h-[40px] rounded-xl bg-[#059669] hover:bg-[#047857] text-white text-xs font-bold shadow-xs cursor-pointer active:scale-95 text-center flex items-center gap-1.5 transition-colors"
                         >
-                          {t('admin.directReuniteBtn')}
+                          <Check className="w-3.5 h-3.5" />
+                          <span>{t('admin.directReuniteBtn')}</span>
                         </button>
-                      )}
+                      ) : !isCompleted && item?.custody !== 'at_office' ? (
+                        <button
+                          onClick={() => {
+                            updateItemCustody(claim.itemId, 'at_office');
+                            showFeedback('تم استلام الأمانة لعهدة مكتب الإدارة رسمياً 🏛️');
+                          }}
+                          className="py-2 px-3 min-h-[40px] rounded-xl bg-[#F1F3F0] dark:bg-[#1C2B27] hover:bg-[#E4E7E4] dark:hover:bg-[#23332F] text-[#176B5B] dark:text-emerald-400 text-xs font-bold border border-transparent dark:border-[#2D3E3A] cursor-pointer flex items-center gap-1.5 transition-colors"
+                          title="نقل الأمانة لعهدة مكتب الإدارة في حال حدوث خلاف بين الطلاب أو تعذر التواصل الميداني"
+                        >
+                          <Building2 className="w-3.5 h-3.5" />
+                          <span>استلام لغرفة العهدة بالمكتب</span>
+                        </button>
+                      ) : null}
+
+                      <Link
+                        href={`/items/${claim.itemId}`}
+                        className="py-2 px-3 min-h-[40px] rounded-xl bg-white dark:bg-[#15201D] hover:bg-[#E4E7E4] dark:hover:bg-[#23332F] text-[#18201D] dark:text-white text-xs font-bold border border-[#E4E7E4] dark:border-[#2D3E3A] cursor-pointer flex items-center gap-1.5 transition-colors"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                        <span>{t('admin.preview')}</span>
+                      </Link>
                     </div>
 
                   </div>
@@ -1069,6 +1078,24 @@ export default function AdminPage() {
                       </div>
                     )}
 
+                    {/* Voice Recording Proof */}
+                    {sub.audioBase64 && (
+                      <div className="p-3 sm:p-3.5 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 space-y-2 text-start">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[11px] font-bold text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
+                            <Volume2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                            <span>{language === 'en' ? 'Student Voice Evidence 🎙️:' : 'التسجيل الصوتي لإثبات إنجاز الطالب 🎙️:'}</span>
+                          </span>
+                          {sub.audioDuration && (
+                            <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-white/80 dark:bg-emerald-900/60 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
+                              {sub.audioDuration} {language === 'en' ? 'sec' : 'ثانية'}
+                            </span>
+                          )}
+                        </div>
+                        <audio controls src={sub.audioBase64} className="w-full h-9 rounded-xl outline-none" />
+                      </div>
+                    )}
+
                     {/* Action buttons if pending */}
                     {sub.status === 'pending' && (
                       <div className="flex items-center gap-2.5 pt-1 w-full sm:w-auto justify-end">
@@ -1126,140 +1153,13 @@ export default function AdminPage() {
         </div>
       )}
 
-      {/* ========================================================
-          TAB 6: ISEF Benchmark
-      ======================================================== */}
-      {activeTab === 'benchmark' && (
-        <div className="space-y-4 text-start animate-in fade-in w-full max-w-full">
-          <div className="p-4 sm:p-6 rounded-2xl bg-white dark:bg-[#15201D] border border-[#E4E7E4] dark:border-[#263834] space-y-4 w-full max-w-full overflow-hidden">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div className="min-w-0 flex-1">
-                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#D1FAE5] dark:bg-emerald-950/80 text-[#065F46] dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
-                  Regeneron ISEF 2026 Engine
-                </span>
-                <h2 className="text-base sm:text-lg font-bold text-[#18201D] dark:text-white mt-1 break-words">
-                  {language === 'en' ? 'Multimodal AI Scientific Benchmarking Suite' : 'منظومة التقييم العلمي التجريبي لنظام الذكاء الاصطناعي'}
-                </h2>
-                <p className="text-xs text-[#66706B] dark:text-[#94A39D] mt-1 max-w-xl">
-                  {language === 'en'
-                    ? 'Evaluates real-time image color histograms, OCR text vectors, and multimodal similarity vs baseline heuristic on 24 ground-truth sample pairs.'
-                    : 'اختبار دقة وخوارزميات الرؤية الحاسوبية وقراءة النصوص والتعرف المتعدد الوسائط مقارنة بالأنظمة التقليدية مع حساب مصفوفة الارتباك.'}
-                </p>
-              </div>
 
-              <Link
-                href="/admin/benchmark"
-                className="w-full sm:w-auto py-2.5 px-5 rounded-xl bg-[#176B5B] dark:bg-[#2DD4BF] hover:bg-[#125648] dark:hover:bg-[#14B8A6] text-white dark:text-[#18201D] font-bold text-xs transition-all shadow-xs flex items-center justify-center gap-2 shrink-0 cursor-pointer"
-              >
-                <Cpu className="w-4 h-4" />
-                <span>{language === 'en' ? 'Open Full Benchmark Suite' : 'فتح منصة التقييم والنتائج الكاملة'}</span>
-              </Link>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-              <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-[#192421] border border-slate-200 dark:border-[#263834]">
-                <div className="text-[10px] text-[#66706B] dark:text-[#94A39D]">{language === 'en' ? 'Multimodal F1-Score' : 'معامل الدقة F1 للذكاء الاصطناعي'}</div>
-                <div className="text-xl font-black text-[#059669] dark:text-emerald-400 mt-0.5">&gt;= 94.0%</div>
-                <div className="text-[10px] text-[#059669] dark:text-emerald-400 mt-0.5">{language === 'en' ? 'vs ~58% Baseline (+35%)' : 'مقارنة بـ 58% للتقليدي (+35%)'}</div>
-              </div>
-              <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-[#192421] border border-slate-200 dark:border-[#263834]">
-                <div className="text-[10px] text-[#66706B] dark:text-[#94A39D]">{language === 'en' ? 'Edge Latency' : 'سرعة المعالجة في المتصفح'}</div>
-                <div className="text-xl font-black text-cyan-600 dark:text-cyan-400 mt-0.5">&lt; 15ms</div>
-                <div className="text-[10px] text-[#66706B] dark:text-[#94A39D] mt-0.5">{language === 'en' ? 'Sub-30ms Realtime target' : 'لحظي بدون خوادم خارجية'}</div>
-              </div>
-              <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-[#192421] border border-slate-200 dark:border-[#263834]">
-                <div className="text-[10px] text-[#66706B] dark:text-[#94A39D]">{language === 'en' ? 'Student Privacy' : 'خصوصية بيانات الطلاب'}</div>
-                <div className="text-xl font-black text-[#176B5B] dark:text-[#2DD4BF] mt-0.5">100% On-Device</div>
-                <div className="text-[10px] text-[#66706B] dark:text-[#94A39D] mt-0.5">{language === 'en' ? 'Zero cloud image transfer' : 'صفر إرسال صور للسيرفر'}</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* ========================================================
           TAB 7: School Behavioral Impact (ISEF BEHA)
       ======================================================== */}
       {activeTab === 'behavioral' && (
         <BehavioralImpactTab />
-      )}
-
-      {/* ========================================================
-          TAB 5: Printable QR Posters
-      ======================================================== */}
-      {activeTab === 'qr_generator' && (
-        <div className="space-y-4 sm:space-y-6 animate-in fade-in">
-          
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#E4E7E4] dark:border-[#23332F] pb-3 text-start">
-            <div>
-              <h2 className="text-sm sm:text-base font-black text-[#18201D] dark:text-white">{t('admin.qrPostersHeading')}</h2>
-              <p className="text-[11px] sm:text-xs text-[#66706B] dark:text-[#94A39D]">
-                {t('admin.qrPostersSubtitle')}
-              </p>
-            </div>
-            <button
-              onClick={() => window.print()}
-              className="py-2.5 px-4 min-h-[40px] rounded-xl bg-[#176B5B] dark:bg-[#2DD4BF] hover:bg-[#125648] dark:hover:bg-[#14B8A6] text-white dark:text-[#18201D] text-xs font-bold flex items-center justify-center gap-2 shadow-xs cursor-pointer shrink-0"
-            >
-              <Printer className="w-4 h-4" />
-              <span>{t('admin.printAllPosters')}</span>
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-5">
-            {SCHOOL_LOCATIONS.map((rawLoc) => {
-              const loc = getLocalizedLocation(rawLoc, language);
-              return (
-              <div
-                key={loc.id}
-                className="bg-white dark:bg-[#15201D] border-2 border-dashed border-[#CBD3CE] dark:border-[#263834] rounded-2xl p-4 sm:p-5 flex flex-col items-center text-center space-y-3 shadow-2xs"
-              >
-                <div className="w-full flex items-center justify-between border-b border-[#E4E7E4] dark:border-[#23332F] pb-2">
-                  <span className="font-black text-xs text-[#18201D] dark:text-white">ETHOS SCHOOL</span>
-                  <span className="text-[10px] text-[#176B5B] dark:text-emerald-400 font-bold">{t('admin.schoolSmartPoint')}</span>
-                </div>
-
-                <div>
-                  <h3 className="text-xs sm:text-sm font-bold text-[#18201D] dark:text-white">{loc.name}</h3>
-                  <p className="text-[10px] text-[#66706B] dark:text-[#94A39D]">{loc.building} • {loc.floor}</p>
-                </div>
-
-                <div className="p-2.5 bg-white dark:bg-[#182220] rounded-xl shadow-2xs border border-[#E4E7E4] dark:border-[#2D3E3A]">
-                  <svg viewBox="0 0 100 100" className="w-24 h-24 sm:w-28 sm:h-28 text-[#18201D] dark:text-white" fill="currentColor">
-                    <rect width="30" height="30" x="10" y="10" rx="4" fill="currentColor" />
-                    <rect width="18" height="18" x="16" y="16" rx="2" fill="white" className="dark:fill-[#182220]" />
-                    <rect width="10" height="10" x="20" y="20" rx="1" fill="#176B5B" />
-
-                    <rect width="30" height="30" x="60" y="10" rx="4" fill="currentColor" />
-                    <rect width="18" height="18" x="66" y="16" rx="2" fill="white" className="dark:fill-[#182220]" />
-                    <rect width="10" height="10" x="70" y="20" rx="1" fill="#176B5B" />
-
-                    <rect width="30" height="30" x="10" y="60" rx="4" fill="currentColor" />
-                    <rect width="18" height="18" x="16" y="66" rx="2" fill="white" className="dark:fill-[#182220]" />
-                    <rect width="10" height="10" x="20" y="70" rx="1" fill="#176B5B" />
-
-                    <rect width="6" height="6" x="48" y="14" rx="1" fill="currentColor" />
-                    <rect width="6" height="6" x="48" y="26" rx="1" fill="currentColor" />
-                    <rect width="6" height="6" x="14" y="48" rx="1" fill="currentColor" />
-                    <rect width="6" height="6" x="26" y="48" rx="1" fill="currentColor" />
-                    <rect width="10" height="10" x="45" y="45" rx="2" fill="#059669" />
-                    <rect width="6" height="6" x="62" y="48" rx="1" fill="currentColor" />
-                    <rect width="6" height="6" x="78" y="48" rx="1" fill="currentColor" />
-                    <rect width="6" height="6" x="48" y="66" rx="1" fill="currentColor" />
-                    <rect width="6" height="6" x="64" y="66" rx="1" fill="currentColor" />
-                    <rect width="6" height="6" x="78" y="78" rx="1" fill="currentColor" />
-                  </svg>
-                </div>
-
-                <p className="text-[10px] text-[#66706B] dark:text-[#94A39D] font-medium leading-relaxed">
-                  {t('admin.scanMePrompt')}
-                </p>
-              </div>
-            );
-            })}
-          </div>
-
-        </div>
       )}
 
     </div>

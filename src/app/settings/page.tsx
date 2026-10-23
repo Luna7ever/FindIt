@@ -70,6 +70,7 @@ const SETTINGS_STORAGE_KEY = 'findit_user_settings_v4';
 export default function SettingsPage() {
   const { 
     currentUser, 
+    updateUserProfile,
     users, 
     setCurrentUserById, 
     currentUserTrustTier, 
@@ -97,18 +98,27 @@ export default function SettingsPage() {
 
   const isAdminUser = canAccessAdmin(currentUser);
 
-  // Load settings on client mount
+  // Load settings on client mount and synchronize with currentUser cloud profile
   useEffect(() => {
     try {
       const saved = localStorage.getItem(SETTINGS_STORAGE_KEY);
-      if (saved) {
-        setSettings(JSON.parse(saved));
-        setPinInput(JSON.parse(saved).defaultPin || '1234');
-      }
+      const parsed = saved ? JSON.parse(saved) : {};
+      const merged: UserSettingsState = {
+        ...DEFAULT_SETTINGS,
+        ...parsed,
+        publicLeaderboard: currentUser.isLeaderboardVisible !== undefined 
+          ? currentUser.isLeaderboardVisible 
+          : (parsed.publicLeaderboard ?? true),
+        maskContactInfo: currentUser.maskContactInfo !== undefined
+          ? currentUser.maskContactInfo
+          : (parsed.maskContactInfo ?? true),
+      };
+      setSettings(merged);
+      setPinInput(merged.defaultPin || '1234');
     } catch {
       // Use defaults
     }
-  }, []);
+  }, [currentUser.isLeaderboardVisible, currentUser.maskContactInfo]);
 
   const updateSetting = <K extends keyof UserSettingsState>(key: K, value: UserSettingsState[K]) => {
     const updated = { ...settings, [key]: value };
@@ -119,6 +129,13 @@ export default function SettingsPage() {
       setTimeout(() => setIsSaved(false), 2000);
     } catch {
       // ignore
+    }
+
+    // Immediately persist privacy settings to currentUser and Cloudflare D1
+    if (key === 'publicLeaderboard') {
+      updateUserProfile({ isLeaderboardVisible: Boolean(value) }).catch(() => {});
+    } else if (key === 'maskContactInfo') {
+      updateUserProfile({ maskContactInfo: Boolean(value) }).catch(() => {});
     }
   };
 

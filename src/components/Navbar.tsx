@@ -20,8 +20,6 @@ import {
   Award,
   GraduationCap
 } from 'lucide-react';
-import QRModal from '@/components/QRModal';
-import CameraQRScannerModal from '@/components/CameraQRScannerModal';
 import IntegrityCertificateModal from '@/components/IntegrityCertificateModal';
 import NotificationCenter from '@/components/NotificationCenter';
 import ToastNotification from '@/components/ToastNotification';
@@ -34,16 +32,12 @@ export default function Navbar() {
     users, 
     setCurrentUserById, 
     getClaimsForMyItems,
-    isQRScannerOpen,
-    openQRScanner,
-    closeQRScanner,
     isCertificateModalOpen,
     certificateUser,
     closeCertificateModal,
     openOnboardingModal
   } = useApp();
   
-  const [showQRModal, setShowQRModal] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
 
   const pendingClaimsCount = (getClaimsForMyItems() || []).filter(
@@ -144,26 +138,6 @@ export default function Navbar() {
 
           {/* Quick Actions & User Switcher */}
           <div className="flex items-center gap-2 sm:gap-3">
-            
-            {/* Live Camera QR Scanner Trigger */}
-            <button
-              onClick={openQRScanner}
-              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold text-emerald-900 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/80 transition-all shadow-xs"
-              title="مسح باركود المرفق بالكاميرا"
-            >
-              <Camera className="w-3.5 h-3.5 text-emerald-700" />
-              <span className="hidden sm:inline">مسح بالكاميرا</span>
-            </button>
-
-            {/* School Printable QR Trigger */}
-            <button
-              onClick={() => setShowQRModal(true)}
-              className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors"
-              title="ملصقات QR لمرافق المدرسة"
-            >
-              <QrCode className="w-3.5 h-3.5 text-slate-600" />
-              <span>ملصقات QR</span>
-            </button>
 
             {/* Real-time Notification Center */}
             <NotificationCenter />
@@ -325,8 +299,6 @@ export default function Navbar() {
       </header>
 
       {/* Global Modals & Toasts */}
-      <QRModal isOpen={showQRModal} onClose={() => setShowQRModal(false)} />
-      <CameraQRScannerModal isOpen={isQRScannerOpen} onClose={closeQRScanner} />
       <IntegrityCertificateModal 
         isOpen={isCertificateModalOpen} 
         onClose={closeCertificateModal} 

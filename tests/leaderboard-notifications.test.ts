@@ -12,7 +12,7 @@ test('1. LEADERBOARD: Calculates ranks and points correctly from users roster', 
   
   assert.strictEqual(sortedStudents[0].name, 'ملك محمد فروق');
   assert.strictEqual(sortedStudents[0].goodwillPoints, 100);
-  assert.strictEqual(sortedStudents[1].name, 'سارة القحطاني');
+  assert.strictEqual(sortedStudents[1].name, 'سارة أحمد');
   assert.strictEqual(sortedStudents[1].goodwillPoints, 90);
 });
 

@@ -25,6 +25,7 @@ import {
   FolderOpen
 } from 'lucide-react';
 import Link from 'next/link';
+import AudioVoiceButton from '@/components/AudioVoiceButton';
 
 const categoryIconMap: Record<string, React.ReactNode> = {
   electronics: <Laptop className="w-4 h-4" />,
@@ -107,9 +108,12 @@ function ExploreContent() {
       {/* Header */}
       <div className="flex items-center justify-between gap-3 text-start">
         <div>
-          <h1 className="text-lg sm:text-2xl font-black text-[#18201D] dark:text-white tracking-tight">
-            {language === 'en' ? 'Explore Lost & Found Items' : 'استكشاف المفقودات والأمانات'}
-          </h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-lg sm:text-2xl font-black text-[#18201D] dark:text-white tracking-tight">
+              {language === 'en' ? 'Explore Lost & Found Items' : 'استكشاف المفقودات والأمانات'}
+            </h1>
+            <AudioVoiceButton text={language === 'en' ? 'Explore Lost and Found Items' : 'استكشاف المفقودات والأمانات'} size="sm" />
+          </div>
           <p className="text-[11px] sm:text-xs text-[#66706B] dark:text-[#94A39D] mt-0.5">
             {language === 'en' ? `Browse registered school belongings (${items.length} items)` : `تصفح الأغراض المسجلة في كافة مرافق المدرسة (${items.length} غرض)`}
           </p>

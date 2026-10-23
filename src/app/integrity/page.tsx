@@ -45,6 +45,8 @@ import {
   Scale,
   ScrollText
 } from 'lucide-react';
+import AudioVoiceButton from '@/components/AudioVoiceButton';
+import { speakKidsText } from '@/lib/kidsVoice';
 
 interface ScenarioAnswerState {
   optionId: string;
@@ -467,7 +469,7 @@ function StudentIntegrityFlow() {
         accuracy,
         idealCount
       ).catch((err) => {
-        console.error('Error saving weekly challenge to Firestore:', err);
+        console.error('Error saving weekly challenge to Cloudflare D1:', err);
       });
     }
   };
@@ -547,64 +549,55 @@ function StudentIntegrityFlow() {
     <div className="w-full max-w-full overflow-x-hidden min-w-0 px-3 sm:px-6 py-4 max-w-6xl mx-auto space-y-4 text-start font-sans" dir={dir}>
       
       {/* ========================================================
-          0. PRE-TEST MORAL PLEDGE MODAL (Mandatory / Non-dismissible)
+          0. KIDS WELCOME MODAL: "أهلًا بيك في إيثوس! 🌱"
       ======================================================== */}
       {!isScreenCompleted && !hasConfirmedPledge && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md animate-in fade-in duration-300">
           <div 
-            className="w-full max-w-lg bg-white dark:bg-[#15201D] border-2 border-emerald-500/40 dark:border-emerald-500/50 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-5 text-center relative overflow-hidden animate-in zoom-in-95 duration-300"
+            className="w-full max-w-md bg-white dark:bg-[#15201D] border-3 border-emerald-400 dark:border-emerald-500 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-5 text-center relative overflow-hidden animate-in zoom-in-95 duration-300"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Subtle radial emerald background glow */}
-            <div className="absolute top-0 right-1/2 translate-x-1/2 w-64 h-64 bg-[#176B5B]/15 dark:bg-emerald-500/10 blur-3xl rounded-full pointer-events-none" />
+            {/* Cheerful radial emerald glow */}
+            <div className="absolute top-0 right-1/2 translate-x-1/2 w-64 h-64 bg-emerald-400/20 dark:bg-emerald-500/10 blur-3xl rounded-full pointer-events-none" />
 
-            {/* Icon Header */}
-            <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-tr from-[#176B5B] to-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-900/30 relative z-10">
-              <Scale className="w-8 h-8 text-amber-200" />
+            {/* 3D Mascot Character Avatar */}
+            <div className="relative mx-auto w-28 h-28 sm:w-32 sm:h-32 flex items-center justify-center">
+              <div className="absolute inset-0 bg-gradient-to-tr from-emerald-400 via-teal-300 to-amber-200 rounded-full blur-md opacity-70 animate-pulse pointer-events-none" />
+              <img
+                src="/kids/girl_avatar.png"
+                alt="Ethos Mascot"
+                className="w-28 h-28 sm:w-32 sm:h-32 object-contain relative z-10 drop-shadow-lg"
+              />
             </div>
 
-            {/* Title & Badge */}
-            <div className="space-y-2 relative z-10">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950/70 border border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs font-black shadow-2xs">
-                <ScrollText className="w-3.5 h-3.5" />
-                <span>{language === 'en' ? 'Pre-Test Moral Priming Pledge' : 'تعهد النزاهة المسبق'}</span>
+            {/* Title & Audio Voice Button */}
+            <div className="space-y-3 relative z-10">
+              <div className="flex items-center justify-center gap-2">
+                <h2 className="text-2xl sm:text-3xl font-black text-[#18201D] dark:text-white leading-tight">
+                  {language === 'en' ? 'Welcome to Ethos! 🌱' : 'أهلًا بيك في إيثوس! 🌱'}
+                </h2>
+                <AudioVoiceButton
+                  text={language === 'en' ? 'Welcome to Ethos! Here we will play, choose, and learn how to act with honesty!' : 'أهلًا بيك في إيثوس! هنا هنلعب، ونختار، ونتعلّم نتصرف بأمانة!'}
+                  size="md"
+                />
               </div>
-              <h2 className="text-xl sm:text-2xl font-black text-[#18201D] dark:text-white leading-snug">
-                {language === 'en' ? 'Integrity & Moral Commitment' : 'ميثاق الأمانة والنزاهة المدرسية'}
-              </h2>
-              <p className="text-xs text-[#66706B] dark:text-[#94A39D]">
-                {language === 'en' 
-                  ? `${activeWeeklyChallenge?.theme_title || 'Weekly Challenge'} • Step into the dilemmas with sincere accountability` 
-                  : `${activeWeeklyChallenge?.theme_title || 'تحدي الأسبوع'} • نرجو قراءة التعهد بعناية واعتماده قبل بدء الموقف الأول`}
-              </p>
-            </div>
 
-            {/* Pledge Card Frame */}
-            <div className="p-5 sm:p-6 rounded-2xl bg-gradient-to-br from-emerald-50/80 via-slate-50 to-amber-50/50 dark:from-[#1C2B27] dark:via-[#162522] dark:to-[#122420] border border-emerald-500/30 dark:border-emerald-600/40 shadow-inner relative z-10 space-y-3.5">
-              <div className="flex items-center justify-center gap-1.5 text-amber-600 dark:text-amber-400 font-bold text-xs">
-                <Sparkles className="w-4 h-4 animate-pulse" />
-                <span>{language === 'en' ? 'Official Student Ethical Commitment' : 'تعهد الطالبـ/ـة المعتمد'}</span>
-                <Sparkles className="w-4 h-4 animate-pulse" />
+              {/* Character Speech Bubble */}
+              <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-[#1C2B27] dark:to-[#162522] border-2 border-emerald-300/80 dark:border-emerald-700/60 shadow-sm relative text-center">
+                <p className="text-base sm:text-lg font-black text-[#176B5B] dark:text-emerald-200 leading-snug">
+                  «{language === 'en' ? 'Here we will play, choose, and learn how to act with honesty!' : 'هنا هنلعب، ونختار، ونتعلّم نتصرف بأمانة!'}»
+                </p>
               </div>
-              <blockquote className="text-sm sm:text-base font-black text-[#18201D] dark:text-emerald-100 leading-relaxed italic px-2">
-                «{currentPledgeText}»
-              </blockquote>
-              {currentUser.name && (
-                <div className="pt-2.5 border-t border-emerald-200/70 dark:border-emerald-900/60 flex items-center justify-between text-xs text-[#66706B] dark:text-[#94A39D] font-bold px-2">
-                  <span>{language === 'en' ? 'Pledged by:' : 'المتعهدـ/ـة:'}</span>
-                  <span className="text-[#176B5B] dark:text-emerald-300 font-black">{currentUser.name}</span>
-                </div>
-              )}
             </div>
 
-            {/* Action Confirmation Button */}
+            {/* Big Cheerful Button: يلا نبدأ! */}
             <div className="pt-2 relative z-10">
               <button
+                type="button"
                 onClick={handleConfirmPledge}
-                className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-[#176B5B] to-emerald-600 hover:from-[#125648] hover:to-emerald-700 text-white font-black text-sm shadow-lg shadow-emerald-900/25 flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-98 cursor-pointer"
+                className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 hover:from-emerald-600 hover:to-teal-600 text-white font-black text-lg sm:text-xl shadow-xl shadow-emerald-500/30 flex items-center justify-center gap-2 transition-all hover:scale-[1.03] active:scale-95 cursor-pointer border-2 border-emerald-300/40"
               >
-                <CheckCircle2 className="w-5 h-5 text-amber-200" />
-                <span>{language === 'en' ? 'I Confirm My Pledge & Begin' : 'أؤكد تعهدي وأبدأ'}</span>
+                <span>{language === 'en' ? "Let's Start! 🎮" : 'يلا نبدأ! 🎮'}</span>
               </button>
             </div>
 
@@ -1043,6 +1036,228 @@ function StudentIntegrityFlow() {
           </div>
 
         </div>
+      ) : activeScenarioIndex === 0 ? (
+        /* ========================================================
+            KIDS ILLUSTRATED SCENARIO: "لقيت قلم مش بتاعك… تعمل إيه؟"
+        ======================================================== */
+        <div className="bg-white dark:bg-[#15201D] border-2 border-emerald-300/60 dark:border-emerald-800/60 rounded-3xl p-4 sm:p-7 shadow-lg space-y-6 animate-in fade-in duration-300">
+          
+          {/* Top Question Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-[#23332F] pb-4">
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <span className="w-9 h-9 rounded-2xl bg-emerald-100 dark:bg-emerald-950/70 text-emerald-800 dark:text-emerald-300 font-black text-base flex items-center justify-center shrink-0 shadow-2xs">
+                1
+              </span>
+              <h2 className="text-xl sm:text-2xl font-black text-[#18201D] dark:text-white flex items-center gap-2">
+                <span>{language === 'en' ? 'You found a pencil that isn’t yours… what do you do? ✏️🤔' : 'لقيت قلم مش بتاعك… تعمل إيه؟ ✏️🤔'}</span>
+              </h2>
+              <AudioVoiceButton
+                text={language === 'en' ? 'You found a pencil that is not yours, what do you do?' : 'لقيت قلم مش بتاعك… تعمل إيه؟'}
+                size="md"
+              />
+            </div>
+
+            <span className="self-start sm:self-auto px-3 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950/70 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 text-xs font-black">
+              {language === 'en' ? '+10 Goodwill Points' : '+10 نقاط أمانة 🌟'}
+            </span>
+          </div>
+
+          {/* Hero Picture of the Found Pencil */}
+          <div className="relative aspect-[16/8] sm:aspect-[21/9] w-full rounded-2xl overflow-hidden shadow-md border border-slate-200 dark:border-slate-800">
+            <img
+              src="/kids/kids_found_pencil.jpg"
+              alt="Found Pencil"
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent pointer-events-none" />
+            <div className="absolute bottom-3 start-4 end-4 flex items-center justify-between text-white text-xs sm:text-sm font-black drop-shadow-md">
+              <span className="flex items-center gap-2">
+                <span>{language === 'en' ? 'You saw a colorful pencil on the school floor!' : 'شفت قلم ملون وجميل واقع على أرض الفصل! ✏️'}</span>
+                <AudioVoiceButton
+                  text={language === 'en' ? 'You saw a colorful pencil on the school floor' : 'شفت قلم ملون وجميل واقع على أرض الفصل'}
+                  size="sm"
+                  className="bg-white/30 text-white border-white/40"
+                />
+              </span>
+            </div>
+          </div>
+
+          {/* Instruction Callout */}
+          <div className="text-center sm:text-start flex items-center justify-between gap-2">
+            <p className="text-sm sm:text-base font-black text-[#176B5B] dark:text-emerald-300">
+              {language === 'en' ? 'Choose the right picture: 👇' : 'اختر الصورة الصحيحة بتصرفك الأمين: 👇'}
+            </p>
+            <span className="text-xs text-[#66706B] dark:text-[#94A39D] font-bold">
+              {language === 'en' ? 'Tap an image to decide' : 'اضغط على الصورة'}
+            </span>
+          </div>
+
+          {/* 2 Big Picture Choices */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+            
+            {/* Option 1 (Ideal / Honest Choice) */}
+            {(() => {
+              const honestOption = primaryQuestion?.options.find((o) => o.score === 100) || primaryQuestion?.options[0];
+              const isSelected = selectedOptionId === honestOption?.id;
+              const hasAnswered = !!selectedOptionId;
+
+              return (
+                <div
+                  onClick={() => {
+                    if (!hasAnswered && honestOption) {
+                      handleSelectOption(honestOption);
+                      speakKidsText(language === 'en' ? 'We ask the teacher so we can return the pencil to its owner. Great job hero!' : 'نسأل المعلّمة عشان نرجّع القلم لصاحبه.. شاطر يا بطل! 🌟');
+                    }
+                  }}
+                  className={`group rounded-3xl border-3 p-4 sm:p-5 transition-all flex flex-col justify-between space-y-4 cursor-pointer relative overflow-hidden select-none ${
+                    isSelected
+                      ? 'border-emerald-500 bg-emerald-50/90 dark:bg-emerald-950/60 ring-4 ring-emerald-400/40 shadow-xl scale-[1.02]'
+                      : hasAnswered
+                      ? 'border-slate-200 dark:border-[#2D3E3A] opacity-60'
+                      : 'border-slate-200 hover:border-emerald-400 dark:border-[#2D3E3A] dark:hover:border-emerald-500 hover:shadow-xl hover:scale-[1.02] bg-white dark:bg-[#1C2B27]'
+                  }`}
+                >
+                  {/* Big 3D Cartoon Picture */}
+                  <div className="relative aspect-[4/3] w-full rounded-2xl overflow-hidden shadow-md">
+                    <img
+                      src="/kids/kids_ask_teacher.jpg"
+                      alt="Ask the teacher"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    {isSelected && (
+                      <div className="absolute top-3 end-3 w-9 h-9 rounded-full bg-emerald-600 text-white flex items-center justify-center shadow-lg animate-bounce">
+                        <Check className="w-5 h-5 stroke-[3]" />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Text Label & Voice Button */}
+                  <div className="flex items-center justify-between gap-2 pt-1">
+                    <p className="text-base sm:text-lg font-black text-[#18201D] dark:text-white leading-snug">
+                      {language === 'en' ? 'Ask the teacher so we can return the pencil to its owner 👩‍🏫✨' : 'نسأل المعلّمة عشان نرجّع القلم لصاحبه 👩‍🏫✨'}
+                    </p>
+                    <AudioVoiceButton
+                      text={language === 'en' ? 'Ask the teacher so we can return the pencil to its owner' : 'نسأل المعلّمة عشان نرجّع القلم لصاحبه'}
+                      size="md"
+                    />
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* Option 2 (Distractor / Bag Choice) */}
+            {(() => {
+              const distractorOption = primaryQuestion?.options.find((o) => o.score === 0) || primaryQuestion?.options[1];
+              const isSelected = selectedOptionId === distractorOption?.id;
+              const hasAnswered = !!selectedOptionId;
+
+              return (
+                <div
+                  onClick={() => {
+                    if (!hasAnswered && distractorOption) {
+                      handleSelectOption(distractorOption);
+                      speakKidsText(language === 'en' ? 'The pencil is not ours, it is better to ask the teacher to return it to its owner!' : 'القلم مش بتاعنا، نسأل المعلمة أحسن عشان نرجّعه لصاحبه! 🌱');
+                    }
+                  }}
+                  className={`group rounded-3xl border-3 p-4 sm:p-5 transition-all flex flex-col justify-between space-y-4 cursor-pointer relative overflow-hidden select-none ${
+                    isSelected
+                      ? 'border-amber-500 bg-amber-50/90 dark:bg-amber-950/60 ring-4 ring-amber-400/40 shadow-xl'
+                      : hasAnswered
+                      ? 'border-slate-200 dark:border-[#2D3E3A] opacity-60'
+                      : 'border-slate-200 hover:border-amber-400 dark:border-[#2D3E3A] dark:hover:border-amber-500 hover:shadow-xl hover:scale-[1.02] bg-white dark:bg-[#1C2B27]'
+                  }`}
+                >
+                  {/* Big 3D Cartoon Picture */}
+                  <div className="relative aspect-[4/3] w-full rounded-2xl overflow-hidden shadow-md">
+                    <img
+                      src="/kids/kids_put_in_bag.jpg"
+                      alt="Put in bag"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    {isSelected && (
+                      <div className="absolute top-3 end-3 w-9 h-9 rounded-full bg-amber-600 text-white flex items-center justify-center shadow-lg">
+                        <AlertCircle className="w-5 h-5" />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Text Label & Voice Button */}
+                  <div className="flex items-center justify-between gap-2 pt-1">
+                    <p className="text-base sm:text-lg font-black text-[#18201D] dark:text-white leading-snug">
+                      {language === 'en' ? 'Put it in my bag and take it home with me 🎒' : 'أحطه في شنطتي وآخده معايا البيت 🎒'}
+                    </p>
+                    <AudioVoiceButton
+                      text={language === 'en' ? 'Put it in my bag and take it home with me' : 'أحطه في شنطتي وآخده معايا البيت'}
+                      size="md"
+                    />
+                  </div>
+                </div>
+              );
+            })()}
+
+          </div>
+
+          {/* Instant Character Explanation & Next Button Card */}
+          {selectedOption && (
+            <div className={`p-5 rounded-3xl border-2 shadow-lg space-y-3 animate-in fade-in slide-in-from-bottom-2 duration-300 ${
+              selectedOption.score === 100
+                ? 'bg-gradient-to-br from-emerald-50 via-white to-teal-50 dark:from-emerald-950/50 dark:via-[#15201D] dark:to-teal-950/40 border-emerald-400 dark:border-emerald-700'
+                : 'bg-gradient-to-br from-amber-50 via-white to-rose-50 dark:from-amber-950/50 dark:via-[#15201D] dark:to-rose-950/40 border-amber-400 dark:border-amber-700'
+            }`}>
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="flex items-center gap-3 text-center sm:text-start">
+                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shrink-0 shadow-md ${
+                    selectedOption.score === 100 ? 'bg-emerald-500 text-white' : 'bg-amber-500 text-white'
+                  }`}>
+                    {selectedOption.score === 100 ? '🌟' : '💡'}
+                  </div>
+                  <div>
+                    <h4 className="text-base sm:text-lg font-black text-[#18201D] dark:text-white">
+                      {selectedOption.score === 100
+                        ? (language === 'en' ? 'Excellent Hero! 🌟' : 'ممتاز يا بطل! 🌟')
+                        : (language === 'en' ? 'Think again hero! 🌱' : 'فكّر تاني يا بطل! 🌱')}
+                    </h4>
+                    <p className="text-sm font-bold text-[#176B5B] dark:text-emerald-300 mt-0.5">
+                      {selectedOption.score === 100
+                        ? (language === 'en' ? '«We ask the teacher so we can return the pencil to its owner.»' : '«نسأل المعلّمة عشان نرجّع القلم لصاحبه.»')
+                        : (language === 'en' ? '«The pencil is not ours, honesty means we return it to its owner!»' : '«القلم مش بتاعنا.. الأمانة إننا نرجّعه لصاحبه بمساعدة المعلّمة!»')}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  {selectedOption.score < 100 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedOptionId(null);
+                        speakKidsText(language === 'en' ? 'Try again!' : 'جرّب تاني واختار التصرف الأمين!');
+                      }}
+                      className="py-3 px-5 rounded-2xl bg-white dark:bg-[#1C2B27] border-2 border-amber-300 dark:border-amber-700 text-amber-900 dark:text-amber-200 font-black text-sm shadow-sm flex items-center gap-2 hover:bg-amber-50 transition-all cursor-pointer"
+                    >
+                      <RefreshCw className="w-4 h-4" />
+                      <span>{language === 'en' ? 'Try Again 🔄' : 'جرّب تاني 🔄'}</span>
+                    </button>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={handleNextStep}
+                    className="py-3.5 px-6 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-black text-base shadow-lg shadow-emerald-500/25 flex items-center gap-2 transition-all hover:scale-105 active:scale-95 cursor-pointer"
+                  >
+                    <span>
+                      {activeScenarioIndex === currentChallengeScenarios.length - 1
+                        ? (language === 'en' ? 'View Certificate 🏆' : 'عرض النتيجة والشهادة 🏆')
+                        : (language === 'en' ? 'Next Scenario 🚀' : 'الموقف التالي 🚀')}
+                    </span>
+                    {isRtl ? <ChevronLeft className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+        </div>
       ) : (
         /* ========================================================
             3. INTERACTIVE ROLEPLAY CINEMA SIMULATION (DECLUTTERED SPLIT GRID)
@@ -1092,9 +1307,11 @@ function StudentIntegrityFlow() {
                     <Compass className="w-3.5 h-3.5" />
                     {activeScenario.visualDetails.locationBadge}
                   </span>
-                  <span className="text-[11px] font-medium text-slate-400">
-                    {activeScenario.visualDetails.roomLabel}
-                  </span>
+                  {activeScenario.visualDetails.roomLabel && activeScenario.visualDetails.roomLabel !== activeScenario.visualDetails.locationBadge && (
+                    <span className="text-[11px] font-medium text-slate-400">
+                      {activeScenario.visualDetails.roomLabel}
+                    </span>
+                  )}
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -1123,12 +1340,15 @@ function StudentIntegrityFlow() {
               </div>
 
               {/* Dynamic Interactive Character Viewport */}
-              <div className="relative aspect-[16/10] w-full bg-slate-950 overflow-hidden group select-none">
+              <div className="relative aspect-[16/10] w-full bg-slate-900 overflow-hidden group select-none">
                 {activeScenario.visualDetails.sceneImageUrl ? (
                   <div className="absolute inset-0 overflow-hidden">
                     <img
                       src={activeScenario.visualDetails.sceneImageUrl}
                       alt={activeScenario.title}
+                      onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).src = '/kids/challenge_banner.png';
+                      }}
                       className={`w-full h-full object-cover transition-all duration-1000 ease-out ${
                         isPlaying ? 'scale-108 -translate-y-1 brightness-105 contrast-105' : 'scale-100'
                       }`}
@@ -1163,13 +1383,15 @@ function StudentIntegrityFlow() {
                   </div>
                 )}
 
-                {/* Top-Left: Scenario Note Badge */}
-                <div className="absolute top-3 start-3 z-20 pointer-events-none">
-                  <span className="px-2.5 py-1 rounded-lg bg-black/70 backdrop-blur-sm text-amber-300 text-[10px] font-bold border border-amber-500/30 flex items-center gap-1.5 shadow-md">
-                    <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
-                    <span>{activeScenario.visualDetails.promptNote}</span>
-                  </span>
-                </div>
+                {/* Top-Left: Scenario Note Badge (Only rendered if promptNote exists) */}
+                {activeScenario.visualDetails.promptNote ? (
+                  <div className="absolute top-3 start-3 z-20 pointer-events-none">
+                    <span className="px-2.5 py-1 rounded-lg bg-black/70 backdrop-blur-sm text-amber-300 text-[10px] font-bold border border-amber-500/30 flex items-center gap-1.5 shadow-md">
+                      <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
+                      <span>{activeScenario.visualDetails.promptNote}</span>
+                    </span>
+                  </div>
+                ) : null}
 
                 {/* In-Video Decision Outcome HUD (Bandersnatch Reaction Stage) */}
                 {selectedOption && (
@@ -1308,10 +1530,13 @@ function StudentIntegrityFlow() {
             
             <div className="space-y-1 border-b border-slate-100 dark:border-[#23332F] pb-3">
               <div className="flex items-center justify-between">
-                <h2 className="text-sm sm:text-base font-black text-[#18201D] dark:text-white flex items-center gap-2">
-                  <Flame className="w-4 h-4 text-[#176B5B] dark:text-emerald-400" />
-                  <span>{primaryQuestion?.question || (language === 'en' ? 'How do you respond directly?' : 'كيف ترد وتتصرف في هذا الموقف؟')}</span>
-                </h2>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-sm sm:text-base font-black text-[#18201D] dark:text-white flex items-center gap-2">
+                    <Flame className="w-4 h-4 text-[#176B5B] dark:text-emerald-400" />
+                    <span>{primaryQuestion?.question || (language === 'en' ? 'How do you respond directly?' : 'كيف ترد وتتصرف في هذا الموقف؟')}</span>
+                  </h2>
+                  <AudioVoiceButton text={primaryQuestion?.question || 'كيف ترد وتتصرف في هذا الموقف؟'} size="sm" />
+                </div>
                 <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-[10px] font-bold">
                   {language === 'en' ? '+10 Integrity Points' : '+10 نقاط للأمانة'}
                 </span>
@@ -1366,9 +1591,12 @@ function StudentIntegrityFlow() {
 
                       {/* Conversational Option Text */}
                       <div className="space-y-0.5">
-                        <span className="text-[10px] font-bold text-[#176B5B] dark:text-emerald-400 block">
-                          {language === 'en' ? `🗣️ Spoken Response Option ${optIdx + 1}:` : `🗣️ خيار الرد المباشر ${optIdx + 1}:`}
-                        </span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[10px] font-bold text-[#176B5B] dark:text-emerald-400 block">
+                            {language === 'en' ? `🗣️ Spoken Response Option ${optIdx + 1}:` : `🗣️ خيار الرد المباشر ${optIdx + 1}:`}
+                          </span>
+                          <AudioVoiceButton text={option.text} size="sm" />
+                        </div>
                         <p className="text-xs sm:text-sm font-semibold leading-relaxed">
                           {option.text}
                         </p>

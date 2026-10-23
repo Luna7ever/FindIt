@@ -8,8 +8,10 @@ import { SCHOOL_LOCATIONS, CATEGORIES } from '@/lib/constants';
 import { formatAppDate, getPublicReporterLabel } from '@/lib/utils';
 import { getLocalizedItem, getLocalizedLocation, getLocalizedColorName } from '@/lib/i18n/seedDataTranslations';
 import ClaimModal from '@/components/ClaimModal';
+import HandoverPinModal from '@/components/HandoverPinModal';
 import ItemVisual from '@/components/ItemVisual';
 import UserAvatar from '@/components/UserAvatar';
+import { Claim } from '@/types';
 import { 
   MapPin, 
   Clock, 
@@ -20,14 +22,28 @@ import {
   AlertCircle, 
   ArrowLeft,
   ArrowRight,
-  Share2
+  Share2,
+  KeyRound,
+  Users
 } from 'lucide-react';
 
 export default function ItemDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
   const router = useRouter();
-  const { getItemById, currentUser, dir, isRtl, language, t } = useApp();
+  const { 
+    getItemById, 
+    currentUser, 
+    claims, 
+    getClaimForCurrentUserAndItem, 
+    approveClaim, 
+    rejectClaim, 
+    dir, 
+    isRtl, 
+    language, 
+    t 
+  } = useApp();
   const [showClaimModal, setShowClaimModal] = useState(false);
+  const [selectedHandoverClaim, setSelectedHandoverClaim] = useState<Claim | null>(null);
 
   const rawItem = getItemById(resolvedParams.id);
   const item = rawItem ? getLocalizedItem(rawItem, language) : null;
@@ -183,17 +199,143 @@ export default function ItemDetailsPage({ params }: { params: Promise<{ id: stri
                 </div>
               )}
 
-              {/* Primary Claim Action */}
+              {/* Primary Claim Action for Students claiming this item */}
               {!isLost && !isReunited && !isMyReport && (
                 <div className="pt-2">
-                  <button
-                    onClick={() => setShowClaimModal(true)}
-                    className="w-full py-3.5 px-6 min-h-[44px] rounded-2xl bg-[#176B5B] dark:bg-[#2DD4BF] hover:bg-[#125648] dark:hover:bg-[#14B8A6] text-white dark:text-slate-950 font-bold text-xs sm:text-sm transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer"
-                  >
-                    <Lock className="w-4 h-4" />
-                    <span>{t('item.claimBtn')}</span>
-                  </button>
+                  {(() => {
+                    const existingClaim = getClaimForCurrentUserAndItem(item.id);
+                    if (existingClaim?.status === 'pending') {
+                      return (
+                        <button
+                          onClick={() => setShowClaimModal(true)}
+                          className="w-full py-3.5 px-6 min-h-[44px] rounded-2xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs sm:text-sm transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer"
+                        >
+                          <Clock className="w-4 h-4" />
+                          <span>{language === 'en' ? '⏳ Request Under Finder Review (Click to view)' : '⏳ طلبك قيد مراجعة العاثر (اضغط للمتابعة)'}</span>
+                        </button>
+                      );
+                    }
+                    if (existingClaim?.status === 'approved') {
+                      return (
+                        <button
+                          onClick={() => setShowClaimModal(true)}
+                          className="w-full py-3.5 px-6 min-h-[44px] rounded-2xl bg-[#059669] hover:bg-[#047857] text-white font-bold text-xs sm:text-sm transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer animate-pulse"
+                        >
+                          <KeyRound className="w-4 h-4" />
+                          <span>{language === 'en' ? '🔑 Claim Approved! View Your PIN' : '🔑 تم قبولك! اضغط لعرض رمز الاستلام (PIN)'}</span>
+                        </button>
+                      );
+                    }
+                    return (
+                      <button
+                        onClick={() => setShowClaimModal(true)}
+                        className="w-full py-3.5 px-6 min-h-[44px] rounded-2xl bg-[#176B5B] dark:bg-[#2DD4BF] hover:bg-[#125648] dark:hover:bg-[#14B8A6] text-white dark:text-slate-950 font-bold text-xs sm:text-sm transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer"
+                      >
+                        <Lock className="w-4 h-4" />
+                        <span>{t('item.claimBtn')}</span>
+                      </button>
+                    );
+                  })()}
                 </div>
+              )}
+
+              {/* AI Matching Button */}
+              {!isReunited && (
+                <div className="pt-2">
+                  <Link
+                    href={`/match/${item.id}`}
+                    className="w-full py-3.5 px-6 min-h-[44px] rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white font-bold text-xs sm:text-sm transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <Sparkles className="w-4 h-4 text-amber-300 animate-pulse" />
+                    <span>{language === 'en' ? '🎯 Check AI Matching Engine' : '🎯 فحص التطابق الذكي (AI Matching)'}</span>
+                  </Link>
+                </div>
+              )}
+
+              {/* Direct Finder Claims Review Section (When finder or admin views this item) */}
+              {!isLost && (isMyReport || currentUser.role === 'admin') && (
+                (() => {
+                  const itemClaims = claims.filter((c) => c.itemId === item.id);
+                  if (itemClaims.length === 0) return null;
+
+                  return (
+                    <div className="pt-3 space-y-3">
+                      <div className="flex items-center gap-1.5 text-xs font-bold text-[#18201D] dark:text-white">
+                        <Users className="w-4 h-4 text-[#176B5B] dark:text-[#2DD4BF]" />
+                        <span>{language === 'en' ? 'Incoming Claims on this Item' : 'طلبات الاسترداد الواردة على هذا الغرض'} ({itemClaims.length})</span>
+                      </div>
+
+                      <div className="space-y-2.5">
+                        {itemClaims.map((claim) => (
+                          <div 
+                            key={claim.id}
+                            className="p-3.5 rounded-2xl bg-[#F1F3F0] dark:bg-[#1C2B27] border border-[#E4E7E4] dark:border-[#2D3E3A] space-y-2.5 text-xs"
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="font-bold text-[#18201D] dark:text-white">
+                                {claim.claimant?.name || 'طالب'} ({claim.claimant?.grade || 'طالب'})
+                              </span>
+                              {claim.status === 'completed' ? (
+                                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">
+                                  تم الاسترداد 🎉
+                                </span>
+                              ) : claim.status === 'approved' ? (
+                                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#E6F1ED] dark:bg-[#122823] text-[#176B5B] dark:text-[#2DD4BF]">
+                                  معتمد (بانتظار الـ PIN)
+                                </span>
+                              ) : claim.status === 'rejected' ? (
+                                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 dark:bg-rose-950 text-rose-700 dark:text-rose-300">
+                                  مرفوض
+                                </span>
+                              ) : (
+                                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300">
+                                  بانتظار موافقتك ⏳
+                                </span>
+                              )}
+                            </div>
+
+                            <div className="p-2.5 rounded-xl bg-white dark:bg-[#15201D] border border-[#E4E7E4] dark:border-[#263834] space-y-1">
+                              <span className="text-[10px] text-[#66706B] dark:text-[#94A39D] block">
+                                {language === 'en' ? 'Student Answer to Secret Question:' : 'إجابة الطالب على سؤالك السري:'}
+                              </span>
+                              <p className="font-bold text-[#18201D] dark:text-white">
+                                «{claim.answerText}»
+                              </p>
+                            </div>
+
+                            {claim.status === 'pending' && (
+                              <div className="flex items-center gap-2 pt-1">
+                                <button
+                                  onClick={() => approveClaim(claim.id)}
+                                  className="flex-1 py-2 px-3 rounded-xl bg-[#176B5B] dark:bg-[#2DD4BF] hover:bg-[#125648] dark:hover:bg-[#14B8A6] text-white dark:text-slate-950 font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+                                >
+                                  <CheckCircle2 className="w-3.5 h-3.5" />
+                                  <span>{language === 'en' ? 'Approve Proof ✅' : 'قبول الإثبات ✅'}</span>
+                                </button>
+                                <button
+                                  onClick={() => rejectClaim(claim.id)}
+                                  className="py-2 px-3 rounded-xl bg-white dark:bg-[#15201D] hover:bg-rose-50 dark:hover:bg-rose-950/40 text-rose-600 dark:text-rose-400 font-bold text-xs border border-rose-200 dark:border-rose-900/50 cursor-pointer"
+                                >
+                                  {language === 'en' ? 'Reject ❌' : 'رفض ❌'}
+                                </button>
+                              </div>
+                            )}
+
+                            {claim.status === 'approved' && !isReunited && (
+                              <button
+                                onClick={() => setSelectedHandoverClaim(claim)}
+                                className="w-full py-2.5 px-3 rounded-xl bg-[#176B5B] dark:bg-[#2DD4BF] hover:bg-[#125648] dark:hover:bg-[#14B8A6] text-white dark:text-slate-950 font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+                              >
+                                <KeyRound className="w-3.5 h-3.5" />
+                                <span>{language === 'en' ? 'Enter PIN to Complete Handover' : 'إدخال رمز PIN لتأكيد تسليم الأمانة'}</span>
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()
               )}
 
             </div>
@@ -270,6 +412,16 @@ export default function ItemDetailsPage({ params }: { params: Promise<{ id: stri
           itemId={item.id}
           isOpen={true}
           onClose={() => setShowClaimModal(false)}
+        />
+      )}
+
+      {/* Handover PIN Modal for Finder */}
+      {selectedHandoverClaim && rawItem && (
+        <HandoverPinModal
+          claim={selectedHandoverClaim}
+          item={rawItem}
+          isOpen={true}
+          onClose={() => setSelectedHandoverClaim(null)}
         />
       )}
 

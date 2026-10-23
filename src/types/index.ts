@@ -56,6 +56,8 @@ export interface UserProfile {
   total_points?: number;
   completed_challenges?: string[];
   integrityScenariosCompleted?: string[];
+  isLeaderboardVisible?: boolean;
+  maskContactInfo?: boolean;
 }
 
 export interface DominantColor {
@@ -229,7 +231,7 @@ export interface IntegrityAttempt {
   answers: Record<string, string>; // questionId -> optionId
 }
 
-export type NotificationType = 'match' | 'claim' | 'points' | 'integrity' | 'system';
+export type NotificationType = 'match' | 'claim' | 'points' | 'integrity' | 'system' | 'general';
 
 export interface NotificationItem {
   id: string;
@@ -239,6 +241,7 @@ export interface NotificationItem {
   timestamp: string;
   isRead: boolean;
   linkUrl?: string;
+  relatedItemId?: string;
   metadata?: Record<string, unknown>;
 }
 
@@ -300,6 +303,8 @@ export interface ActivitySubmission {
   status: ActivityStatus;
   submittedAt: string;
   notes?: string;
+  audioBase64?: string;
+  audioDuration?: number;
   locationId?: SchoolLocationId;
   awardedPoints: number;
   reviewedBy?: string;

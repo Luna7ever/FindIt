@@ -13,18 +13,16 @@ import {
 } from '../src/lib/i18n/seedDataTranslations';
 import { TRANSLATIONS } from '../src/lib/i18n/translations';
 
-test('1. ACTIVITIES REGISTRY: 8 Authentic School Quests Configured', () => {
-  assert.equal(SCHOOL_ACTIVITIES.length, 8, 'Must have exactly 8 school activities');
+test('1. ACTIVITIES REGISTRY: 6 Authentic School Quests Configured', () => {
+  assert.equal(SCHOOL_ACTIVITIES.length, 6, 'Must have exactly 6 school activities');
 
   const expectedIds = [
-    'act_break_custody',
-    'act_lab_assistance',
-    'act_library_books',
     'act_eco_clean',
-    'act_integrity_ambassador',
-    'act_peer_tutoring',
+    'act_library_books',
+    'act_break_custody',
     'act_gym_organization',
     'act_prayer_room_care',
+    'act_peer_tutoring',
   ];
 
   for (const expectedId of expectedIds) {

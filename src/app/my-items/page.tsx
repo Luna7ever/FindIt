@@ -25,6 +25,7 @@ import {
   MapPin,
   Award
 } from 'lucide-react';
+import AudioVoiceButton from '@/components/AudioVoiceButton';
 
 export default function MyItemsPage() {
   const { 
@@ -78,6 +79,7 @@ export default function MyItemsPage() {
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 flex-wrap">
               <h1 className="text-base sm:text-lg font-bold text-[#18201D] dark:text-white truncate">{currentUser.name || localizedUser.name}</h1>
+              <AudioVoiceButton text={currentUser.name || localizedUser.name} size="sm" />
               <TrustBadge tier={currentUserTrustTier} size="sm" />
               {env.NEXT_PUBLIC_DEMO_MODE && (
                 <button

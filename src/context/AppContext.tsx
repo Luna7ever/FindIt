@@ -40,7 +40,7 @@ import { canAccessAdmin, canDirectReunite, canDeleteItem } from '@/lib/auth/perm
 import { AuthorizationError, NotFoundError } from '@/lib/errors/AppError';
 import { logger } from '@/lib/logging/logger';
 import { cloudflareSyncService, SyncStatus } from '@/services/cloudflareSyncService';
-import { firestoreService } from '@/services/firestoreService';
+import { d1DataService } from '@/services/d1DataService';
 
 interface AppContextType {
   items: Item[];
@@ -104,7 +104,7 @@ interface AppContextType {
   
   // School Activities System
   activitySubmissions: ActivitySubmission[];
-  submitSchoolActivity: (activityId: string, notes?: string, locationId?: SchoolLocationId) => { success: boolean; submission: ActivitySubmission; isInstant: boolean };
+  submitSchoolActivity: (activityId: string, notes?: string, locationId?: SchoolLocationId, audioBase64?: string, audioDuration?: number) => { success: boolean; submission: ActivitySubmission; isInstant: boolean };
   approveSchoolActivity: (submissionId: string) => void;
   rejectSchoolActivity: (submissionId: string) => void;
   getUserActivitySubmissions: (userId?: string) => ActivitySubmission[];
@@ -248,18 +248,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [syncStatus, setSyncStatus] = useState<SyncStatus>(cloudflareSyncService.getStatus());
 
-  // Dynamic Weekly Challenges State from Firestore
+  // Dynamic Weekly Challenges State from Cloudflare D1
   const [weeklyChallenges, setWeeklyChallenges] = useState<WeeklyChallenge[]>(DEFAULT_WEEKLY_CHALLENGES);
   const [selectedChallengeWeekId, setSelectedChallengeWeekId] = useState<string | null>(null);
 
   const refreshWeeklyChallenges = useCallback(async () => {
     try {
-      const fetched = await firestoreService.getWeeklyChallenges();
+      const fetched = await d1DataService.getWeeklyChallenges();
       if (fetched && fetched.length > 0) {
         setWeeklyChallenges(fetched);
       }
     } catch (e) {
-      logger.warn('Failed to load weekly challenges from Firestore', { error: String(e) });
+      logger.warn('Failed to load weekly challenges from Cloudflare D1', { error: String(e) });
     }
   }, []);
 
@@ -404,7 +404,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  // Synchronize active user profile with Firebase Firestore on launch
+  // Synchronize active user profile with Cloudflare D1 on launch
   useEffect(() => {
     if (!isLoaded) return;
     const targetUserId = currentUser.id || (typeof window !== 'undefined' ? localStorage.getItem(CURRENT_USER_KEY) : null);
@@ -413,7 +413,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     let isMounted = true;
     (async () => {
       try {
-        const cloudProfile = await firestoreService.getUserProfile(targetUserId);
+        const users = await d1DataService.getAllUsers();
+        const cloudProfile = users.find((u) => u.id === targetUserId);
         if (cloudProfile && cloudProfile.name && isMounted) {
           setCurrentUser((prev) => ({ ...prev, ...cloudProfile }));
           setUsers((prevUsers) => {
@@ -430,7 +431,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           }
         }
       } catch (err) {
-        logger.warn('Failed to rehydrate user profile from Firestore', { error: String(err) });
+        logger.warn('Failed to rehydrate user profile from Cloudflare D1', { error: String(err) });
       }
     })();
 
@@ -448,26 +449,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       }
     }
   }, [isLoaded, currentUser.role, currentUser.name, currentUser.classroom]);
-
-  // Real-time synchronization with Firebase Firestore
-  useEffect(() => {
-    const unsubItems = firestoreService.subscribeToItems((firestoreItems) => {
-      if (firestoreItems && firestoreItems.length > 0) {
-        setItems(firestoreItems.map(normalizeItem));
-      }
-    });
-
-    const unsubClaims = firestoreService.subscribeToClaims((firestoreClaims) => {
-      if (firestoreClaims && firestoreClaims.length > 0) {
-        setClaims(firestoreClaims.map(normalizeClaim));
-      }
-    });
-
-    return () => {
-      unsubItems();
-      unsubClaims();
-    };
-  }, []);
 
   // Compute resolved theme
   const resolvedTheme: 'light' | 'dark' = useMemo(() => {
@@ -662,7 +643,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     const interval = setInterval(() => {
       pullAndMerge();
-    }, 10000); // Check for updates every 10 seconds
+    }, 5000); // Check for updates every 5 seconds
 
     return () => clearInterval(interval);
   }, [isLoaded, pullAndMerge]);
@@ -742,8 +723,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const addItem = useCallback((itemData: unknown): Item => {
     const newItem = ItemService.createItem(itemData, currentUser);
     setItems((prev) => [newItem, ...prev]);
-    firestoreService.saveItem(newItem).catch((err) => {
-      logger.warn('Failed to sync item to Firestore', { error: String(err) });
+    d1DataService.saveItem(newItem).catch((err) => {
+      logger.warn('Failed to sync item to Cloudflare D1', { error: String(err) });
     });
     return newItem;
   }, [currentUser]);
@@ -756,7 +737,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setItems((prev) =>
       prev.map((item) => (item.id === id ? { ...item, status } : item))
     );
-    firestoreService.updateItem(id, { status }).catch(() => {});
+    d1DataService.updateItem(id, { status }).catch(() => {});
   }, []);
 
   const updateItemCustody = useCallback((id: string, custody: CustodyStatus) => {
@@ -766,8 +747,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setItems((prev) =>
       prev.map((item) => (item.id === id ? { ...item, custody } : item))
     );
-    firestoreService.updateItem(id, { custody }).catch(() => {});
-    logger.info('Item custody updated', { itemId: id, custody });
+    d1DataService.updateItem(id, { custody }).catch(() => {});
+    logger.info('Item custody updated in D1', { itemId: id, custody });
   }, [currentUser]);
 
   const deleteItem = useCallback((id: string) => {
@@ -780,7 +761,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     setItems((prev) => prev.filter((i) => i.id !== id));
     setClaims((prev) => prev.filter((c) => c.itemId !== id));
-    logger.info('Item deleted', { itemId: id });
+    d1DataService.deleteItem(id).catch(() => {});
+    logger.info('Item deleted from Cloudflare D1', { itemId: id });
   }, [items, currentUser]);
 
   const adminDirectReunite = useCallback((id: string) => {
@@ -794,8 +776,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         item.id === id ? { ...item, status: 'reunited', reunitedAt: completedAt } : item
       )
     );
-    firestoreService.updateItem(id, { status: 'reunited', reunitedAt: completedAt }).catch(() => {});
-    logger.info('Item reunited via admin direct confirmation', { itemId: id });
+    d1DataService.updateItem(id, { status: 'reunited', reunitedAt: completedAt }).catch(() => {});
+    logger.info('Item reunited via admin direct confirmation in D1', { itemId: id });
   }, [currentUser]);
 
   const submitClaim = useCallback((itemId: string, answerText: string): Claim => {
@@ -811,11 +793,28 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     setClaims((prev) => [newClaim, ...prev]);
     updateItemStatus(itemId, 'claimed');
-    firestoreService.saveClaim(newClaim).catch((err) => {
-      logger.warn('Failed to sync claim to Firestore', { error: String(err) });
+    d1DataService.saveClaim(newClaim).catch((err) => {
+      logger.warn('Failed to sync claim to Cloudflare D1', { error: String(err) });
     });
+
+    // Notify the finder that an applicant submitted an answer for their found item
+    if (targetItem.reportedBy?.id) {
+      const newNotif: NotificationItem = {
+        id: `notif_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+        timestamp: new Date().toISOString(),
+        isRead: false,
+        type: 'match',
+        title: language === 'en' ? 'New Claim Request' : 'طلب استرداد أمانة جديد',
+        message: language === 'en'
+          ? `${currentUser.name || 'A student'} submitted an answer for "${targetItem.title}". Review it now.`
+          : `قدّم الطالب (${currentUser.name || 'طالب'}) إجابة على سؤالك السري للأمانة «${targetItem.title}». راجعها لقبولها أو رفضها.`,
+        relatedItemId: itemId,
+      };
+      setNotifications((prev) => [newNotif, ...prev]);
+    }
+
     return newClaim;
-  }, [items, claims, currentUser, updateItemStatus]);
+  }, [items, claims, currentUser, updateItemStatus, language]);
 
   const approveClaim = useCallback((claimId: string) => {
     const claim = claims.find((c) => c.id === claimId);
@@ -826,8 +825,22 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     const approvedClaim = ClaimService.approveClaim(claim, item, currentUser);
     setClaims((prev) => prev.map((c) => (c.id === claimId ? approvedClaim : c)));
-    firestoreService.updateClaim(claimId, { status: 'approved', approvedAt: approvedClaim.approvedAt }).catch(() => {});
-  }, [claims, items, currentUser]);
+    d1DataService.updateClaim(claimId, { status: 'approved', approvedAt: approvedClaim.approvedAt }).catch(() => {});
+
+    // Notify the claimant that their answer was approved and provide handover instructions
+    const approvedNotif: NotificationItem = {
+      id: `notif_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      timestamp: new Date().toISOString(),
+      isRead: false,
+      type: 'match',
+      title: language === 'en' ? 'Claim Approved! 🎉' : 'تم قبول إثبات ملكيتك! 🎉',
+      message: language === 'en'
+        ? `The finder approved your answer for "${item.title}". Your PIN is: ${approvedClaim.handoverPin}`
+        : `وافق العاثر على إجابتك للأمانة «${item.title}»! رمز التسليم الخاص بك هو: ${approvedClaim.handoverPin}. التقي به في المدرسة وأعطه الرمز.`,
+      relatedItemId: claim.itemId,
+    };
+    setNotifications((prev) => [approvedNotif, ...prev]);
+  }, [claims, items, currentUser, language]);
 
   const rejectClaim = useCallback((claimId: string) => {
     const claim = claims.find((c) => c.id === claimId);
@@ -839,8 +852,22 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const rejectedClaim = ClaimService.rejectClaim(claim, item, currentUser);
     setClaims((prev) => prev.map((c) => (c.id === claimId ? rejectedClaim : c)));
     updateItemStatus(claim.itemId, 'open');
-    firestoreService.updateClaim(claimId, { status: 'rejected' }).catch(() => {});
-  }, [claims, items, currentUser, updateItemStatus]);
+    d1DataService.updateClaim(claimId, { status: 'rejected' }).catch(() => {});
+
+    // Notify the claimant that their answer was rejected
+    const rejectedNotif: NotificationItem = {
+      id: `notif_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      timestamp: new Date().toISOString(),
+      isRead: false,
+      type: 'general',
+      title: language === 'en' ? 'Claim Not Approved' : 'لم يتم قبول الإثبات',
+      message: language === 'en'
+        ? `Your answer for "${item.title}" did not match. Please visit the admin office if this is yours.`
+        : `راجع العاثر إجابتك للأمانة «${item.title}» وتبيّن عدم تطابقها. يمكنك مراجعة مكتب الإدارة المدرسية.`,
+      relatedItemId: claim.itemId,
+    };
+    setNotifications((prev) => [rejectedNotif, ...prev]);
+  }, [claims, items, currentUser, updateItemStatus, language]);
 
   const completeHandover = useCallback((
     claimId: string,
@@ -859,13 +886,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         setClaims((prev) => prev.map((c) => (c.id === claimId ? result.updatedClaim : c)));
         setItems((prev) => prev.map((i) => (i.id === item.id ? result.updatedItem : i)));
 
-        firestoreService.updateClaim(claimId, { 
+        d1DataService.updateClaim(claimId, { 
           status: 'completed', 
           handoverPin: '', 
           completedAt: result.updatedClaim.completedAt 
         }).catch(() => {});
 
-        firestoreService.updateItem(item.id, { 
+        d1DataService.updateItem(item.id, { 
           status: 'reunited', 
           reunitedAt: result.updatedItem.reunitedAt 
         }).catch(() => {});
@@ -880,9 +907,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
                   ...u,
                   returnedCount: (u.returnedCount || 0) + 1,
                   goodwillPoints: (u.goodwillPoints || 0) + 50,
+                  total_points: (u.total_points || u.goodwillPoints || 0) + 50,
                   isTrusted: true,
                 };
-                firestoreService.saveUserProfile(updatedUser).catch(() => {});
+                d1DataService.saveUserProfile(updatedUser).catch(() => {});
                 return updatedUser;
               }
               return u;
@@ -1074,8 +1102,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     try {
       await Promise.all([
-        firestoreService.recordChallengeCompletion(currentUser.id, weekId, totalPoints),
-        firestoreService.saveIntegrityResearchData({
+        d1DataService.recordChallengeCompletion(currentUser, weekId, totalPoints),
+        d1DataService.saveIntegrityResearchData({
           studentId: currentUser.id,
           studentName: currentUser.name,
           studentGrade: currentUser.grade,
@@ -1088,9 +1116,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           answers: answersData,
         })
       ]);
-      logger.info('Weekly challenge saved to Firestore', { userId: currentUser.id, weekId, totalPoints });
+      logger.info('Weekly challenge saved to Cloudflare D1', { userId: currentUser.id, weekId, totalPoints });
     } catch (err) {
-      logger.error('Failed to sync weekly challenge to Firestore', { error: String(err) });
+      logger.error('Failed to sync weekly challenge to Cloudflare D1', { error: String(err) });
     }
   }, [currentUser]);
 
@@ -1182,11 +1210,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             }
           } catch (e) {}
         }
-        firestoreService.saveUserProfile(updated).then(() => {
-          logger.info('User profile saved to Firestore successfully', { userId: updated.id });
+        d1DataService.saveUserProfile(updated).then(() => {
+          logger.info('User profile saved to Cloudflare D1 successfully', { userId: updated.id });
           resolve();
         }).catch((err) => {
-          logger.error('Failed to sync profile to Firestore', { error: String(err) });
+          logger.error('Failed to sync profile to Cloudflare D1', { error: String(err) });
           resolve();
         });
         return updated;
@@ -1200,7 +1228,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const submitSchoolActivity = useCallback((
     activityId: string,
     notes?: string,
-    locationId?: SchoolLocationId
+    locationId?: SchoolLocationId,
+    audioBase64?: string,
+    audioDuration?: number
   ) => {
     const activity = SCHOOL_ACTIVITIES.find((a) => a.id === activityId);
     if (!activity) {
@@ -1218,7 +1248,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       userGrade: currentUser.grade,
       status: isInstant ? 'approved' : 'pending',
       submittedAt: new Date().toISOString(),
-      notes: notes?.trim(),
+      notes: notes?.trim() || (audioBase64 ? 'تسجيل صوتي موثق من الطالب' : undefined),
+      audioBase64,
+      audioDuration,
       locationId: locationId || activity.targetLocationId,
       awardedPoints: activity.points,
       reviewedBy: isInstant ? 'النظام الذكي (فوري)' : undefined,

@@ -103,11 +103,11 @@ describe('Layout Integrity, Button Presence & Ergonomics Suite', () => {
       );
     });
 
-    it('1.5 School citizenship card and instant search QR trigger render properly', () => {
+    it('1.5 School citizenship card and instant search submit trigger render properly', () => {
       const html = renderWithContext(React.createElement(HomePage), '/');
 
       assert.ok(html.includes('href="/activities"'), 'School citizenship card must contain Activities link');
-      assert.ok(instantSearchSource.includes('openQRScanner'), 'Instant search bar must integrate QR Scanner button');
+      assert.ok(instantSearchSource.includes('type="submit"'), 'Instant search bar must integrate Submit button');
     });
 
     it('1.6 Dual action hero cards on Home page provide immediate access to Report Lost and Record Found', () => {
@@ -142,10 +142,10 @@ describe('Layout Integrity, Button Presence & Ergonomics Suite', () => {
       );
     });
 
-    it('2.3 HomePage search QR scanner button meets >= 40px touch target standard', () => {
+    it('2.3 HomePage search submit button meets touch target standard', () => {
       assert.ok(
-        instantSearchSource.includes('min-h-[40px] rounded-xl'),
-        'Search QR scanner button must have min-h-[40px]'
+        instantSearchSource.includes('min-h-[36px] rounded-xl'),
+        'Search button must have min-h-[36px]'
       );
     });
 

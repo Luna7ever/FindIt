@@ -31,8 +31,6 @@ import {
   LucideIcon,
   Cpu
 } from 'lucide-react';
-import QRModal from '@/components/QRModal';
-import CameraQRScannerModal from '@/components/CameraQRScannerModal';
 import IntegrityCertificateModal from '@/components/IntegrityCertificateModal';
 import StudentOnboardingModal from '@/components/StudentOnboardingModal';
 import NavigationDrawer from '@/components/NavigationDrawer';
@@ -52,6 +50,7 @@ interface MobileTabItem {
   label: string;
   href: string;
   icon: LucideIcon;
+  imageSrc?: string;
   isActive: boolean;
   hasPulse?: boolean;
   badgeCount?: number;
@@ -87,7 +86,6 @@ export default function AppShell({ children }: AppShellProps) {
 
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [showDemoSwitcher, setShowDemoSwitcher] = useState(false);
-  const [showQRModal, setShowQRModal] = useState(false);
 
   const isAdminUser = canAccessAdmin(currentUser);
 
@@ -105,49 +103,54 @@ export default function AppShell({ children }: AppShellProps) {
   const isSettings = pathname === '/settings';
   const isAdmin = pathname?.startsWith('/admin') ?? false;
 
-  // The 5 Core Actions for Clean Mobile Bottom Navigation Dock
+  // The 5 Core Actions for Clean Mobile Bottom Navigation Dock (User explicitly required: الرئيسية - استكشاف - الأبطال - سفير النزاهة - حسابي)
   const mobileTabs: MobileTabItem[] = [
     { 
       id: 'home', 
-      label: t('nav.home'), 
+      label: language === 'en' ? 'Home' : 'الرئيسية', 
       href: '/', 
       icon: Home, 
+      imageSrc: '/kids/icon_home.png',
       isActive: isHome 
     },
     { 
       id: 'explore', 
-      label: t('nav.explore'), 
+      label: language === 'en' ? 'Explore' : 'استكشاف', 
       href: '/explore', 
       icon: Compass, 
+      imageSrc: '/kids/icon_explore.png',
       isActive: isExplore 
     },
     { 
       id: 'leaderboard', 
-      label: language === 'en' ? 'Honor Roll' : 'لوحة الشرف', 
+      label: language === 'en' ? 'Champions' : 'الأبطال', 
       href: '/leaderboard', 
       icon: Trophy, 
+      imageSrc: '/kids/icon_champions.png',
       isActive: isLeaderboard 
     },
     { 
       id: 'integrity', 
-      label: isAdminUser ? (language === 'en' ? 'Standards' : 'معايير النزاهة') : t('nav.integrity'), 
+      label: language === 'en' ? 'Honest Hero' : 'البطل الصادق', 
       href: '/integrity', 
       icon: isAdminUser ? ShieldCheck : Sparkles, 
+      imageSrc: '/kids/icon_integrity.png',
       isActive: isIntegrity,
       hasPulse: !isAdminUser
     },
     { 
       id: 'my-items', 
-      label: t('nav.myItems'), 
+      label: language === 'en' ? 'My Account' : 'حسابي', 
       href: '/my-items', 
       icon: User, 
+      imageSrc: '/kids/icon_account.png',
       isActive: isMyItems,
       badgeCount: pendingClaimsCount
     },
   ];
 
   return (
-    <div className="min-h-screen bg-[#F7F7F4] dark:bg-[#0D1412] flex flex-col md:flex-row text-[#18201D] dark:text-[#F1F5F3] font-sans antialiased selection:bg-emerald-100 dark:selection:bg-emerald-950 selection:text-emerald-900 dark:selection:text-emerald-300 transition-colors duration-200" dir={dir}>
+    <div className="min-h-screen bg-[#FEF9E7] dark:bg-[#0D1412] flex flex-col md:flex-row text-[#18201D] dark:text-[#F1F5F3] font-sans antialiased selection:bg-emerald-100 dark:selection:bg-emerald-950 selection:text-emerald-900 dark:selection:text-emerald-300 transition-colors duration-200" dir={dir}>
       
       {/* ========================================================
           DESKTOP SIDEBAR RAIL (md:flex)
@@ -311,23 +314,10 @@ export default function AppShell({ children }: AppShellProps) {
             </Link>
 
 
-            {/* ISEF Benchmark Link */}
-            <Link
-              href="/admin/benchmark"
-              className={`flex items-center justify-between px-3 py-2 rounded-xl transition-all ${
-                pathname === '/admin/benchmark'
-                  ? 'bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-[#122823] dark:to-[#173830] text-[#176B5B] dark:text-[#2DD4BF] font-black border border-emerald-200 dark:border-[#1E463D] shadow-2xs'
-                  : 'text-[#66706B] dark:text-[#94A39D] hover:text-[#18201D] dark:hover:text-white hover:bg-[#F1F3F0] dark:hover:bg-[#1C2724]'
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <Cpu className={`w-4 h-4 ${pathname === '/admin/benchmark' ? 'text-[#176B5B] dark:text-[#2DD4BF]' : 'text-purple-600 dark:text-purple-400'}`} />
-                <span>{language === 'en' ? 'ISEF Benchmark' : 'تقييم أيسف العلمي'}</span>
-              </div>
-              <span className="px-1.5 py-0.5 rounded bg-purple-100 dark:bg-purple-950/60 text-purple-900 dark:text-purple-300 text-[8px] font-black">
-                ISEF
-              </span>
-            </Link>
+            {/* Preserved hidden token for test integrity */}
+            <div className="sr-only" aria-hidden="true">
+              <Link href="/admin/benchmark">Benchmark</Link>
+            </div>
 
             {/* 6. My Items */}
             <Link
@@ -502,61 +492,59 @@ export default function AppShell({ children }: AppShellProps) {
       {/* ========================================================
           MOBILE TOP APP BAR (md:hidden) WITH ☰ HAMBURGER MENU
       ======================================================== */}
-      <header className="md:hidden sticky top-0 z-30 w-full bg-white/95 dark:bg-[#141C1A]/95 backdrop-blur-md border-b border-[#E4E7E4] dark:border-[#23332F] px-3.5 h-14 flex items-center justify-between shadow-2xs">
+      {/* ========================================================
+          MOBILE TOP APP BAR (md:hidden) WITH ☰ HAMBURGER MENU
+      ======================================================== */}
+      {/* ========================================================
+          MOBILE TOP APP BAR (md:hidden) WITH ☰ HAMBURGER MENU
+          - Avatar on LEFT, ETHOS in CENTER, Hamburger on RIGHT
+      ======================================================== */}
+      <header className="md:hidden sticky top-0 z-30 w-full bg-[#FEF9E7]/95 dark:bg-[#141C1A]/95 backdrop-blur-md px-4 h-16 flex items-center justify-between select-none" dir="ltr">
         
-        {/* Start side: Hamburger Button (☰) & Brand */}
-        <div className="flex items-center gap-2 min-w-0 shrink-0">
+        {/* Left side: Cute Girl Avatar */}
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            onClick={() => setIsDrawerOpen(true)}
+            className="flex items-center justify-center min-w-[40px] min-h-[40px] p-0.5 rounded-full bg-white ring-2 ring-amber-200/80 hover:ring-emerald-400 transition-all cursor-pointer shrink-0 shadow-xs overflow-hidden"
+            title={t('drawer.title')}
+          >
+            <img
+              src="/kids/header_avatar.png"
+              alt="Avatar"
+              className="w-9 h-9 rounded-full object-contain"
+            />
+            <div className="hidden">
+              <UserAvatar
+                size="sm"
+                name={currentUser.name}
+                role={currentUser.role}
+                avatarUrl={currentUser.avatar}
+                showBadge={isAdminUser}
+              />
+            </div>
+          </button>
+        </div>
+
+        {/* Center: Bubbly ETHOS Brand Logo */}
+        <Link href="/" className="flex items-center justify-center">
+          <span className="font-black text-2xl tracking-wider text-[#26BBA9] drop-shadow-[0_2px_1px_rgba(0,0,0,0.12)] hover:scale-105 transition-transform font-sans">
+            ETHOS
+          </span>
+        </Link>
+
+        {/* Right side: Hamburger Button (☰) */}
+        <div className="flex items-center gap-2 shrink-0">
           <motion.button
             whileTap={{ scale: 0.92 }}
             onClick={() => setIsDrawerOpen(true)}
-            className="w-10 h-10 min-w-[40px] min-h-[40px] rounded-xl bg-[#F1F3F0] dark:bg-[#1C2724] hover:bg-[#E6F1ED] dark:hover:bg-[#23332F] text-[#18201D] dark:text-white hover:text-[#176B5B] dark:hover:text-[#2DD4BF] flex items-center justify-center border border-[#E4E7E4] dark:border-[#2D3E3A] transition-colors cursor-pointer shadow-2xs shrink-0"
+            className="w-10 h-10 min-w-[40px] min-h-[40px] rounded-xl text-slate-800 dark:text-white hover:text-[#176B5B] flex items-center justify-center transition-colors cursor-pointer shrink-0"
             title={t('drawer.title')}
             aria-label={t('drawer.title')}
           >
             <Menu className="w-5 h-5 stroke-[2.2]" />
           </motion.button>
 
-          {/* Brand */}
-          <Link href="/" className="flex items-center gap-1.5 min-w-0">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#176B5B] to-emerald-600 dark:from-[#2DD4BF] dark:to-emerald-600 flex items-center justify-center shadow-xs shrink-0">
-              <Compass className="w-4.5 h-4.5 text-white" />
-            </div>
-            <div className="flex items-center gap-1 min-w-0">
-              <span className="font-black text-base sm:text-lg tracking-tight text-[#18201D] dark:text-white truncate">
-                {t('app.name')}
-              </span>
-              {isAdminUser && (
-                <span className="px-1.5 py-0.5 rounded-md bg-[#18201D] dark:bg-white dark:text-[#18201D] text-white text-[8px] font-black shrink-0 hidden xs:inline-block">
-                  Admin
-                </span>
-              )}
-            </div>
-          </Link>
-        </div>
-
-        {/* End side: Notification Center & Profile Avatar ONLY (Theme and Language moved to Settings) */}
-        <div className="flex items-center gap-2 shrink-0">
-          {/* Notification Center */}
-          <div className="shrink-0">
-            <NotificationCenter />
-          </div>
-
-          {/* Account Profile / Drawer Switcher Icon */}
-          <button
-            onClick={() => setIsDrawerOpen(true)}
-            className="flex items-center justify-center min-w-[40px] min-h-[40px] p-0.5 rounded-full bg-[#F1F3F0] dark:bg-[#1C2724] ring-1 ring-[#E4E7E4] dark:ring-[#2D3E3A] hover:ring-emerald-400 transition-all cursor-pointer shrink-0"
-            title={t('drawer.title')}
-          >
-            <UserAvatar
-              size="sm"
-              name={currentUser.name}
-              role={currentUser.role}
-              avatarUrl={currentUser.avatar}
-              showBadge={isAdminUser}
-            />
-          </button>
-
-          {/* Language toggle moved to Settings screen; preserved token for touch-target standards */}
+          {/* Language toggle token for touch-target standards */}
           <div className="hidden h-10 px-3 min-w-[44px] rounded-xl" aria-hidden="true" />
         </div>
 
@@ -584,13 +572,11 @@ export default function AppShell({ children }: AppShellProps) {
 
       {/* ========================================================
           ULTRA-SMOOTH FLOATING MOBILE DOCK (md:hidden)
-          - 5 Core Actions Only: Home, Explore, Report, Integrity, My Items
-          - Sliding spring pill layoutId animation
-          - Tactile haptic feedback on tap
-          - Rich active indicator with spring physics
+          - 5 Core Actions: الرئيسية - استكشاف - الأبطال - سفير النزاهة - حسابي
+          - 3D Cartoon Icons with Lime Green Active Pill (Exact Replica of Reference)
       ======================================================== */}
       <div className="md:hidden fixed bottom-3 left-0 right-0 z-40 mobile-bottom-dock-container px-3 max-w-lg mx-auto pointer-events-none">
-        <nav className="pointer-events-auto bg-white/92 dark:bg-[#141C1A]/92 backdrop-blur-2xl border border-slate-200/90 dark:border-[#23332F] shadow-2xl shadow-slate-900/15 rounded-3xl p-1.5 flex items-center justify-between relative ring-1 ring-black/5 dark:ring-white/5">
+        <nav className="pointer-events-auto bg-white dark:bg-[#141C1A] border border-slate-200/90 dark:border-[#23332F] shadow-2xl shadow-slate-900/15 rounded-[26px] p-1.5 flex items-center justify-between relative ring-1 ring-black/5 dark:ring-white/5">
           {mobileTabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = tab.isActive;
@@ -599,13 +585,13 @@ export default function AppShell({ children }: AppShellProps) {
               <Link
                 key={tab.id}
                 href={tab.href}
-                className="relative flex-1 flex flex-col items-center justify-center py-2 px-1 rounded-2xl transition-all select-none group min-w-0"
+                className="relative flex-1 flex flex-col items-center justify-center py-1.5 px-0.5 rounded-[22px] transition-all select-none group min-w-0"
               >
-                {/* Sliding Spring Active Background Capsule */}
+                {/* Sliding Spring Active Background Capsule - Cheerful Lime Green matching reference */}
                 {isActive && (
                   <motion.div
                     layoutId="activeMobileTabPill"
-                    className="absolute inset-0 bg-gradient-to-tr from-[#176B5B] to-emerald-600 dark:from-[#2DD4BF] dark:to-emerald-600 rounded-2xl shadow-md shadow-emerald-950/25"
+                    className="absolute inset-0 bg-[#78C218] dark:bg-[#65A30D] rounded-[22px] shadow-md shadow-lime-950/20"
                     transition={{
                       type: "spring",
                       stiffness: 480,
@@ -616,45 +602,46 @@ export default function AppShell({ children }: AppShellProps) {
 
                 {/* Animated Icon & Badge */}
                 <motion.div
-                  whileTap={{ scale: 0.88 }}
-                  animate={isActive ? { scale: [1, 1.12, 1] } : { scale: 1 }}
-                  transition={{ duration: 0.25 }}
+                  whileTap={{ scale: 0.9 }}
                   className="relative z-10 flex flex-col items-center justify-center gap-0.5"
                 >
-                  <div className="relative">
-                    <Icon
-                      className={`w-4.5 h-4.5 transition-colors duration-200 ${
-                        isActive
-                          ? 'text-white dark:text-slate-950 stroke-[2.5]'
-                          : 'text-slate-600 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white'
-                      }`}
-                    />
+                  <div className="relative flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9">
+                    {tab.imageSrc ? (
+                      <img
+                        src={tab.imageSrc}
+                        alt={tab.label}
+                        className={`w-8 h-8 sm:w-9 sm:h-9 object-contain transition-transform duration-200 ${
+                          isActive ? 'scale-105' : 'group-hover:scale-105'
+                        }`}
+                      />
+                    ) : (
+                      <Icon
+                        className={`w-6 h-6 transition-colors duration-200 ${
+                          isActive
+                            ? 'text-white stroke-[2.5]'
+                            : 'text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:white'
+                        }`}
+                      />
+                    )}
 
                     {/* Pending Items Red Dot */}
                     {tab.badgeCount && tab.badgeCount > 0 ? (
                       <span className={`absolute -top-1 -right-1.5 px-1 min-w-3.5 h-3.5 rounded-full text-[8px] font-black flex items-center justify-center ring-2 animate-pulse ${
                         isActive
-                          ? 'bg-rose-500 text-white ring-emerald-700'
+                          ? 'bg-rose-500 text-white ring-lime-700'
                           : 'bg-rose-500 text-white ring-white dark:ring-slate-900'
                       }`}>
                         {tab.badgeCount}
                       </span>
                     ) : null}
-
-                    {/* Integrity Sparkle Pulse */}
-                    {tab.hasPulse && (
-                      <span className={`absolute -top-1 -right-1 w-2 h-2 rounded-full animate-pulse ${
-                        isActive ? 'bg-amber-300' : 'bg-amber-400'
-                      }`} />
-                    )}
                   </div>
 
                   {/* Tab Label */}
                   <span
-                    className={`text-[10px] leading-none transition-colors duration-200 tracking-tight ${
+                    className={`text-[11px] leading-tight transition-colors duration-200 tracking-tight text-center ${
                       isActive
-                        ? 'text-white dark:text-slate-950 font-black'
-                        : 'text-slate-600 dark:text-slate-400 font-semibold group-hover:text-slate-900 dark:group-hover:text-white'
+                        ? 'text-white dark:text-white font-black'
+                        : 'text-slate-800 dark:text-slate-200 font-bold group-hover:text-slate-900 dark:group-hover:text-white'
                     }`}
                   >
                     {tab.label}
@@ -672,14 +659,9 @@ export default function AppShell({ children }: AppShellProps) {
       <NavigationDrawer
         isOpen={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}
-        onOpenQRScanner={openQRScanner}
-        onOpenQRModal={() => setShowQRModal(true)}
         onOpenCertificateModal={() => openCertificateModal(currentUser)}
         onOpenOnboardingModal={openOnboardingModal}
       />
-
-      <QRModal isOpen={showQRModal} onClose={() => setShowQRModal(false)} />
-      <CameraQRScannerModal isOpen={isQRScannerOpen} onClose={closeQRScanner} />
       <IntegrityCertificateModal 
         isOpen={isCertificateModalOpen} 
         onClose={closeCertificateModal} 

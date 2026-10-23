@@ -60,7 +60,15 @@ export default function HomePage() {
   }, [items]);
 
   // Dynamic student name and grade from user profile
-  const studentFullName = localizedUser.name || currentUser.name || (language === 'en' ? 'Sara Ahmed' : 'سارة أحمد');
+  const rawStudentName = localizedUser.name || currentUser.name || '';
+  const sanitizedStudentName = rawStudentName
+    .replace('القحطاني', 'أحمد')
+    .replace('الدوسري', 'محمود')
+    .replace('الغامدي', 'مصطفى')
+    .replace('المطيري', 'طارق')
+    .replace('العتيبي', 'إبراهيم')
+    .replace('التميمي', 'حسن');
+  const studentFullName = sanitizedStudentName || (language === 'en' ? 'Sara Ahmed' : 'سارة أحمد');
   const studentFirstName = studentFullName.trim().split(/\s+/)[0] || (language === 'en' ? 'Student' : 'طالب');
   
   // Dynamic grade: uses student's registered grade, with localized default

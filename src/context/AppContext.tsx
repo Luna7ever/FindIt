@@ -163,6 +163,10 @@ export function getStoredStudent(): UserProfile | null {
       if (ethosStudent) {
         const parsed = JSON.parse(ethosStudent);
         if (parsed && typeof parsed === 'object' && parsed.name) {
+          if (typeof parsed.name === 'string' && parsed.name.includes('القحطاني')) {
+            parsed.name = parsed.name.replace('القحطاني', 'أحمد');
+            try { localStorage.setItem(ETHOS_STUDENT_STORAGE_KEY, JSON.stringify(parsed)); } catch {}
+          }
           return parsed;
         }
       }
@@ -170,6 +174,10 @@ export function getStoredStudent(): UserProfile | null {
       if (v5Profile) {
         const parsed = JSON.parse(v5Profile);
         if (parsed && typeof parsed === 'object' && parsed.name) {
+          if (typeof parsed.name === 'string' && parsed.name.includes('القحطاني')) {
+            parsed.name = parsed.name.replace('القحطاني', 'أحمد');
+            try { localStorage.setItem(CURRENT_USER_PROFILE_KEY, JSON.stringify(parsed)); } catch {}
+          }
           return parsed;
         }
       }

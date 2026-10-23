@@ -92,14 +92,22 @@ export default function NotificationCenter() {
         )}
       </button>
 
+      {/* Mobile Backdrop */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 z-40 bg-black/25 backdrop-blur-[2px] sm:hidden"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+
       {/* Dropdown Menu */}
       {isOpen && (
         <div 
-          className={`absolute ${isRtl ? 'left-0' : 'right-0'} mt-2 w-80 sm:w-96 max-w-[calc(100vw-1.5rem)] rounded-2xl bg-white dark:bg-[#15201D] shadow-2xl border border-slate-200 dark:border-[#263834] z-50 overflow-hidden animate-in fade-in zoom-in-95 text-[#18201D] dark:text-[#F1F5F3]`}
+          className="fixed sm:absolute top-16 sm:top-full left-3.5 right-3.5 sm:left-auto sm:right-0 sm:mt-2 sm:w-96 max-w-[calc(100vw-1.75rem)] max-h-[75vh] flex flex-col rounded-2xl bg-white dark:bg-[#15201D] shadow-2xl border border-slate-200 dark:border-[#263834] z-50 overflow-hidden animate-in fade-in zoom-in-95 text-[#18201D] dark:text-[#F1F5F3]"
           dir={dir}
         >
           {/* Header */}
-          <div className="px-4 py-3 border-b border-slate-100 dark:border-[#263834] bg-slate-50 dark:bg-[#182220] flex items-center justify-between">
+          <div className="px-4 py-3 border-b border-slate-100 dark:border-[#263834] bg-slate-50 dark:bg-[#182220] flex items-center justify-between shrink-0">
             <div className="flex items-center gap-2">
               <h3 className="font-extrabold text-sm text-[#18201D] dark:text-white">
                 {language === 'en' ? 'Notifications' : 'مركز التنبيهات'}
@@ -123,7 +131,7 @@ export default function NotificationCenter() {
           </div>
 
           {/* Filter Bar */}
-          <div className="flex items-center gap-1 px-3 py-2 border-b border-slate-100 dark:border-[#263834] bg-white dark:bg-[#15201D] overflow-x-auto text-[11px] font-medium scrollbar-none">
+          <div className="flex items-center gap-1 px-3 py-2 border-b border-slate-100 dark:border-[#263834] bg-white dark:bg-[#15201D] overflow-x-auto text-[11px] font-medium scrollbar-none shrink-0">
             {[
               { id: 'all', label: language === 'en' ? 'All' : 'الكل' },
               { id: 'match', label: language === 'en' ? 'Matches' : 'مطابقات' },
@@ -146,7 +154,7 @@ export default function NotificationCenter() {
           </div>
 
           {/* Notification Items List */}
-          <div className="max-h-80 overflow-y-auto divide-y divide-slate-100 dark:divide-[#23332F]">
+          <div className="overflow-y-auto flex-1 divide-y divide-slate-100 dark:divide-[#23332F]">
             {filteredNotifications.length === 0 ? (
               <div className="p-8 text-center space-y-2">
                 <Bell className="w-8 h-8 text-slate-300 dark:text-slate-600 mx-auto" />

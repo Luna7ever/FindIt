@@ -80,13 +80,13 @@ export default function NotificationCenter() {
       {/* Bell Trigger Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 rounded-xl text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#1C2724] transition-colors focus:outline-none cursor-pointer"
+        className="relative w-10 h-10 min-w-[40px] min-h-[40px] flex items-center justify-center rounded-xl text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/80 dark:hover:bg-[#1C2724] transition-colors focus:outline-none cursor-pointer"
         title={language === 'en' ? 'School Notifications' : 'التنبيهات المدرسية'}
         aria-label={language === 'en' ? 'Notifications' : 'التنبيهات'}
       >
-        <Bell className="w-4 h-4" />
+        <Bell className="w-5 h-5 text-amber-500 dark:text-amber-400" />
         {unreadNotificationsCount > 0 && (
-          <span className="absolute top-1 right-1 min-w-[18px] h-[18px] px-1 bg-rose-600 text-white text-[10px] font-extrabold rounded-full flex items-center justify-center ring-2 ring-white dark:ring-[#141C1A] animate-pulse">
+          <span className="absolute top-1 end-1 min-w-[18px] h-[18px] px-1 bg-rose-600 text-white text-[10px] font-extrabold rounded-full flex items-center justify-center ring-2 ring-white dark:ring-[#141C1A] animate-pulse">
             {unreadNotificationsCount}
           </span>
         )}

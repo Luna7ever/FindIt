@@ -328,11 +328,23 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       // Check for saved registered student
       const activeStudent = getStoredStudent();
       if (activeStudent) {
+        if (activeStudent.name && activeStudent.name.includes('القحطاني')) {
+          activeStudent.name = activeStudent.name.replace('القحطاني', 'أحمد');
+          try { localStorage.setItem(ETHOS_STUDENT_STORAGE_KEY, JSON.stringify(activeStudent)); } catch {}
+        }
         setCurrentUser(activeStudent);
       }
 
       if (savedUsers) {
         const parsedUsers: UserProfile[] = JSON.parse(savedUsers);
+        parsedUsers.forEach((u) => {
+          if (u.name && u.name.includes('القحطاني')) u.name = u.name.replace('القحطاني', 'أحمد');
+          if (u.name && u.name.includes('الدوسري')) u.name = u.name.replace('الدوسري', 'محمود');
+          if (u.name && u.name.includes('الغامدي')) u.name = u.name.replace('الغامدي', 'مصطفى');
+          if (u.name && u.name.includes('المطيري')) u.name = u.name.replace('المطيري', 'طارق');
+          if (u.name && u.name.includes('العتيبي')) u.name = u.name.replace('العتيبي', 'إبراهيم');
+          if (u.name && u.name.includes('التميمي')) u.name = u.name.replace('التميمي', 'حسن');
+        });
         if (activeStudent) {
           const index = parsedUsers.findIndex((u) => u.id === activeStudent.id);
           if (index >= 0) {

@@ -187,8 +187,11 @@ export default function AppShell({ children }: AppShellProps) {
               </div>
             </Link>
 
-            {/* Desktop Action Buttons: Theme, Language, Drawer Trigger */}
+            {/* Desktop Action Buttons: Theme, Language, Notifications */}
             <div className="flex items-center gap-1 shrink-0">
+              {/* Notification Center */}
+              <NotificationCenter />
+
               {/* Theme Toggle */}
               <motion.button
                 whileTap={{ scale: 0.9 }}
@@ -532,8 +535,10 @@ export default function AppShell({ children }: AppShellProps) {
           </span>
         </Link>
 
-        {/* Right side: Hamburger Button (☰) */}
-        <div className="flex items-center gap-2 shrink-0">
+        {/* Right side: Notification Bell + Hamburger Button (☰) */}
+        <div className="flex items-center gap-1.5 shrink-0">
+          <NotificationCenter />
+
           <motion.button
             whileTap={{ scale: 0.92 }}
             onClick={() => setIsDrawerOpen(true)}

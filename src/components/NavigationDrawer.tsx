@@ -25,12 +25,14 @@ import {
   Moon,
   Laptop,
   Cpu,
-  GraduationCap
+  GraduationCap,
+  Bell
 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { canAccessAdmin } from '@/lib/auth/permissions';
 import UserAvatar from '@/components/UserAvatar';
 import TrustBadge from '@/components/TrustBadge';
+import NotificationCenter from '@/components/NotificationCenter';
 import { env } from '@/config/env';
 
 interface NavigationDrawerProps {
@@ -52,6 +54,7 @@ export default function NavigationDrawer({
     users, 
     setCurrentUserById, 
     currentUserTrustTier,
+    unreadNotificationsCount,
     getClaimsForMyItems,
     resetDemoData,
     addToast,
@@ -293,8 +296,30 @@ export default function NavigationDrawer({
                   {t('drawer.pagesSection')}
                 </span>
                 <div className="space-y-1.5">
-                  
-
+                  {/* Notifications Center Row */}
+                  <div className="w-full flex items-center justify-between p-2.5 rounded-2xl bg-white dark:bg-[#15201D] border border-[#E4E7E4] dark:border-[#263834] transition-all">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-xl bg-sky-100 dark:bg-sky-950/60 text-sky-700 dark:text-sky-300 flex items-center justify-center shrink-0">
+                        <Bell className="w-4.5 h-4.5" />
+                      </div>
+                      <div className="text-start">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs font-bold leading-tight text-[#18201D] dark:text-white">
+                            {language === 'en' ? 'School Notifications' : 'التنبيهات المدرسية'}
+                          </span>
+                          {unreadNotificationsCount > 0 && (
+                            <span className="px-1.5 py-0.5 rounded-full bg-rose-500 text-white text-[8px] font-black animate-pulse">
+                              {unreadNotificationsCount} {language === 'en' ? 'new' : 'جديد'}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[10px] text-[#66706B] dark:text-[#94A39D]">
+                          {language === 'en' ? 'Live alerts for claims & activities' : 'تنبيهات فورية لطلبات الاسترداد والأنشطة'}
+                        </p>
+                      </div>
+                    </div>
+                    <NotificationCenter />
+                  </div>
 
                   {/* School Activities & Volunteering Quests */}
                   <Link

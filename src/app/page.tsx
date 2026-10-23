@@ -60,7 +60,7 @@ export default function HomePage() {
   }, [items]);
 
   // Dynamic student name and grade from user profile
-  const studentFullName = localizedUser.name || currentUser.name || (language === 'en' ? 'Sarah Al-Qahtani' : 'سارة القحطاني');
+  const studentFullName = localizedUser.name || currentUser.name || (language === 'en' ? 'Sara Ahmed' : 'سارة أحمد');
   const studentFirstName = studentFullName.trim().split(/\s+/)[0] || (language === 'en' ? 'Student' : 'طالب');
   
   // Dynamic grade: uses student's registered grade, with localized default
